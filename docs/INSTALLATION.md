@@ -481,5 +481,5 @@ npm run build
 ## Next Steps
 
 - [Configuration Guide](CONFIGURATION.md) - Configure AllyLab settings
-- [API Reference](API.md) - Learn the API endpoints
+- [API Reference](api.md) - Learn the API endpoints
 - [Contributing](../CONTRIBUTING.md) - Contribute to AllyLab
