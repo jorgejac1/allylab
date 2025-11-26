@@ -9,4 +9,5 @@ export const config = {
   
   // Feature flags
   enableAiFixes: !!process.env.ANTHROPIC_API_KEY,
+  githubApiUrl: process.env.GITHUB_API_URL || 'https://api.github.com',
 } as const;
