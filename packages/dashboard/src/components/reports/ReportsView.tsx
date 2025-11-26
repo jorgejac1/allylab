@@ -6,16 +6,26 @@ import { TrendCharts } from './TrendCharts';
 import { ExportOptions } from './ExportOptions';
 import { ScanResults } from '../scan';
 import type { SavedScan } from '../../types';
+import type { RegressionInfo } from '../../hooks/useScans';
 
 interface ReportsViewProps {
   scans: SavedScan[];
   onDeleteScan?: (scanId: string) => void;
   onRescan?: (url: string) => void;
+  // New regression props
+  recentRegressions?: RegressionInfo[];
+  hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
 
 type TabId = 'history' | 'trends' | 'export';
 
-export function ReportsView({ scans, onDeleteScan, onRescan }: ReportsViewProps) {
+export function ReportsView({ 
+  scans, 
+  onDeleteScan, 
+  onRescan,
+  recentRegressions = [],
+  hasRegression,
+}: ReportsViewProps) {
   const [activeTab, setActiveTab] = useState<TabId>('history');
   const [selectedScan, setSelectedScan] = useState<SavedScan | null>(null);
   const [selectedScanId, setSelectedScanId] = useState<string | undefined>(undefined);
@@ -119,6 +129,7 @@ export function ReportsView({ scans, onDeleteScan, onRescan }: ReportsViewProps)
                   olderScan={comparisonScans.older}
                   newerScan={comparisonScans.newer}
                   onClose={handleCloseComparison}
+                  hasRegression={hasRegression}
                 />
               ) : selectedScan ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -142,12 +153,18 @@ export function ReportsView({ scans, onDeleteScan, onRescan }: ReportsViewProps)
                   onDeleteScan={onDeleteScan}
                   onCompare={handleCompare}
                   selectedScanId={selectedScanId}
+                  hasRegression={hasRegression}
                 />
               )}
             </>
           )}
 
-          {activeTab === 'trends' && <TrendCharts scans={scans} />}
+          {activeTab === 'trends' && (
+            <TrendCharts 
+              scans={scans} 
+              recentRegressions={recentRegressions}
+            />
+          )}
 
           {activeTab === 'export' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -160,7 +177,11 @@ export function ReportsView({ scans, onDeleteScan, onRescan }: ReportsViewProps)
         {/* Sidebar - Recent Activity */}
         {activeTab === 'history' && !selectedScan && !comparisonScans && (
           <div style={{ width: 300, flexShrink: 0 }}>
-            <RecentActivity scans={scans.slice(0, 5)} onSelect={handleSelectScan} />
+            <RecentActivity 
+              scans={scans.slice(0, 5)} 
+              onSelect={handleSelectScan}
+              hasRegression={hasRegression}
+            />
           </div>
         )}
       </div>
@@ -209,69 +230,82 @@ function QuickStat({
 interface RecentActivityProps {
   scans: SavedScan[];
   onSelect: (scan: SavedScan) => void;
+  hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
 
-function RecentActivity({ scans, onSelect }: RecentActivityProps) {
+function RecentActivity({ scans, onSelect, hasRegression }: RecentActivityProps) {
   return (
     <Card>
       <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px' }}>
         🕐 Recent Activity
       </h4>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {scans.map(scan => (
-          <button
-            key={scan.id}
-            onClick={() => onSelect(scan)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: 12,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 8,
-              cursor: 'pointer',
-              textAlign: 'left',
-              width: '100%',
-            }}
-          >
-            <div
+        {scans.map(scan => {
+          const regression = hasRegression?.(scan.id);
+          
+          return (
+            <button
+              key={scan.id}
+              onClick={() => onSelect(scan)}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 8,
-                background: scan.score >= 70 ? '#dcfce7' : scan.score >= 40 ? '#fef9c3' : '#fee2e2',
-                color: scan.score >= 70 ? '#166534' : scan.score >= 40 ? '#854d0e' : '#991b1b',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 14,
+                gap: 12,
+                padding: 12,
+                background: regression ? '#fef3c7' : '#f8fafc',
+                border: regression ? '1px solid #f59e0b' : '1px solid #e2e8f0',
+                borderRadius: 8,
+                cursor: 'pointer',
+                textAlign: 'left',
+                width: '100%',
               }}
             >
-              {scan.score}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontWeight: 500,
-                  fontSize: 13,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  background: scan.score >= 70 ? '#dcfce7' : scan.score >= 40 ? '#fef9c3' : '#fee2e2',
+                  color: scan.score >= 70 ? '#166534' : scan.score >= 40 ? '#854d0e' : '#991b1b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: 14,
                 }}
               >
-                {new URL(scan.url).hostname}
+                {scan.score}
               </div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>
-                {formatRelativeTime(new Date(scan.timestamp))}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    fontWeight: 500,
+                    fontSize: 13,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {new URL(scan.url).hostname}
+                  {regression && (
+                    <span style={{ fontSize: 11, color: '#dc2626' }}>
+                      🔻-{regression.scoreDrop}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b' }}>
+                  {formatRelativeTime(new Date(scan.timestamp))}
+                </div>
               </div>
-            </div>
-            <div style={{ fontSize: 12, color: '#64748b' }}>
-              {scan.totalIssues} issues
-            </div>
-          </button>
-        ))}
+              <div style={{ fontSize: 12, color: '#64748b' }}>
+                {scan.totalIssues} issues
+              </div>
+            </button>
+          );
+        })}
       </div>
     </Card>
   );

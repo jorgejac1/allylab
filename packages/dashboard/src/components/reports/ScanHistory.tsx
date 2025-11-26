@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Card, Button, EmptyState, Select } from '../ui';
-import { ScoreCircle, Sparkline } from '../charts';
-import type { SavedScan } from '../../types';
-import { SEVERITY_COLORS } from '../../utils/constants';
+import { Card, Button, EmptyState } from '../ui';
+import { ScanCard, ScanHistoryToolbar } from './scan-history';
+import { getDateRangeBounds, formatDateRangeLabel } from '../../utils/dateRange';
+import type { SavedScan, DateRange, DateRangeOption, SortOption } from '../../types';
+import type { RegressionInfo } from '../../hooks/useScans';
 
 interface ScanHistoryProps {
   scans: SavedScan[];
@@ -10,9 +11,8 @@ interface ScanHistoryProps {
   onDeleteScan?: (scanId: string) => void;
   onCompare?: (scan1: SavedScan, scan2: SavedScan) => void;
   selectedScanId?: string;
+  hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
-
-type SortOption = 'newest' | 'oldest' | 'score-high' | 'score-low' | 'issues-high' | 'issues-low';
 
 export function ScanHistory({
   scans,
@@ -20,11 +20,23 @@ export function ScanHistory({
   onDeleteScan,
   onCompare,
   selectedScanId,
+  hasRegression,
 }: ScanHistoryProps) {
+  // Filter state
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterUrl, setFilterUrl] = useState<string>('all');
+  
+  // Compare state
   const [compareMode, setCompareMode] = useState(false);
   const [compareSelection, setCompareSelection] = useState<SavedScan[]>([]);
+  
+  // Date range state
+  const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>('all');
+  const [customDateRange, setCustomDateRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   // Get unique URLs for filter
   const uniqueUrls = useMemo(() => {
@@ -39,6 +51,17 @@ export function ScanHistory({
     // Filter by URL
     if (filterUrl !== 'all') {
       result = result.filter(s => new URL(s.url).hostname === filterUrl);
+    }
+
+    // Filter by date range
+    const dateRange = getDateRangeBounds(dateRangeOption, customDateRange);
+    if (dateRange.start || dateRange.end) {
+      result = result.filter(scan => {
+        const scanDate = new Date(scan.timestamp);
+        if (dateRange.start && scanDate < dateRange.start) return false;
+        if (dateRange.end && scanDate > dateRange.end) return false;
+        return true;
+      });
     }
 
     // Sort
@@ -64,7 +87,7 @@ export function ScanHistory({
     }
 
     return result;
-  }, [scans, filterUrl, sortBy]);
+  }, [scans, filterUrl, sortBy, dateRangeOption, customDateRange]);
 
   // Get score trend for sparkline
   const getScoreTrend = (url: string): number[] => {
@@ -75,6 +98,7 @@ export function ScanHistory({
       .map(s => s.score);
   };
 
+  // Compare handlers
   const handleCompareToggle = (scan: SavedScan) => {
     if (compareSelection.find(s => s.id === scan.id)) {
       setCompareSelection(compareSelection.filter(s => s.id !== scan.id));
@@ -91,6 +115,39 @@ export function ScanHistory({
     }
   };
 
+  const handleCompareCancel = () => {
+    setCompareMode(false);
+    setCompareSelection([]);
+  };
+
+  // Date range handlers
+  const handleDateRangeOptionChange = (option: DateRangeOption) => {
+    setDateRangeOption(option);
+    setShowCustomPicker(option === 'custom');
+  };
+
+  const handleCustomDateChange = (field: 'start' | 'end', value: string) => {
+    const date = value ? new Date(value) : null;
+    if (field === 'start' && date) {
+      date.setHours(0, 0, 0, 0);
+    }
+    if (field === 'end' && date) {
+      date.setHours(23, 59, 59, 999);
+    }
+    setCustomDateRange(prev => ({
+      ...prev,
+      [field]: date,
+    }));
+  };
+
+  const handleClearAll = () => {
+    setFilterUrl('all');
+    setDateRangeOption('all');
+    setShowCustomPicker(false);
+    setCustomDateRange({ start: null, end: null });
+  };
+
+  // Empty state
   if (scans.length === 0) {
     return (
       <EmptyState
@@ -104,211 +161,70 @@ export function ScanHistory({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Toolbar */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
-        }}
-      >
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          {/* URL Filter */}
-          <Select
-            value={filterUrl}
-            onChange={e => setFilterUrl(e.target.value)}
-            options={[
-              { value: 'all', label: 'All Sites' },
-              ...uniqueUrls.map(url => ({ value: url, label: url })),
-            ]}
-            style={{ minWidth: 180 }}
-          />
-
-          {/* Sort */}
-          <Select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as SortOption)}
-            options={[
-              { value: 'newest', label: 'Newest First' },
-              { value: 'oldest', label: 'Oldest First' },
-              { value: 'score-high', label: 'Highest Score' },
-              { value: 'score-low', label: 'Lowest Score' },
-              { value: 'issues-high', label: 'Most Issues' },
-              { value: 'issues-low', label: 'Fewest Issues' },
-            ]}
-            style={{ minWidth: 150 }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: 8 }}>
-          {onCompare && (
-            <>
-              {compareMode ? (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setCompareMode(false);
-                      setCompareSelection([]);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleCompareSubmit}
-                    disabled={compareSelection.length !== 2}
-                  >
-                    Compare ({compareSelection.length}/2)
-                  </Button>
-                </>
-              ) : (
-                <Button variant="secondary" size="sm" onClick={() => setCompareMode(true)}>
-                  📊 Compare Scans
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      <ScanHistoryToolbar
+        filterUrl={filterUrl}
+        onFilterUrlChange={setFilterUrl}
+        uniqueUrls={uniqueUrls}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        dateRangeOption={dateRangeOption}
+        onDateRangeOptionChange={handleDateRangeOptionChange}
+        customDateRange={customDateRange}
+        onCustomDateChange={handleCustomDateChange}
+        showCustomPicker={showCustomPicker}
+        compareMode={compareMode}
+        compareSelectionCount={compareSelection.length}
+        onCompareModeToggle={() => setCompareMode(true)}
+        onCompareSubmit={handleCompareSubmit}
+        onCompareCancel={handleCompareCancel}
+        canCompare={!!onCompare}
+        onClearAll={handleClearAll}
+      />
 
       {/* Scan List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {filteredScans.map(scan => {
-          const isSelected = selectedScanId === scan.id;
-          const isCompareSelected = compareSelection.find(s => s.id === scan.id);
-          const scoreTrend = getScoreTrend(scan.url);
-
-          return (
-            <Card
-              key={scan.id}
-              padding="none"
-              style={{
-                cursor: 'pointer',
-                border: isSelected
-                  ? '2px solid #2563eb'
-                  : isCompareSelected
-                  ? '2px solid #10b981'
-                  : '1px solid #e2e8f0',
-                transition: 'all 0.2s',
-              }}
-              onClick={() => (compareMode ? handleCompareToggle(scan) : onSelectScan(scan))}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  padding: 16,
-                }}
+        {filteredScans.length === 0 ? (
+          <Card>
+            <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+              <p style={{ margin: 0 }}>No scans match your filters</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleClearAll}
+                style={{ marginTop: 12 }}
               >
-                {/* Compare Checkbox */}
-                {compareMode && (
-                  <input
-                    type="checkbox"
-                    checked={!!isCompareSelected}
-                    onChange={() => handleCompareToggle(scan)}
-                    onClick={e => e.stopPropagation()}
-                    style={{ width: 18, height: 18 }}
-                  />
-                )}
-
-                {/* Score */}
-                <ScoreCircle score={scan.score} size={56} />
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      marginBottom: 4,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {new URL(scan.url).hostname}
-                    <span style={{ fontWeight: 400, color: '#64748b', marginLeft: 8 }}>
-                      {new URL(scan.url).pathname}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>
-                    {new Date(scan.timestamp).toLocaleString()}
-                  </div>
-                </div>
-
-                {/* Trend Sparkline */}
-                {scoreTrend.length > 1 && (
-                  <div style={{ width: 80 }}>
-                    <Sparkline data={scoreTrend} color="auto" height={30} />
-                  </div>
-                )}
-
-                {/* Severity Counts */}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <SeverityPill severity="critical" count={scan.critical} />
-                  <SeverityPill severity="serious" count={scan.serious} />
-                  <SeverityPill severity="moderate" count={scan.moderate} />
-                  <SeverityPill severity="minor" count={scan.minor} />
-                </div>
-
-                {/* Delete */}
-                {onDeleteScan && !compareMode && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={e => {
-                      e.stopPropagation();
-                      onDeleteScan(scan.id);
-                    }}
-                    style={{ color: '#ef4444' }}
-                  >
-                    🗑️
-                  </Button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
+                Clear Filters
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          filteredScans.map(scan => (
+            <ScanCard
+              key={scan.id}
+              scan={scan}
+              isSelected={selectedScanId === scan.id}
+              isCompareSelected={!!compareSelection.find(s => s.id === scan.id)}
+              compareMode={compareMode}
+              scoreTrend={getScoreTrend(scan.url)}
+              regression={hasRegression?.(scan.id)}
+              onSelect={() => onSelectScan(scan)}
+              onCompareToggle={() => handleCompareToggle(scan)}
+              onDelete={onDeleteScan ? () => onDeleteScan(scan.id) : undefined}
+            />
+          ))
+        )}
       </div>
 
       {/* Results Count */}
       <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center' }}>
         Showing {filteredScans.length} of {scans.length} scans
+        {dateRangeOption !== 'all' && (
+          <span style={{ marginLeft: 8 }}>
+            • {formatDateRangeLabel(dateRangeOption, customDateRange)}
+          </span>
+        )}
       </div>
-    </div>
-  );
-}
-
-function SeverityPill({ severity, count }: { severity: string; count: number }) {
-  if (count === 0) return null;
-
-  const color = SEVERITY_COLORS[severity as keyof typeof SEVERITY_COLORS];
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 8px',
-        borderRadius: 6,
-        background: `${color}15`,
-        minWidth: 40,
-        justifyContent: 'center',
-      }}
-    >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: color,
-        }}
-      />
-      <span style={{ fontSize: 12, fontWeight: 600, color }}>{count}</span>
     </div>
   );
 }

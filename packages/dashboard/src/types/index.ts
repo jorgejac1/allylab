@@ -183,6 +183,34 @@ export type {
   DrillDownTarget,
 } from './executive';
 
+// Add to existing types/index.ts
+
+// Date range filter types
+export interface DateRange {
+  start: Date | null;
+  end: Date | null;
+}
+
+export interface IssueTrendDataPoint {
+  date: string;
+  fullDate?: string;
+  critical: number;
+  serious: number;
+  moderate: number;
+  minor: number;
+  total: number;
+}
+
+export interface AlertSettings {
+  regressionThreshold: number;
+  recentDays: number;
+  showRegressionAlerts: boolean;
+}
+
+export type DateRangeOption = 'all' | '7days' | '30days' | '90days' | 'custom';
+
+export type SortOption = 'newest' | 'oldest' | 'score-high' | 'score-low' | 'issues-high' | 'issues-low';
+
 export * from './jira';
 export * from './schedule';
 export * from './competitor';

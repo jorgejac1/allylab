@@ -1,15 +1,22 @@
 import { Card, Button } from '../ui';
 import { ScoreCircle, SeverityBar } from '../charts';
 import type { SavedScan } from '../../types';
+import type { RegressionInfo } from '../../hooks/useScans';
 import { SEVERITY_COLORS } from '../../utils/constants';
 
 interface ComparisonViewProps {
   olderScan: SavedScan;
   newerScan: SavedScan;
   onClose: () => void;
+  hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
 
-export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonViewProps) {
+export function ComparisonView({ 
+  olderScan, 
+  newerScan, 
+  onClose,
+  hasRegression,
+}: ComparisonViewProps) {
   const scoreDiff = newerScan.score - olderScan.score;
   const issuesDiff = newerScan.totalIssues - olderScan.totalIssues;
 
@@ -17,6 +24,11 @@ export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonView
   const seriousDiff = newerScan.serious - olderScan.serious;
   const moderateDiff = newerScan.moderate - olderScan.moderate;
   const minorDiff = newerScan.minor - olderScan.minor;
+
+  // Check if either scan has a regression
+  const olderRegression = hasRegression?.(olderScan.id);
+  const newerRegression = hasRegression?.(newerScan.id);
+  const hasAnyRegression = olderRegression || newerRegression;
 
   const formatDiff = (diff: number): { text: string; color: string } => {
     if (diff > 0) return { text: `+${diff}`, color: '#ef4444' };
@@ -49,6 +61,32 @@ export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonView
         </Button>
       </div>
 
+      {/* Regression Alert */}
+      {hasAnyRegression && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: 12,
+            marginBottom: 24,
+            borderRadius: 8,
+            background: '#fef3c7',
+            border: '1px solid #f59e0b',
+          }}
+        >
+          <span style={{ fontSize: 20 }}>⚠️</span>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#92400e' }}>
+              {newerRegression 
+                ? `The "After" scan shows a regression of ${newerRegression.scoreDrop} points from a previous scan.`
+                : `The "Before" scan shows a regression of ${olderRegression?.scoreDrop} points from an earlier scan.`
+              }
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Comparison Grid */}
       <div
         style={{
@@ -59,7 +97,11 @@ export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonView
         }}
       >
         {/* Older Scan */}
-        <ScanCard scan={olderScan} label="Before" />
+        <ScanCard 
+          scan={olderScan} 
+          label="Before" 
+          regression={olderRegression}
+        />
 
         {/* Diff Column */}
         <div
@@ -107,7 +149,11 @@ export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonView
         </div>
 
         {/* Newer Scan */}
-        <ScanCard scan={newerScan} label="After" />
+        <ScanCard 
+          scan={newerScan} 
+          label="After" 
+          regression={newerRegression}
+        />
       </div>
 
       {/* Summary */}
@@ -144,18 +190,53 @@ export function ComparisonView({ olderScan, newerScan, onClose }: ComparisonView
   );
 }
 
-function ScanCard({ scan, label }: { scan: SavedScan; label: string }) {
+function ScanCard({ 
+  scan, 
+  label,
+  regression,
+}: { 
+  scan: SavedScan; 
+  label: string;
+  regression?: RegressionInfo;
+}) {
   return (
     <div
       style={{
         padding: 20,
-        background: '#f8fafc',
+        background: regression ? '#fef3c7' : '#f8fafc',
         borderRadius: 12,
-        border: '1px solid #e2e8f0',
+        border: regression ? '2px solid #f59e0b' : '1px solid #e2e8f0',
       }}
     >
-      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 12, fontWeight: 600 }}>
-        {label.toUpperCase()}
+      <div 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: 12,
+        }}
+      >
+        <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
+          {label.toUpperCase()}
+        </span>
+        {regression && (
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '2px 8px',
+              borderRadius: 4,
+              background: '#fef3c7',
+              border: '1px solid #f59e0b',
+              color: '#92400e',
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            🔻 -{regression.scoreDrop} from previous
+          </span>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
         <ScoreCircle score={scan.score} size={64} />
