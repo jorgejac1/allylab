@@ -7,7 +7,7 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (better layer caching)
 COPY package*.json ./
 
 # Install dependencies
