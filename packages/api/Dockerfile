@@ -49,6 +49,15 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user FIRST
+RUN groupadd -r allylab && useradd -r -g allylab -m allylab
+
+# Set Playwright to use a shared location
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-browsers
+
+# Create the browsers directory and set permissions
+RUN mkdir -p /opt/playwright-browsers && chown -R allylab:allylab /opt/playwright-browsers
+
 WORKDIR /app
 
 # Copy package files
@@ -57,15 +66,19 @@ COPY package*.json ./
 # Install production dependencies only
 RUN npm install --omit=dev
 
-# Install Playwright browsers
-RUN npx playwright install chromium
+# Install Playwright browsers to shared location (still as root for system deps)
+RUN npx playwright install chromium --with-deps
+
+# Set ownership of browsers directory
+RUN chown -R allylab:allylab /opt/playwright-browsers
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
 
-# Create non-root user for security
-RUN groupadd -r allylab && useradd -r -g allylab allylab
+# Set ownership of app directory
 RUN chown -R allylab:allylab /app
+
+# Switch to non-root user
 USER allylab
 
 # Environment variables
