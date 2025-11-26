@@ -1,0 +1,101 @@
+# Example workflow - copy this to your repository's .github/workflows/
+
+name: Accessibility Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL to scan'
+        required: true
+        default: 'https://example.com'
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    name: Scan for accessibility issues
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run AllyLab Scan
+        id: allylab
+        uses: jorgejac1/allylab@v1
+        with:
+          url: ${{ github.event.inputs.url || 'https://example.com' }}
+          standard: wcag22aa
+          viewport: desktop
+          fail-on: critical
+          output-file: a11y-report.json
+          # Optional: Enable AI-powered fix suggestions
+          # anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-report
+          path: a11y-report.json
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const score = '${{ steps.allylab.outputs.score }}';
+            const critical = '${{ steps.allylab.outputs.critical }}';
+            const serious = '${{ steps.allylab.outputs.serious }}';
+            const total = '${{ steps.allylab.outputs.total-issues }}';
+            
+            const emoji = score >= 90 ? '✅' : score >= 70 ? '⚠️' : '❌';
+            
+            const body = `## ${emoji} Accessibility Scan Results
+            
+            | Metric | Value |
+            |--------|-------|
+            | Score | **${score}/100** |
+            | Critical Issues | ${critical} |
+            | Serious Issues | ${serious} |
+            | Total Issues | ${total} |
+            
+            [View full report](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+  # Example: Multi-page site scan
+  site-scan:
+    runs-on: ubuntu-latest
+    name: Full site scan
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Site Scan
+        uses: jorgejac1/allylab@v1
+        with:
+          url: ${{ github.event.inputs.url }}
+          max-pages: 10
+          max-depth: 2
+          standard: wcag21aa
+          fail-on: serious
+          output-file: site-report.json
+
+      - name: Upload Site Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-accessibility-report
+          path: site-report.json

@@ -1,0 +1,68 @@
+name: 'AllyLab Accessibility Scanner'
+description: 'AI-powered accessibility scanner with WCAG 2.0/2.1/2.2 support and fix suggestions'
+author: 'Jorge Jacinto'
+branding:
+  icon: 'eye'
+  color: 'blue'
+
+inputs:
+  url:
+    description: 'URL to scan for accessibility issues'
+    required: true
+  standard:
+    description: 'WCAG standard (wcag21aa, wcag22aa, wcag21a, wcag2aa, wcag2a)'
+    required: false
+    default: 'wcag21aa'
+  viewport:
+    description: 'Viewport size (desktop, tablet, mobile)'
+    required: false
+    default: 'desktop'
+  fail-on:
+    description: 'Fail if issues of this severity or higher are found (critical, serious, moderate, minor)'
+    required: false
+    default: ''
+  max-pages:
+    description: 'Maximum pages to scan (for site scans)'
+    required: false
+    default: '1'
+  max-depth:
+    description: 'Maximum crawl depth (for site scans)'
+    required: false
+    default: '2'
+  output-file:
+    description: 'Path to save JSON results'
+    required: false
+    default: ''
+  anthropic-api-key:
+    description: 'Anthropic API key for AI-powered fix suggestions (optional)'
+    required: false
+    default: ''
+
+outputs:
+  score:
+    description: 'Accessibility score (0-100)'
+  total-issues:
+    description: 'Total number of issues found'
+  critical:
+    description: 'Number of critical issues'
+  serious:
+    description: 'Number of serious issues'
+  moderate:
+    description: 'Number of moderate issues'
+  minor:
+    description: 'Number of minor issues'
+  report-path:
+    description: 'Path to the JSON report file'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    INPUT_URL: ${{ inputs.url }}
+    INPUT_STANDARD: ${{ inputs.standard }}
+    INPUT_VIEWPORT: ${{ inputs.viewport }}
+    INPUT_FAIL_ON: ${{ inputs.fail-on }}
+    INPUT_MAX_PAGES: ${{ inputs.max-pages }}
+    INPUT_MAX_DEPTH: ${{ inputs.max-depth }}
+    INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+    ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
