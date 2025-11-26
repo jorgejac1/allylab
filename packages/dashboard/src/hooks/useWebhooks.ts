@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getApiBase } from '../utils/api';
-import type { Webhook, WebhookEvent } from '../types/webhook';
+import type { Webhook, WebhookEvent, WebhookType } from '../types/webhook';
 
 export function useWebhooks() {
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
@@ -29,13 +29,14 @@ export function useWebhooks() {
     name: string,
     url: string,
     events: WebhookEvent[],
-    secret?: string
+    secret?: string,
+    type?: WebhookType
   ): Promise<Webhook | null> => {
     try {
       const response = await fetch(`${getApiBase()}/webhooks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, url, events, secret }),
+        body: JSON.stringify({ name, url, events, secret, type }),
       });
       if (response.ok) {
         const webhook = await response.json();
