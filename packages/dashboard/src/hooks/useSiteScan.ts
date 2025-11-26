@@ -55,6 +55,10 @@ export function useSiteScan() {
         body: JSON.stringify({ url, maxPages, maxDepth, standard }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response body');
 
@@ -66,52 +70,78 @@ export function useSiteScan() {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n\n');
-        buffer = lines.pop() || '';
+        
+        // Split by double newline (SSE event separator)
+        const chunks = buffer.split('\n\n');
+        buffer = chunks.pop() || ''; // Keep incomplete chunk in buffer
 
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
+        for (const chunk of chunks) {
+          if (!chunk.trim()) continue;
+          
+          // Parse SSE format: "event: type\ndata: {...}"
+          const lines = chunk.split('\n');
+          let eventType = '';
+          let dataStr = '';
+          
+          for (const line of lines) {
+            if (line.startsWith('event:')) {
+              eventType = line.slice(6).trim();
+            } else if (line.startsWith('data:')) {
+              dataStr = line.slice(5).trim();
+            }
+          }
+          
+          if (!eventType || !dataStr) {
+            console.log('[useSiteScan] Skipping incomplete chunk:', chunk);
+            continue;
+          }
           
           try {
-            const data = JSON.parse(line.slice(6));
+            const data = JSON.parse(dataStr);
+            console.log('[useSiteScan] Event:', eventType, data);
             
-            switch (data.type) {
+            switch (eventType) {
               case 'status':
-                if (data.data.phase === 'crawl') setPhase('crawling');
-                if (data.data.phase === 'scan') setPhase('scanning');
+                if (data.phase === 'crawl') setPhase('crawling');
+                if (data.phase === 'scan') setPhase('scanning');
                 break;
                 
               case 'crawl-complete':
-                setDiscoveredUrls(data.data.urls);
-                setTotalPages(data.data.totalFound);
+                setDiscoveredUrls(data.urls || []);
+                setTotalPages(data.totalFound || 0);
                 break;
                 
               case 'page-start':
-                setCurrentPage(data.data.index);
+                setCurrentPage(data.index || 0);
                 break;
                 
               case 'page-complete':
-                setResults(prev => [...prev, data.data]);
+                setResults(prev => [...prev, data as PageResult]);
                 break;
                 
               case 'complete':
                 setPhase('complete');
-                setSummary(data.data);
+                setSummary(data as SiteScanResult);
                 break;
                 
               case 'error':
                 setPhase('error');
-                setError(data.data.message);
+                setError(data.message || 'Unknown error');
                 break;
+                
+              default:
+                console.log('[useSiteScan] Unknown event type:', eventType);
             }
-          } catch {
-            // Skip invalid JSON
+          } catch (parseError) {
+            console.error('[useSiteScan] Failed to parse SSE data:', parseError, dataStr);
           }
         }
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Scan failed';
+      console.error('[useSiteScan] Scan failed:', message);
       setPhase('error');
-      setError(err instanceof Error ? err.message : 'Scan failed');
+      setError(message);
     }
   }, []);
 

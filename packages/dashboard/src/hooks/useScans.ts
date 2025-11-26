@@ -1,18 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import type { SavedScan, ScanResult, TrackedFinding } from '../types';
 import { loadAllScans, saveScan, deleteScan, getScansForUrl } from '../utils/storage';
 import { getTrackingStats, getPreviousFingerprints } from '../utils/issueTracker';
 import { generateFingerprint, generateFindingId } from '../utils/fingerprint';
 
 export function useScans() {
-  const [scans, setScans] = useState<SavedScan[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load scans on mount
-  useEffect(() => {
-    setScans(loadAllScans());
-    setIsLoading(false);
-  }, []);
+  // Use lazy initialization - function runs only once on mount
+  const [scans, setScans] = useState<SavedScan[]>(() => loadAllScans());
+  const [isLoading] = useState(false);
 
   // Add a new scan result
   const addScan = useCallback((result: ScanResult): SavedScan => {

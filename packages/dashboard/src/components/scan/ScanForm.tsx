@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button, Input, Select } from '../ui';
 import type { WCAGStandard, Viewport } from '../../types';
 
@@ -22,17 +22,11 @@ const VIEWPORTS: { value: Viewport; label: string; icon: string }[] = [
   { value: 'mobile', label: 'Mobile', icon: '📲' },
 ];
 
-export function ScanForm({ onScan, isScanning, initialUrl }: ScanFormProps) {
-  const [url, setUrl] = useState(initialUrl || '');
+export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps) {
+  // Initialize directly from prop - parent should use key={initialUrl} to reset
+  const [url, setUrl] = useState(initialUrl);
   const [standard, setStandard] = useState<WCAGStandard>('wcag21aa');
   const [viewport, setViewport] = useState<Viewport>('desktop');
-
-  // Update URL when initialUrl changes (from drill-down navigation)
-  useEffect(() => {
-    if (initialUrl) {
-      setUrl(initialUrl);
-    }
-  }, [initialUrl]);
 
   const handleSubmit = () => {
     if (!url.trim()) return;

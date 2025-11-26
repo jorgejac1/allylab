@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
-import { useApiStatus } from '../../hooks';
 
 interface NavItem {
   id: string;
@@ -21,6 +20,7 @@ interface SidebarLayoutProps {
   activeItem: string;
   onItemClick: (id: string) => void;
   sidebarCollapsed?: boolean;
+  apiStatus?: 'connected' | 'disconnected' | 'checking';
 }
 
 export function SidebarLayout({
@@ -29,9 +29,8 @@ export function SidebarLayout({
   activeItem,
   onItemClick,
   sidebarCollapsed = false,
+  apiStatus = 'checking',
 }: SidebarLayoutProps) {
-  const { status } = useApiStatus();
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar
@@ -39,7 +38,7 @@ export function SidebarLayout({
         activeItem={activeItem}
         onItemClick={onItemClick}
         collapsed={sidebarCollapsed}
-        apiStatus={status}
+        apiStatus={apiStatus}
       />
       <main
         style={{
