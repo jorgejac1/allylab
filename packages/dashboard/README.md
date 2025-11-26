@@ -12,6 +12,7 @@ React-based web dashboard for AllyLab accessibility scanning. Built with React 1
 - 🤖 **AI-Powered Fixes** - View and apply fix suggestions
 - 🔗 **GitHub Integration** - Create PRs directly from findings
 - 🔗 **Batch PR Creation** - Select multiple issues and create a single PR with all fixes
+- 🔍 **Fix Verification** - Re-scan after PR merge to confirm fixes worked
 - 📅 **Scheduled Scans** - Set up recurring scans
 - 🔔 **Webhooks** - Configure Slack/Teams notifications
 - 📋 **JIRA Integration** - Export issues to JIRA
@@ -121,6 +122,8 @@ src/
 │   │   │   ├── RepoSelector.tsx
 │   │   │   ├── SeverityDot.tsx
 │   │   │   └── index.ts
+│   │   ├── PRStatusBadge.tsx
+│   │   ├── VerificationModal.tsx
 │   │   ├── BatchPRModal.tsx
 │   │   ├── CreatePRModal.tsx
 │   │   ├── ExportDropdown.tsx
@@ -275,6 +278,18 @@ const { schedules, createSchedule, updateSchedule, deleteSchedule } = useSchedul
 Webhook configuration.
 ```tsx
 const { webhooks, createWebhook, updateWebhook, deleteWebhook, testWebhook } = useWebhooks();
+```
+
+### `usePRTracking`
+Track PRs and verify fixes after merge.
+```tsx
+const { 
+  trackedPRs,
+  trackPR,
+  verifyFixes,
+  getPRsForFinding,
+  refreshAllStatuses
+} = usePRTracking();
 ```
 
 ## Configuration

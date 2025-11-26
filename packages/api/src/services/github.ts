@@ -287,3 +287,45 @@ export function getSourceMapping(repoFullName: string, selector: string): Source
   
   return mappings.find(m => m.selector === selector);
 }
+
+// ============================================
+// PR Status & Verification
+// ============================================
+
+export async function getPRStatus(
+  token: string,
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<PRStatus | null> {
+  try {
+    const pr = await githubFetch<{
+      number: number;
+      state: 'open' | 'closed';
+      merged: boolean;
+      merged_at: string | null;
+      html_url: string;
+      title: string;
+      head: { ref: string };
+      base: { ref: string };
+    }>(`/repos/${owner}/${repo}/pulls/${prNumber}`, token);
+
+    return {
+      number: pr.number,
+      state: pr.state,
+      merged: pr.merged,
+      merged_at: pr.merged_at,
+      html_url: pr.html_url,
+      title: pr.title,
+      head: { ref: pr.head.ref },
+      base: { ref: pr.base.ref },
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[GitHub] Failed to get PR status:', message);
+    return null;
+  }
+}
+
+// Import at the top of the file
+import type { PRStatus } from '../types/github.js';

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Modal, Button } from "../ui";
 import { useGitHub } from "../../hooks/useGitHub";
+import { usePRTracking } from "../../hooks/usePRTracking";
 import { getApiBase } from "../../utils/api";
 import {
   FixGenerationList,
@@ -17,12 +18,23 @@ interface BatchPRModalProps {
   isOpen: boolean;
   onClose: () => void;
   findings: TrackedFinding[];
+  scanUrl: string;
+  scanStandard?: string;
+  scanViewport?: string;
 }
 
 type Step = "fixes" | "repo" | "files" | "confirm";
 
-export function BatchPRModal({ isOpen, onClose, findings }: BatchPRModalProps) {
+export function BatchPRModal({ 
+  isOpen, 
+  onClose, 
+  findings,
+  scanUrl,
+  scanStandard,
+  scanViewport,
+}: BatchPRModalProps) {
   const { connection, getRepos, getBranches, createPR } = useGitHub();
+  const { trackPR } = usePRTracking();
 
   const [step, setStep] = useState<Step>("fixes");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -229,6 +241,20 @@ export function BatchPRModal({ isOpen, onClose, findings }: BatchPRModalProps) {
       );
 
       if (result.success && result.prUrl && result.prNumber) {
+        // Track the PR with all finding IDs for verification
+        const findingIds = fixesWithPaths.map((f) => f.finding.id);
+        trackPR(
+          result,
+          selectedRepo.owner.login,
+          selectedRepo.name,
+          findingIds,
+          {
+            scanUrl,
+            scanStandard,
+            scanViewport,
+          }
+        );
+
         setPrResult({ prUrl: result.prUrl, prNumber: result.prNumber });
         setStep("confirm");
       } else {

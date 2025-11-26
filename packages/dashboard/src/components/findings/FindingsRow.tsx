@@ -18,6 +18,7 @@ interface FindingsRowProps {
   onSaveJiraLink: () => void;
   onCancelJiraLink: () => void;
   onRemoveJiraLink: () => void;
+  renderPRStatus?: () => React.ReactNode;
 }
 
 export function FindingsRow({
@@ -34,6 +35,7 @@ export function FindingsRow({
   onSaveJiraLink,
   onCancelJiraLink,
   onRemoveJiraLink,
+  renderPRStatus,
 }: FindingsRowProps) {
   const isFalsePositive = finding.falsePositive;
 
@@ -149,6 +151,11 @@ export function FindingsRow({
           onCancelLink={onCancelJiraLink}
           onRemoveLink={onRemoveJiraLink}
         />
+      </td>
+
+      {/* PR Status Column */}
+      <td style={tdStyle}>
+        {renderPRStatus ? renderPRStatus() : <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>}
       </td>
 
       {/* Actions */}

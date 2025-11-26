@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal } from '../ui';
 import { useGitHub } from '../../hooks/useGitHub';
+import { usePRTracking } from '../../hooks/usePRTracking';
 import type { GitHubRepo, GitHubBranch } from '../../types/github';
 import type { CodeFix } from '../../types/fixes';
 
@@ -9,13 +10,26 @@ interface CreatePRModalProps {
   onClose: () => void;
   fix: CodeFix;
   finding: {
+    id: string;
     ruleTitle: string;
     selector: string;
   };
+  scanUrl: string;
+  scanStandard?: string;
+  scanViewport?: string;
 }
 
-export function CreatePRModal({ isOpen, onClose, fix, finding }: CreatePRModalProps) {
+export function CreatePRModal({ 
+  isOpen, 
+  onClose, 
+  fix, 
+  finding,
+  scanUrl,
+  scanStandard,
+  scanViewport,
+}: CreatePRModalProps) {
   const { connection, getRepos, getBranches, createPR } = useGitHub();
+  const { trackPR } = usePRTracking();
   
   const [step, setStep] = useState<'repo' | 'file' | 'confirm'>('repo');
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -107,6 +121,19 @@ export function CreatePRModal({ isOpen, onClose, fix, finding }: CreatePRModalPr
       );
 
       if (result.success && result.prUrl && result.prNumber) {
+        // Track the PR for verification
+        trackPR(
+          result,
+          selectedRepo.owner.login,
+          selectedRepo.name,
+          [finding.id],
+          {
+            scanUrl,
+            scanStandard,
+            scanViewport,
+          }
+        );
+
         setPrResult({ prUrl: result.prUrl, prNumber: result.prNumber });
         setStep('confirm');
       } else {

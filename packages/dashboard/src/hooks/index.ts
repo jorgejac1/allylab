@@ -10,3 +10,4 @@ export { useSchedules } from './useSchedules';
 export { useSiteScan } from './useSiteScan';
 export { useWebhooks } from './useWebhooks';
 export { useGitHub } from './useGitHub';
+export { usePRTracking } from './usePRTracking';

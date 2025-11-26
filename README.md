@@ -68,6 +68,7 @@ allylab scan https://example.com --fail-on critical --format json
 - **Framework-specific code** (HTML, React, Vue)
 - **GitHub PR integration** - create pull requests directly
 - **Batch PR creation** - fix multiple issues in a single PR
+- **Fix verification** - Re-scan after PR merge to confirm fixes
 - Confidence levels and effort estimates
 - Unified diff view for code changes
 
@@ -75,6 +76,8 @@ allylab scan https://example.com --fail-on critical --format json
 - Connect with GitHub Personal Access Token
 - **Automatic PR creation** with accessibility fixes
 - **Batch PR creation** - select multiple issues, generate fixes, create single PR
+- **PR status tracking** - Monitor open/merged/closed status
+- **Fix verification** - Re-scan page after merge to confirm issues are resolved
 - Branch creation and file updates
 - Works with any repository you have access to
 
@@ -303,7 +306,9 @@ allylab/
 | `GET` | `/github/status` | Check connection status |
 | `GET` | `/github/repos` | List repositories |
 | `GET` | `/github/repos/:owner/:repo/branches` | List branches |
+| `GET` | `/github/repos/:owner/:repo/pulls/:prNumber` | Get PR status |
 | `POST` | `/github/pr` | Create pull request with fixes (supports batch) |
+| `POST` | `/github/verify` | Verify fixes by re-scanning after PR merge |
 
 ### Schedule Endpoints
 
