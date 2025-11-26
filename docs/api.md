@@ -20,6 +20,20 @@ Currently, the API does not require authentication. For production deployments, 
 | Health | `GET` | `/health` | Health check |
 | Scanning | `POST` | `/scan` | Scan with SSE streaming |
 | Scanning | `POST` | `/scan/json` | Scan with JSON response |
+| Site Scan | `POST` | `/crawl/scan` | Multi-page site scan (SSE) |
+| AI Fixes | `POST` | `/fixes/generate` | Generate AI fix suggestions |
+| GitHub | `POST` | `/github/connect` | Connect GitHub account |
+| GitHub | `POST` | `/github/disconnect` | Disconnect GitHub account |
+| GitHub | `GET` | `/github/status` | Check connection status |
+| GitHub | `GET` | `/github/repos` | List repositories |
+| GitHub | `GET` | `/github/repos/:owner/:repo/branches` | List branches |
+| GitHub | `GET` | `/github/repos/:owner/:repo/file` | Get file content |
+| GitHub | `POST` | `/github/pr` | Create pull request |
+| Webhooks | `GET` | `/webhooks` | List webhooks |
+| Webhooks | `POST` | `/webhooks` | Create webhook |
+| Webhooks | `PUT` | `/webhooks/:id` | Update webhook |
+| Webhooks | `DELETE` | `/webhooks/:id` | Delete webhook |
+| Webhooks | `POST` | `/webhooks/:id/test` | Test webhook |
 | Schedules | `GET` | `/schedules` | List schedules |
 | Schedules | `POST` | `/schedules` | Create schedule |
 | Schedules | `GET` | `/schedules/:id` | Get schedule |
@@ -32,6 +46,8 @@ Currently, the API does not require authentication. For production deployments, 
 | JIRA | `POST` | `/jira/bulk` | Bulk create issues |
 | JIRA | `GET` | `/jira/issue/:key` | Get issue |
 | JIRA | `POST` | `/jira/link` | Link finding |
+| Export | `POST` | `/export/csv` | Export to CSV |
+| Export | `POST` | `/export/json` | Export to JSON |
 
 ---
 
@@ -146,11 +162,391 @@ Start an accessibility scan and return JSON result.
 }
 ```
 
-**Error Response:**
+---
+
+## Site Scanning (Multi-Page)
+
+### POST /crawl/scan
+
+Crawl and scan multiple pages across a website with SSE streaming.
+
+**Request Body:**
 ```json
 {
-  "error": "Failed to navigate to URL",
-  "details": "net::ERR_NAME_NOT_RESOLVED"
+  "url": "https://example.com",
+  "maxPages": 10,
+  "maxDepth": 2,
+  "standard": "wcag21aa"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `url` | string | Yes | - | Starting URL |
+| `maxPages` | number | No | `10` | Maximum pages to scan |
+| `maxDepth` | number | No | `2` | Maximum crawl depth |
+| `standard` | string | No | `wcag21aa` | WCAG standard |
+
+**Response:** Server-Sent Events stream
+```
+event: status
+data: {"message": "Discovering pages...", "phase": "crawl"}
+
+event: crawl-complete
+data: {"urls": ["https://example.com", "https://example.com/about", ...], "totalFound": 5}
+
+event: page-start
+data: {"url": "https://example.com", "index": 1, "total": 5}
+
+event: page-complete
+data: {"url": "https://example.com", "score": 85, "issues": 12, "index": 1, "total": 5}
+
+event: complete
+data: {"pagesScanned": 5, "averageScore": 78, "totalIssues": 45, "critical": 5, "serious": 12, "moderate": 20, "minor": 8, "results": [...]}
+```
+
+**Event Types:**
+
+| Event | Description |
+|-------|-------------|
+| `status` | Status update with phase |
+| `crawl-complete` | Crawling finished, URLs discovered |
+| `page-start` | Starting to scan a page |
+| `page-complete` | Finished scanning a page |
+| `complete` | All pages scanned |
+| `error` | Scan failed |
+
+---
+
+## AI Fixes
+
+### POST /fixes/generate
+
+Generate AI-powered fix suggestions for an accessibility issue.
+
+**Request Body:**
+```json
+{
+  "finding": {
+    "ruleId": "image-alt",
+    "ruleTitle": "Images must have alternate text",
+    "description": "Ensures <img> elements have alternate text or a role of none or presentation",
+    "html": "<img src=\"hero.jpg\" class=\"hero-image\">",
+    "selector": "img.hero-image",
+    "wcagTags": ["wcag111", "wcag244"],
+    "impact": "critical"
+  },
+  "framework": "react",
+  "context": "This is a hero banner image on the homepage"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `finding` | object | Yes | The accessibility finding |
+| `framework` | string | No | Target framework: `html`, `react`, `vue`, `angular` |
+| `context` | string | No | Additional context about the element |
+
+**Response:**
+```json
+{
+  "success": true,
+  "fix": {
+    "original": {
+      "code": "<img src=\"hero.jpg\" class=\"hero-image\">",
+      "language": "jsx"
+    },
+    "suggested": {
+      "code": "<img src=\"hero.jpg\" className=\"hero-image\" alt=\"Hero banner showcasing our product\" />",
+      "language": "jsx"
+    },
+    "explanation": "Added descriptive alt text to convey the image's purpose to screen reader users. For decorative images, use alt=\"\" instead.",
+    "confidence": "high",
+    "effort": "low",
+    "wcagCriteria": ["1.1.1 Non-text Content"],
+    "diff": "- <img src=\"hero.jpg\" class=\"hero-image\">\n+ <img src=\"hero.jpg\" className=\"hero-image\" alt=\"Hero banner showcasing our product\" />"
+  }
+}
+```
+
+---
+
+## GitHub Integration
+
+### POST /github/connect
+
+Connect a GitHub account using a Personal Access Token.
+
+**Request Body:**
+```json
+{
+  "token": "ghp_xxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "user": {
+    "login": "username",
+    "name": "John Doe",
+    "avatar_url": "https://avatars.githubusercontent.com/u/123456"
+  }
+}
+```
+
+---
+
+### POST /github/disconnect
+
+Disconnect the GitHub account.
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+---
+
+### GET /github/status
+
+Check GitHub connection status.
+
+**Response (Connected):**
+```json
+{
+  "connected": true,
+  "user": {
+    "login": "username",
+    "name": "John Doe",
+    "avatar_url": "https://avatars.githubusercontent.com/u/123456"
+  }
+}
+```
+
+**Response (Not Connected):**
+```json
+{
+  "connected": false
+}
+```
+
+---
+
+### GET /github/repos
+
+List repositories the user has access to.
+
+**Response:**
+```json
+{
+  "repos": [
+    {
+      "id": 123456,
+      "name": "my-website",
+      "full_name": "username/my-website",
+      "private": false,
+      "default_branch": "main",
+      "html_url": "https://github.com/username/my-website"
+    }
+  ]
+}
+```
+
+---
+
+### GET /github/repos/:owner/:repo/branches
+
+List branches for a repository.
+
+**Response:**
+```json
+{
+  "branches": [
+    { "name": "main", "protected": true },
+    { "name": "develop", "protected": false },
+    { "name": "feature/new-feature", "protected": false }
+  ]
+}
+```
+
+---
+
+### GET /github/repos/:owner/:repo/file
+
+Get file content from a repository.
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | string | Yes | File path in repository |
+| `branch` | string | No | Branch name (default: default branch) |
+
+**Response:**
+```json
+{
+  "content": "file content here...",
+  "sha": "abc123def456",
+  "path": "src/components/Hero.tsx",
+  "encoding": "utf-8"
+}
+```
+
+---
+
+### POST /github/pr
+
+Create a pull request with accessibility fixes.
+
+**Request Body:**
+```json
+{
+  "owner": "username",
+  "repo": "my-website",
+  "baseBranch": "main",
+  "title": "fix(a11y): Add alt text to hero image",
+  "body": "## Accessibility Fix\n\nThis PR fixes the following accessibility issue:\n- Images must have alternate text",
+  "fixes": [
+    {
+      "filePath": "src/components/Hero.tsx",
+      "originalContent": "<img src=\"hero.jpg\">",
+      "fixedContent": "<img src=\"hero.jpg\" alt=\"Hero banner\" />",
+      "findingId": "image-alt-0",
+      "ruleTitle": "Images must have alternate text"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "pullRequest": {
+    "number": 42,
+    "html_url": "https://github.com/username/my-website/pull/42",
+    "title": "fix(a11y): Add alt text to hero image",
+    "state": "open",
+    "head": {
+      "ref": "a11y-fix-1705312200000"
+    }
+  }
+}
+```
+
+---
+
+## Webhooks
+
+### GET /webhooks
+
+List all configured webhooks.
+
+**Response:**
+```json
+{
+  "webhooks": [
+    {
+      "id": "wh_123",
+      "name": "Slack Notifications",
+      "url": "https://hooks.slack.com/services/xxx/yyy/zzz",
+      "type": "slack",
+      "enabled": true,
+      "events": ["scan.complete"],
+      "createdAt": "2024-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### POST /webhooks
+
+Create a new webhook.
+
+**Request Body:**
+```json
+{
+  "name": "Slack Notifications",
+  "url": "https://hooks.slack.com/services/xxx/yyy/zzz",
+  "type": "slack",
+  "events": ["scan.complete"],
+  "enabled": true
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Webhook name |
+| `url` | string | Yes | Webhook URL |
+| `type` | string | No | `slack`, `teams`, or `generic` (auto-detected) |
+| `events` | array | No | Events to trigger on |
+| `enabled` | boolean | No | Enable/disable webhook |
+
+**Response:**
+```json
+{
+  "id": "wh_123",
+  "name": "Slack Notifications",
+  "url": "https://hooks.slack.com/services/xxx/yyy/zzz",
+  "type": "slack",
+  "enabled": true,
+  "events": ["scan.complete"],
+  "createdAt": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+### PUT /webhooks/:id
+
+Update a webhook.
+
+**Request Body:**
+```json
+{
+  "name": "Updated Name",
+  "enabled": false
+}
+```
+
+**Response:** Updated webhook object
+
+---
+
+### DELETE /webhooks/:id
+
+Delete a webhook.
+
+**Response:**
+```json
+{
+  "success": true
+}
+```
+
+---
+
+### POST /webhooks/:id/test
+
+Send a test notification to a webhook.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Test notification sent"
 }
 ```
 
@@ -299,14 +695,6 @@ Get run history for a schedule.
       "totalIssues": 12,
       "timestamp": "2024-01-16T10:30:00.000Z",
       "success": true
-    },
-    {
-      "scheduleId": "sch_1705312200000_abc123",
-      "url": "https://example.com",
-      "score": 82,
-      "totalIssues": 15,
-      "timestamp": "2024-01-15T10:30:00.000Z",
-      "success": true
     }
   ]
 }
@@ -415,18 +803,18 @@ Create multiple JIRA issues.
 
 ### GET /jira/issue/:key
 
-Get a JIRA issue (mock mode only returns stored mock issues).
+Get a JIRA issue.
 
 **Response:**
 ```json
 {
-  "key": "MOCK-1",
+  "key": "A11Y-123",
   "fields": {
     "summary": "[A11Y] Color contrast issue",
     "project": { "key": "A11Y" },
-    "issuetype": { "name": "Bug" }
-  },
-  "mockMode": true
+    "issuetype": { "name": "Bug" },
+    "status": { "name": "Open" }
+  }
 }
 ```
 
@@ -457,6 +845,42 @@ Link a finding to an existing JIRA issue.
 
 ---
 
+## Export
+
+### POST /export/csv
+
+Export findings to CSV format.
+
+**Request Body:**
+```json
+{
+  "findings": [...],
+  "scanUrl": "https://example.com",
+  "scanDate": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Response:** CSV file download
+
+---
+
+### POST /export/json
+
+Export findings to JSON format.
+
+**Request Body:**
+```json
+{
+  "findings": [...],
+  "scanUrl": "https://example.com",
+  "scanDate": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Response:** JSON file download
+
+---
+
 ## Error Responses
 
 All endpoints return errors in this format:
@@ -474,6 +898,7 @@ All endpoints return errors in this format:
 | 200 | Success |
 | 201 | Created |
 | 400 | Bad Request |
+| 401 | Unauthorized |
 | 404 | Not Found |
 | 500 | Server Error |
 
@@ -485,6 +910,7 @@ Currently no rate limiting is implemented. For production, consider:
 
 - Max concurrent scans
 - Requests per minute/hour
+- GitHub API rate limits (5000 requests/hour authenticated)
 - JIRA API rate limits (typically 100 requests/minute)
 
 ---
@@ -502,40 +928,80 @@ curl -X POST http://localhost:3001/scan/json \
   }'
 ```
 
-### cURL: Create Schedule
+### cURL: Site Scan
 ```bash
-curl -X POST http://localhost:3001/schedules \
+curl -X POST http://localhost:3001/crawl/scan \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com",
-    "frequency": "daily"
+    "maxPages": 10,
+    "maxDepth": 2
+  }'
+```
+
+### cURL: Generate AI Fix
+```bash
+curl -X POST http://localhost:3001/fixes/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "finding": {
+      "ruleId": "image-alt",
+      "ruleTitle": "Images must have alternate text",
+      "html": "<img src=\"hero.jpg\">",
+      "selector": "img.hero",
+      "wcagTags": ["wcag111"],
+      "impact": "critical"
+    },
+    "framework": "react"
+  }'
+```
+
+### cURL: Create GitHub PR
+```bash
+curl -X POST http://localhost:3001/github/pr \
+  -H "Content-Type: application/json" \
+  -d '{
+    "owner": "username",
+    "repo": "my-repo",
+    "baseBranch": "main",
+    "fixes": [{
+      "filePath": "src/Hero.tsx",
+      "originalContent": "<img src=\"hero.jpg\">",
+      "fixedContent": "<img src=\"hero.jpg\" alt=\"Hero\" />"
+    }]
+  }'
+```
+
+### cURL: Create Webhook
+```bash
+curl -X POST http://localhost:3001/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Slack Alerts",
+    "url": "https://hooks.slack.com/services/xxx/yyy/zzz",
+    "type": "slack"
   }'
 ```
 
 ### JavaScript: Scan with SSE
 ```javascript
-const eventSource = new EventSource('/scan?url=https://example.com');
-
-eventSource.addEventListener('progress', (e) => {
-  const data = JSON.parse(e.data);
-  console.log(`Progress: ${data.percent}% - ${data.message}`);
+const response = await fetch('http://localhost:3001/scan', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ url: 'https://example.com' })
 });
 
-eventSource.addEventListener('finding', (e) => {
-  const finding = JSON.parse(e.data);
-  console.log(`Found: ${finding.ruleTitle}`);
-});
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
 
-eventSource.addEventListener('complete', (e) => {
-  const result = JSON.parse(e.data);
-  console.log(`Scan complete! Score: ${result.score}`);
-  eventSource.close();
-});
-
-eventSource.addEventListener('error', (e) => {
-  console.error('Scan failed:', e.data);
-  eventSource.close();
-});
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  
+  const chunk = decoder.decode(value);
+  // Parse SSE events
+  console.log(chunk);
+}
 ```
 
 ### Python: Run a Scan
@@ -551,6 +1017,18 @@ response = requests.post('http://localhost:3001/scan/json', json={
 result = response.json()
 print(f"Score: {result['score']}")
 print(f"Issues: {result['totalIssues']}")
+```
+
+### CLI: Command Line Scanning
+```bash
+# Single page scan
+allylab scan https://example.com
+
+# Site scan
+allylab site https://example.com --max-pages 10
+
+# CI/CD mode
+allylab scan https://example.com --fail-on critical --format json
 ```
 
 ---

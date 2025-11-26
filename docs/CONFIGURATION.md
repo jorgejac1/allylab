@@ -8,8 +8,11 @@ Complete reference for configuring AllyLab.
 - [Dashboard Settings](#dashboard-settings)
 - [WCAG Standards](#wcag-standards)
 - [Viewport Options](#viewport-options)
+- [GitHub Integration](#github-integration)
+- [Webhooks](#webhooks)
 - [JIRA Integration](#jira-integration)
 - [Scheduled Scans](#scheduled-scans)
+- [CLI Configuration](#cli-configuration)
 - [CI/CD Integration](#cicd-integration)
 
 ---
@@ -39,6 +42,13 @@ NODE_ENV=development
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 
 # ===========================================
+# GITHUB INTEGRATION (Optional)
+# ===========================================
+
+# GitHub API URL (for GitHub Enterprise)
+GITHUB_API_URL=https://api.github.com
+
+# ===========================================
 # JIRA INTEGRATION (Optional)
 # ===========================================
 
@@ -62,10 +72,19 @@ JIRA_MOCK_MODE=true
 | `PORT` | No | `3001` | API server port |
 | `NODE_ENV` | No | `development` | Environment mode |
 | `ANTHROPIC_API_KEY` | No | - | Enable AI fix suggestions |
+| `GITHUB_API_URL` | No | `https://api.github.com` | GitHub API URL |
 | `JIRA_BASE_URL` | No | - | JIRA instance URL |
 | `JIRA_EMAIL` | No | - | JIRA account email |
 | `JIRA_API_TOKEN` | No | - | JIRA API token |
 | `JIRA_MOCK_MODE` | No | `true` | Use mock JIRA responses |
+
+### Dashboard Configuration
+
+Create `packages/dashboard/.env`:
+```env
+# API URL (defaults to http://localhost:3001)
+VITE_API_URL=http://localhost:3001
+```
 
 ---
 
@@ -91,6 +110,8 @@ Scan data is stored in browser localStorage:
 | `allylab_scans` | Saved scan results |
 | `allylab_tracked_issues` | Issue fingerprints and status |
 | `allylab_settings` | User preferences |
+| `allylab_github_token` | GitHub Personal Access Token |
+| `allylab_webhooks` | Webhook configurations |
 | `allylab_jira_config` | JIRA configuration |
 | `allylab_jira_mapping` | JIRA field mappings |
 | `allylab_jira_links` | Finding-to-JIRA issue links |
@@ -118,12 +139,14 @@ Scan data is stored in browser localStorage:
 - Includes mobile accessibility criteria
 - Has broad industry adoption
 
-### Scan Request Example
-```json
-{
-  "url": "https://example.com",
-  "standard": "wcag21aa"
-}
+### Usage
+```bash
+# CLI
+allylab scan https://example.com --standard wcag22aa
+
+# API
+curl -X POST http://localhost:3001/scan/json \
+  -d '{"url": "https://example.com", "standard": "wcag21aa"}'
 ```
 
 ---
@@ -147,11 +170,100 @@ const VIEWPORT_CONFIGS = {
 };
 ```
 
-### Scan Request Example
+### Usage
+```bash
+# CLI
+allylab scan https://example.com --viewport mobile
+
+# API
+curl -X POST http://localhost:3001/scan/json \
+  -d '{"url": "https://example.com", "viewport": "mobile"}'
+```
+
+---
+
+## GitHub Integration
+
+### Setup
+
+1. Navigate to **Settings → GitHub**
+2. Generate a Personal Access Token at https://github.com/settings/tokens
+3. Required scopes: `repo` (full control of private repositories)
+4. Enter token and click **Connect**
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **List Repositories** | View repos you have access to |
+| **List Branches** | Select target branch for PRs |
+| **Create PRs** | Automatically create fix PRs |
+| **View Files** | Read file content for fixes |
+
+### Token Permissions
+
+Minimum required scopes:
+
+| Scope | Purpose |
+|-------|---------|
+| `repo` | Access private repositories |
+| `public_repo` | Access public repositories only |
+
+### GitHub Enterprise
+
+For GitHub Enterprise, set the API URL:
+```env
+GITHUB_API_URL=https://github.your-company.com/api/v3
+```
+
+---
+
+## Webhooks
+
+### Setup
+
+1. Navigate to **Settings → Notifications**
+2. Click **Add Webhook**
+3. Enter webhook URL
+4. Type is auto-detected (Slack, Teams, or Generic)
+
+### Supported Platforms
+
+| Platform | URL Pattern | Format |
+|----------|-------------|--------|
+| **Slack** | `hooks.slack.com` | Block Kit |
+| **Microsoft Teams** | `webhook.office.com` | Adaptive Cards |
+| **Generic** | Any URL | JSON payload |
+
+### Slack Webhook Setup
+
+1. Go to https://api.slack.com/apps
+2. Create new app or select existing
+3. Enable **Incoming Webhooks**
+4. Add new webhook to workspace
+5. Copy webhook URL
+
+### Teams Webhook Setup
+
+1. In Teams, go to channel settings
+2. Select **Connectors**
+3. Add **Incoming Webhook**
+4. Copy webhook URL
+
+### Webhook Payload (Generic)
 ```json
 {
-  "url": "https://example.com",
-  "viewport": "mobile"
+  "event": "scan.complete",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "url": "https://example.com",
+    "score": 85,
+    "totalIssues": 12,
+    "critical": 0,
+    "serious": 2,
+    "moderate": 6,
+    "minor": 4
+  }
 }
 ```
 
@@ -224,29 +336,37 @@ For testing without a real JIRA instance:
 | **View History** | See past scan results |
 | **Delete** | Remove schedule |
 
-### API Endpoints
+---
+
+## CLI Configuration
+
+### Global Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--api-url` | API server URL | `http://localhost:3001` |
+| `--format` | Output format | `pretty` |
+| `--output` | Write to file | - |
+
+### Configuration File (Future)
+
+Create `allylab.config.json` in project root:
+```json
+{
+  "apiUrl": "http://localhost:3001",
+  "defaultStandard": "wcag21aa",
+  "defaultViewport": "desktop",
+  "failOn": "critical"
+}
+```
+
+### Environment Variables
 ```bash
-# List schedules
-GET /schedules
+# Set API URL
+export ALLYLAB_API_URL=http://localhost:3001
 
-# Create schedule
-POST /schedules
-{
-  "url": "https://example.com",
-  "frequency": "daily"
-}
-
-# Update schedule
-PATCH /schedules/:id
-{
-  "enabled": false
-}
-
-# Run immediately
-POST /schedules/:id/run
-
-# Get history
-GET /schedules/:id/history
+# Run scan
+allylab scan https://example.com
 ```
 
 ---
@@ -258,6 +378,8 @@ GET /schedules/:id/history
 - **GitHub Actions**
 - **GitLab CI**
 - **Harness**
+- **Jenkins**
+- **CircleCI**
 
 ### Configuration Options
 
@@ -271,12 +393,14 @@ GET /schedules/:id/history
 | **Fail on Serious** | Fail build on serious issues |
 | **Upload Artifacts** | Save scan results as artifacts |
 
-### Generated Workflow (GitHub Actions)
+### GitHub Actions Example
 ```yaml
 name: Accessibility Scan
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
@@ -290,15 +414,27 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install Playwright
-        run: npx playwright install chromium
-      
       - name: Run accessibility scan
-        run: |
-          npx @axe-core/cli https://example.com --exit
+        run: npx @allylab/cli scan https://example.com --fail-on critical
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: a11y-report.json
+```
+
+### GitLab CI Example
+```yaml
+accessibility:
+  image: node:20
+  script:
+    - npx @allylab/cli scan $CI_ENVIRONMENT_URL --fail-on serious --format json --output a11y-report.json
+  artifacts:
+    paths:
+      - a11y-report.json
+    when: always
 ```
 
 ### Using in Your Pipeline
@@ -348,6 +484,17 @@ Default timeouts in scanning:
 | Navigation | 60s | In scanner.ts |
 | Render wait | 2s | In scanner.ts |
 | Axe analysis | 30s | axe-core default |
+
+### Framework Detection
+
+For AI fixes, framework is detected from file extension:
+
+| Extension | Framework |
+|-----------|-----------|
+| `.jsx`, `.tsx` | React |
+| `.vue` | Vue |
+| `.component.html` | Angular |
+| `.html` | HTML |
 
 ---
 

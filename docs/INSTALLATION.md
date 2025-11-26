@@ -8,6 +8,7 @@ This guide covers all installation methods for AllyLab.
 - [Quick Install](#quick-install)
 - [Manual Installation](#manual-installation)
 - [Docker Installation](#docker-installation)
+- [CLI Installation](#cli-installation)
 - [Production Deployment](#production-deployment)
 - [Troubleshooting](#troubleshooting)
 
@@ -33,6 +34,7 @@ AllyLab uses Playwright with Chromium for scanning. The browser is installed aut
 | Service | Purpose |
 |---------|---------|
 | **Anthropic API Key** | AI-powered fix suggestions |
+| **GitHub Account** | PR creation integration |
 | **JIRA Account** | Issue export integration |
 | **Docker** | Containerized deployment |
 
@@ -73,7 +75,7 @@ cd allylab
 npm install
 ```
 
-This installs dependencies for both `packages/api` and `packages/dashboard` via npm workspaces.
+This installs dependencies for all packages (`api`, `dashboard`, `cli`) via npm workspaces.
 
 ### Step 3: Install Playwright Browser
 ```bash
@@ -96,6 +98,9 @@ NODE_ENV=development
 # Optional: AI Fix Suggestions
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 
+# Optional: GitHub (for Enterprise)
+GITHUB_API_URL=https://api.github.com
+
 # Optional: JIRA Integration
 JIRA_BASE_URL=https://your-domain.atlassian.net
 JIRA_EMAIL=your-email@example.com
@@ -111,8 +116,9 @@ For production builds:
 npm run build
 
 # Or build individually
-npm run build:api
-npm run build:dashboard
+npm run build --workspace=@allylab/api
+npm run build --workspace=@allylab/dashboard
+npm run build --workspace=@allylab/cli
 ```
 
 ### Step 6: Start Servers
@@ -175,13 +181,25 @@ docker run -d \
 ```bash
 docker run -d \
   --name allylab-dashboard \
-  -p 5173:80 \
+  -p 8080:80 \
   allylab-dashboard
 ```
 
 ### Docker Compose
 
-Create `docker-compose.yml`:
+Use the included `docker-compose.yml`:
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Or create a custom `docker-compose.yml`:
 ```yaml
 version: '3.8'
 
@@ -196,6 +214,7 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GITHUB_API_URL=${GITHUB_API_URL}
       - JIRA_BASE_URL=${JIRA_BASE_URL}
       - JIRA_EMAIL=${JIRA_EMAIL}
       - JIRA_API_TOKEN=${JIRA_API_TOKEN}
@@ -211,7 +230,7 @@ services:
       context: ./packages/dashboard
       dockerfile: Dockerfile
     ports:
-      - "5173:80"
+      - "8080:80"
     depends_on:
       - api
     restart: unless-stopped
@@ -221,9 +240,48 @@ networks:
     name: allylab-network
 ```
 
-Run:
+**Access:**
+- Dashboard: http://localhost:8080
+- API: http://localhost:3001
+
+---
+
+## CLI Installation
+
+### Install from npm (when published)
 ```bash
-docker-compose up -d
+# Global installation
+npm install -g @allylab/cli
+
+# Or use npx
+npx @allylab/cli scan https://example.com
+```
+
+### Install from source
+```bash
+# From project root
+cd packages/cli
+npm install
+npm run build
+
+# Link globally
+npm link
+
+# Use CLI
+allylab --help
+allylab scan https://example.com
+```
+
+### Verify Installation
+```bash
+# Check version
+allylab --version
+
+# View help
+allylab --help
+
+# Test scan (requires API running)
+allylab scan https://example.com
 ```
 
 ---
@@ -234,10 +292,10 @@ docker-compose up -d
 
 1. **Push to ECR:**
 ```bash
-   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com
-   
-   docker tag allylab-api:latest YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/allylab-api:latest
-   docker push YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/allylab-api:latest
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag allylab-api:latest YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/allylab-api:latest
+docker push YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/allylab-api:latest
 ```
 
 2. **Create App Runner service** via AWS Console or CLI
@@ -277,6 +335,15 @@ railway login
 railway init
 railway up
 ```
+
+### DigitalOcean App Platform
+
+1. Connect your GitHub repository
+2. Select monorepo and configure:
+   - API: `packages/api`
+   - Dashboard: `packages/dashboard`
+3. Set environment variables
+4. Deploy
 
 ---
 
@@ -341,6 +408,33 @@ FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed
 NODE_OPTIONS="--max-old-space-size=4096" npm run dev
 ```
 
+#### CLI Not Finding API
+```
+Error: fetch failed
+```
+
+**Solution:** Ensure the API is running:
+```bash
+# Start API
+npm run dev:api
+
+# Or specify API URL
+allylab scan https://example.com --api-url http://localhost:3001
+```
+
+#### TypeScript Build Errors
+```
+error TS2307: Cannot find module
+```
+
+**Solution:**
+```bash
+# Clean and rebuild
+rm -rf node_modules packages/*/node_modules packages/*/dist
+npm install
+npm run build
+```
+
 ### Getting Help
 
 1. Check [GitHub Issues](https://github.com/yourusername/allylab/issues)
@@ -350,6 +444,37 @@ NODE_OPTIONS="--max-old-space-size=4096" npm run dev
    - Operating system
    - Full error message
    - Steps to reproduce
+
+---
+
+## Verifying Installation
+
+### Check API
+```bash
+curl http://localhost:3001/health
+# Expected: {"status":"ok","timestamp":"..."}
+```
+
+### Check Dashboard
+Open http://localhost:5173 in browser
+
+### Check CLI
+```bash
+allylab --version
+allylab scan https://example.com --format summary
+```
+
+### Run Full Test
+```bash
+# Lint all packages
+npm run lint
+
+# Type check
+npm run typecheck
+
+# Build all
+npm run build
+```
 
 ---
 
