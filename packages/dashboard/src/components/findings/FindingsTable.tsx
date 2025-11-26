@@ -159,6 +159,9 @@ export function FindingsTable({ findings, pageUrl, onViewDetails, onFalsePositiv
           fpFilter={fpFilter}
           severityFilter={severityFilter}
           statusFilter={statusFilter}
+          findings={filtered}           
+          scanUrl={pageUrl}          
+          scanDate={new Date().toISOString()}
           onFpFilterChange={setFpFilter}
           onSeverityFilterChange={setSeverityFilter}
           onStatusFilterChange={setStatusFilter}

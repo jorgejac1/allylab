@@ -1,6 +1,7 @@
 import { Button } from '../ui';
 import { FilterButton, PillButton, Divider } from './FilterButton';
-import type { Severity, IssueStatus } from '../../types';
+import { ExportDropdown } from './ExportDropdown';
+import type { Severity, IssueStatus, TrackedFinding } from '../../types';
 
 export type FalsePositiveFilter = 'all' | 'active' | 'false-positive';
 
@@ -18,6 +19,11 @@ interface FindingsFilterBarProps {
   fpFilter: FalsePositiveFilter;
   severityFilter: Severity | 'all';
   statusFilter: IssueStatus | 'all';
+  
+  // Export data
+  findings: TrackedFinding[];
+  scanUrl: string;
+  scanDate: string;
   
   // Handlers
   onFpFilterChange: (filter: FalsePositiveFilter) => void;
@@ -43,6 +49,9 @@ export function FindingsFilterBar({
   fpFilter,
   severityFilter,
   statusFilter,
+  findings,
+  scanUrl,
+  scanDate,
   onFpFilterChange,
   onSeverityFilterChange,
   onStatusFilterChange,
@@ -111,6 +120,13 @@ export function FindingsFilterBar({
           🔗 {linkedCount} linked to JIRA
         </span>
       )}
+
+      {/* Export Dropdown */}
+      <ExportDropdown 
+        findings={findings}
+        scanUrl={scanUrl}
+        scanDate={scanDate}
+      />
 
       {/* Export to JIRA Button */}
       <Button 
