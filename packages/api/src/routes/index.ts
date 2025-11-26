@@ -4,6 +4,9 @@ import { scanRoutes } from './scan';
 import { scanJsonRoutes } from './scan-json';
 import { jiraRoutes } from './jira';
 import { scheduleRoutes } from './schedules';
+import { exportRoutes } from './export';
+import { webhookRoutes } from './webhooks';
+import { crawlRoutes } from './crawl';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -11,4 +14,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(scanJsonRoutes);
   await fastify.register(jiraRoutes);
   await fastify.register(scheduleRoutes);
+  await fastify.register(exportRoutes);
+  await fastify.register(webhookRoutes);
+  await fastify.register(crawlRoutes);
 }
