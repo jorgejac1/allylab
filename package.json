@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Enterprise-grade web accessibility scanner with AI-powered fix suggestions",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -12,7 +13,8 @@
     "build": "npm run build --workspaces",
     "build:api": "npm run build --workspace=@allylab/api",
     "build:dashboard": "npm run build --workspace=@allylab/dashboard",
-    "lint": "eslint packages/*/src/**/*.{ts,tsx}",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
   },
   "keywords": [
@@ -38,7 +40,13 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.15.0",
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0"
+    "eslint": "^9.15.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.12.0",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.15.0"
   }
 }

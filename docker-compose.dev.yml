@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # API Service (Development)
+  # ===========================================
+  api:
+    build:
+      context: ./packages/api
+      dockerfile: Dockerfile
+    container_name: allylab-api-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - JIRA_MOCK_MODE=true
+    volumes:
+      - ./packages/api/src:/app/src:ro
+    networks:
+      - allylab-network
+
+  # ===========================================
+  # Dashboard Service (Development)
+  # ===========================================
+  dashboard:
+    build:
+      context: ./packages/dashboard
+      dockerfile: Dockerfile
+    container_name: allylab-dashboard-dev
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - allylab-network
+
+networks:
+  allylab-network:
+    driver: bridge

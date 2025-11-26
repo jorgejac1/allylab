@@ -1,0 +1,12 @@
+node_modules
+dist
+npm-debug.log
+.env
+.env.*
+*.md
+.git
+.gitignore
+.vscode
+coverage
+test-results
+playwright-report
