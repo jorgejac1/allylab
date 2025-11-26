@@ -404,7 +404,7 @@ Get file content from a repository.
 
 ### POST /github/pr
 
-Create a pull request with accessibility fixes.
+Create a pull request with accessibility fixes. Supports both single fix and batch fixes (multiple issues in one PR).
 
 **Request Body:**
 ```json
@@ -412,8 +412,8 @@ Create a pull request with accessibility fixes.
   "owner": "username",
   "repo": "my-website",
   "baseBranch": "main",
-  "title": "fix(a11y): Add alt text to hero image",
-  "body": "## Accessibility Fix\n\nThis PR fixes the following accessibility issue:\n- Images must have alternate text",
+  "title": "[AllyLab] Fix 3 accessibility issues",
+  "description": "Optional PR description",
   "fixes": [
     {
       "filePath": "src/components/Hero.tsx",
@@ -421,26 +421,57 @@ Create a pull request with accessibility fixes.
       "fixedContent": "<img src=\"hero.jpg\" alt=\"Hero banner\" />",
       "findingId": "image-alt-0",
       "ruleTitle": "Images must have alternate text"
+    },
+    {
+      "filePath": "src/components/Button.tsx",
+      "originalContent": "<button></button>",
+      "fixedContent": "<button aria-label=\"Submit\"></button>",
+      "findingId": "button-name-0",
+      "ruleTitle": "Buttons must have discernible text"
     }
   ]
 }
 ```
 
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `owner` | string | Yes | Repository owner |
+| `repo` | string | Yes | Repository name |
+| `baseBranch` | string | Yes | Base branch for PR |
+| `title` | string | No | PR title (auto-generated if not provided) |
+| `description` | string | No | PR description (auto-generated if not provided) |
+| `fixes` | array | Yes | Array of fixes to apply |
+| `fixes[].filePath` | string | Yes | Path to file in repository |
+| `fixes[].originalContent` | string | Yes | Original code |
+| `fixes[].fixedContent` | string | Yes | Fixed code |
+| `fixes[].findingId` | string | Yes | Finding identifier |
+| `fixes[].ruleTitle` | string | Yes | Accessibility rule title |
+
 **Response:**
 ```json
 {
   "success": true,
-  "pullRequest": {
-    "number": 42,
-    "html_url": "https://github.com/username/my-website/pull/42",
-    "title": "fix(a11y): Add alt text to hero image",
-    "state": "open",
-    "head": {
-      "ref": "a11y-fix-1705312200000"
-    }
-  }
+  "prNumber": 42,
+  "prUrl": "https://github.com/username/my-website/pull/42",
+  "branchName": "allylab/a11y-fixes-1705312200000"
 }
 ```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "File not found: src/components/Hero.tsx"
+}
+```
+
+**Notes:**
+- Creates a new branch from the base branch
+- Each fix is committed separately with a descriptive message
+- Auto-generates PR title showing fix count if not provided
+- Auto-generates PR description with severity breakdown and checklist if not provided
 
 ---
 
@@ -969,6 +1000,34 @@ curl -X POST http://localhost:3001/github/pr \
       "originalContent": "<img src=\"hero.jpg\">",
       "fixedContent": "<img src=\"hero.jpg\" alt=\"Hero\" />"
     }]
+  }'
+```
+
+### cURL: Create Batch GitHub PR
+```bash
+curl -X POST http://localhost:3001/github/pr \
+  -H "Content-Type: application/json" \
+  -d '{
+    "owner": "username",
+    "repo": "my-repo",
+    "baseBranch": "main",
+    "title": "[AllyLab] Fix 2 accessibility issues",
+    "fixes": [
+      {
+        "filePath": "src/Hero.tsx",
+        "originalContent": "<img src=\"hero.jpg\">",
+        "fixedContent": "<img src=\"hero.jpg\" alt=\"Hero\" />",
+        "findingId": "image-alt-0",
+        "ruleTitle": "Images must have alternate text"
+      },
+      {
+        "filePath": "src/Button.tsx",
+        "originalContent": "<button></button>",
+        "fixedContent": "<button aria-label=\"Submit\"></button>",
+        "findingId": "button-name-0",
+        "ruleTitle": "Buttons must have discernible text"
+      }
+    ]
   }'
 ```
 

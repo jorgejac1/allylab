@@ -67,12 +67,14 @@ allylab scan https://example.com --fail-on critical --format json
 - **Contextual fix suggestions** using Claude AI
 - **Framework-specific code** (HTML, React, Vue)
 - **GitHub PR integration** - create pull requests directly
+- **Batch PR creation** - fix multiple issues in a single PR
 - Confidence levels and effort estimates
 - Unified diff view for code changes
 
 ### 🔗 GitHub Integration
 - Connect with GitHub Personal Access Token
 - **Automatic PR creation** with accessibility fixes
+- **Batch PR creation** - select multiple issues, generate fixes, create single PR
 - Branch creation and file updates
 - Works with any repository you have access to
 
@@ -301,7 +303,7 @@ allylab/
 | `GET` | `/github/status` | Check connection status |
 | `GET` | `/github/repos` | List repositories |
 | `GET` | `/github/repos/:owner/:repo/branches` | List branches |
-| `POST` | `/github/pr` | Create pull request with fixes |
+| `POST` | `/github/pr` | Create pull request with fixes (supports batch) |
 
 ### Schedule Endpoints
 
