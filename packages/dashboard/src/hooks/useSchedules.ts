@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Schedule, ScheduleFrequency, ScheduleRunResult } from '../types';
-
-const API_BASE = 'http://localhost:3001';
+import { getApiBase } from '../utils/api';
 
 interface UseSchedulesReturn {
   schedules: Schedule[];
@@ -25,7 +24,7 @@ export function useSchedules(): UseSchedulesReturn {
     setError(null);
     
     try {
-      const response = await fetch(`${API_BASE}/schedules`);
+      const response = await fetch(`${getApiBase()}/schedules`);
       if (!response.ok) throw new Error('Failed to fetch schedules');
       
       const data = await response.json();
@@ -43,7 +42,7 @@ export function useSchedules(): UseSchedulesReturn {
 
   const createSchedule = useCallback(async (url: string, frequency: ScheduleFrequency): Promise<Schedule | null> => {
     try {
-      const response = await fetch(`${API_BASE}/schedules`, {
+      const response = await fetch(`${getApiBase()}/schedules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, frequency }),
@@ -68,7 +67,7 @@ export function useSchedules(): UseSchedulesReturn {
     updates: { frequency?: ScheduleFrequency; enabled?: boolean }
   ): Promise<Schedule | null> => {
     try {
-      const response = await fetch(`${API_BASE}/schedules/${id}`, {
+      const response = await fetch(`${getApiBase()}/schedules/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -90,7 +89,7 @@ export function useSchedules(): UseSchedulesReturn {
 
   const deleteSchedule = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE}/schedules/${id}`, {
+      const response = await fetch(`${getApiBase()}/schedules/${id}`, {
         method: 'DELETE',
       });
 
@@ -109,7 +108,7 @@ export function useSchedules(): UseSchedulesReturn {
 
   const runNow = useCallback(async (id: string): Promise<ScheduleRunResult | null> => {
     try {
-      const response = await fetch(`${API_BASE}/schedules/${id}/run`, {
+      const response = await fetch(`${getApiBase()}/schedules/${id}/run`, {
         method: 'POST',
       });
 
@@ -132,7 +131,7 @@ export function useSchedules(): UseSchedulesReturn {
 
   const getHistory = useCallback(async (id: string): Promise<ScheduleRunResult[]> => {
     try {
-      const response = await fetch(`${API_BASE}/schedules/${id}/history`);
+      const response = await fetch(`${getApiBase()}/schedules/${id}/history`);
       
       if (!response.ok) {
         const data = await response.json();

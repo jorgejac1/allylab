@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../ui';
 import type { TrackedFinding } from '../../types';
+import { getApiBase } from '../../utils/api';
 
 interface ExportDropdownProps {
   findings: TrackedFinding[];
   scanUrl: string;
   scanDate: string;
 }
-
-const API_BASE = 'http://localhost:3001';
 
 export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +21,7 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
       if (format === 'excel') {
         await exportToExcel(findings, scanUrl, scanDate);
       } else {
-        const response = await fetch(`${API_BASE}/export/${format}`, {
+        const response = await fetch(`${getApiBase()}/export/${format}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

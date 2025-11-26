@@ -6,17 +6,21 @@ import {
   SettingsPage,
   ExecutivePage,
   BenchmarkPage,
+  SiteScanPage,
 } from "./pages";
 import { useApiStatus } from "./hooks";
 import type { SavedScan } from "./types";
 import type { DrillDownTarget } from "./types";
 
-type PageId = "scan" | "reports" | "executive" | "benchmark" | "settings";
+type PageId = "scan" | "site-scan" | "reports" | "executive" | "benchmark" | "settings";
 
 const NAV_GROUPS = [
   {
     title: "Scanning",
-    items: [{ id: "scan", label: "Accessibility Scanner", icon: "♿" }],
+    items: [
+      { id: "scan", label: "Accessibility Scanner", icon: "♿" },
+      { id: "site-scan", label: "Site Scan", icon: "🌐" },
+    ],
   },
   {
     title: "Analysis",
@@ -41,7 +45,7 @@ export default function App() {
 
   const handleNavigate = (id: string) => {
     if (
-      ["scan", "reports", "executive", "benchmark", "settings"].includes(id)
+      ["scan", "site-scan", "reports", "executive", "benchmark", "settings"].includes(id)
     ) {
       setActivePage(id as PageId);
       setDrillDownContext(null);
@@ -128,11 +132,12 @@ export default function App() {
           drillDownContext={drillDownContext}
         />
       )}
+      {activePage === "site-scan" && <SiteScanPage />}
       {activePage === "reports" && <ReportsPage />}
       {activePage === "executive" && (
         <ExecutivePage onDrillDown={handleDrillDown} />
       )}
-      {activePage === 'benchmark' && <BenchmarkPage />}
+      {activePage === "benchmark" && <BenchmarkPage />}
       {activePage === "settings" && <SettingsPage />}
     </SidebarLayout>
   );

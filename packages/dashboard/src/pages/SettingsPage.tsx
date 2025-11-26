@@ -5,6 +5,7 @@ import {
   CICDGenerator,
   JiraSettings,
   ScheduleManager,
+  WebhookManager,
 } from "../components/settings";
 import { useLocalStorage } from "../hooks";
 import type { WCAGStandard } from "../types";
@@ -23,11 +24,12 @@ const DEFAULT_SETTINGS: Settings = {
   maxScansStored: 100,
 };
 
-type TabId = "general" | "schedules" | "jira" | "cicd" | "api";
+type TabId = "general" | "schedules" | "webhooks" | "jira" | "cicd" | "api";
 
 const TABS = [
   { id: "general", label: "General" },
   { id: "schedules", label: "Scheduled Scans" },
+  { id: "webhooks", label: "Webhooks" },
   { id: "jira", label: "JIRA Integration" },
   { id: "cicd", label: "CI/CD Integration" },
   { id: "api", label: "API" },
@@ -240,7 +242,10 @@ export function SettingsPage() {
         {/* Scheduled Scans */}
         {activeTab === "schedules" && <ScheduleManager />}
 
-        {/* JIRA Integration - ADD HERE */}
+        {/* Webhooks */}
+        {activeTab === "webhooks" && <WebhookManager />}
+
+        {/* JIRA Integration */}
         {activeTab === "jira" && <JiraSettings />}
 
         {/* CI/CD Integration */}
@@ -359,6 +364,18 @@ function APISettings() {
             method="POST"
             path="/scan/json"
             description="Start scan and return JSON result"
+            onCopy={handleCopy}
+          />
+          <EndpointRow
+            method="GET"
+            path="/webhooks"
+            description="List all webhooks"
+            onCopy={handleCopy}
+          />
+          <EndpointRow
+            method="POST"
+            path="/webhooks"
+            description="Create a new webhook"
             onCopy={handleCopy}
           />
         </div>

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Competitor, CompetitorScan, BenchmarkData } from '../types';
+import { getApiBase } from '../utils/api';
 
 const STORAGE_KEY = 'allylab_competitors';
 const SCANS_KEY = 'allylab_competitor_scans';
-const API_BASE = 'http://localhost:3001';
 
 export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -68,7 +68,7 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
     setScanningId(competitor.id);
     
     try {
-      const response = await fetch(`${API_BASE}/scan/json`, {
+      const response = await fetch(`${getApiBase()}/scan/json`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
