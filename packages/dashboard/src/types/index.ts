@@ -186,3 +186,4 @@ export type {
 export * from './jira';
 export * from './schedule';
 export * from './competitor';
+export * from './batch-pr';

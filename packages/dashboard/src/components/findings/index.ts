@@ -14,3 +14,4 @@ export { JiraCell } from './JiraCell';
 export { JiraExportModal } from './JiraExportModal';
 export { FixCodePreview } from './FixCodePreview';
 export { CreatePRModal } from './CreatePRModal';
+export { BatchPRModal } from './BatchPRModal';

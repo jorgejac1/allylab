@@ -11,6 +11,7 @@ React-based web dashboard for AllyLab accessibility scanning. Built with React 1
 - 📈 **Reports & History** - Track scans over time with trend analysis
 - 🤖 **AI-Powered Fixes** - View and apply fix suggestions
 - 🔗 **GitHub Integration** - Create PRs directly from findings
+- 🔗 **Batch PR Creation** - Select multiple issues and create a single PR with all fixes
 - 📅 **Scheduled Scans** - Set up recurring scans
 - 🔔 **Webhooks** - Configure Slack/Teams notifications
 - 📋 **JIRA Integration** - Export issues to JIRA
@@ -113,6 +114,14 @@ src/
 │   │   ├── TopIssuesTable.tsx
 │   │   └── index.ts
 │   ├── findings/          # Issue display & management
+│   │   ├── batch-pr/      # Batch PR creation
+│   │   │   ├── FilePathMapper.tsx
+│   │   │   ├── FixGenerationList.tsx
+│   │   │   ├── PRSuccessView.tsx
+│   │   │   ├── RepoSelector.tsx
+│   │   │   ├── SeverityDot.tsx
+│   │   │   └── index.ts
+│   │   ├── BatchPRModal.tsx
 │   │   ├── CreatePRModal.tsx
 │   │   ├── ExportDropdown.tsx
 │   │   ├── FindingDetails.tsx

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, Pagination } from '../ui';
+import { BatchPRModal } from './BatchPRModal';
 import { FindingsFilterBar, FalsePositiveFilter } from './FindingsFilterBar';
 import { FindingsSelectionBar } from './FindingsSelectionBar';
 import { FindingsRow } from './FindingsRow';
@@ -40,6 +41,9 @@ export function FindingsTable({ findings, pageUrl, onViewDetails, onFalsePositiv
   const [jiraLinks, setJiraLinks] = useLocalStorage<JiraLinks>('allylab_jira_links', {});
   const [linkingFindingId, setLinkingFindingId] = useState<string | null>(null);
   const [linkInput, setLinkInput] = useState('');
+
+  // PR Batch
+  const [batchPRModalOpen, setBatchPRModalOpen] = useState(false);
 
   // Apply false positive status
   const findingsWithFpStatus = useMemo(() => {
@@ -173,6 +177,8 @@ export function FindingsTable({ findings, pageUrl, onViewDetails, onFalsePositiv
           totalFilteredCount={filtered.length}
           onSelectAll={handleSelectAllFiltered}
           onClearSelection={handleClearSelection}
+          onCreatePR={() => setBatchPRModalOpen(true)}
+          onExportJira={handleOpenJiraExport}
         />
 
         {/* Table */}
@@ -261,6 +267,14 @@ export function FindingsTable({ findings, pageUrl, onViewDetails, onFalsePositiv
         }}
         findings={selectedFindings.length > 0 ? selectedFindings : filtered}
         pageUrl={pageUrl}
+      />
+
+      <BatchPRModal
+        isOpen={batchPRModalOpen}
+        onClose={() => {
+          setBatchPRModalOpen(false);
+        }}
+        findings={selectedFindings.length > 0 ? selectedFindings : []}
       />
     </>
   );
