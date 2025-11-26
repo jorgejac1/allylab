@@ -8,14 +8,27 @@
     "packages/*"
   ],
   "scripts": {
-    "api": "npm run dev --workspace=@allylab/api",
-    "dashboard": "npm run dev --workspace=@allylab/dashboard",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:dashboard\"",
+    "dev:api": "npm run dev --workspace=@allylab/api",
+    "dev:dashboard": "npm run dev --workspace=@allylab/dashboard",
     "build": "npm run build --workspaces",
-    "build:api": "npm run build --workspace=@allylab/api",
-    "build:dashboard": "npm run build --workspace=@allylab/dashboard",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "rm -rf packages/*/dist packages/*/.turbo node_modules/.cache",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "packages/api/src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "packages/dashboard/src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "packages/cli/src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   },
   "keywords": [
     "accessibility",
@@ -46,6 +59,8 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "typescript": "^5.3.0",
     "typescript-eslint": "^8.15.0"
   }

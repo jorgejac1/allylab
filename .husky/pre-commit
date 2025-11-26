@@ -1,0 +1,31 @@
+npm test
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run typecheck
+echo "📝 Type checking..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+  echo "❌ Type check failed. Please fix TypeScript errors before committing."
+  exit 1
+fi
+
+# Run linter on staged files
+echo "🧹 Linting staged files..."
+npx lint-staged
+if [ $? -ne 0 ]; then
+  echo "❌ Lint failed. Please fix linting errors before committing."
+  exit 1
+fi
+
+# Run build
+echo "🏗️  Building..."
+npm run build
+if [ $? -ne 0 ]; then
+  echo "❌ Build failed. Please fix build errors before committing."
+  exit 1
+fi
+
+echo "✅ All checks passed!"
