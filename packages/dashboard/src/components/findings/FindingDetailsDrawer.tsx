@@ -17,6 +17,10 @@ interface FindingDetailsDrawerProps {
   onFalsePositiveChange?: () => void;
   onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
   isGeneratingFix?: boolean;
+  // Scan settings for PR tracking
+  scanUrl?: string;
+  scanStandard?: string;
+  scanViewport?: string;
 }
 
 export function FindingDetailsDrawer({
@@ -24,6 +28,9 @@ export function FindingDetailsDrawer({
   finding,
   onClose,
   onFalsePositiveChange,
+  scanUrl,
+  scanStandard,
+  scanViewport,
 }: FindingDetailsDrawerProps) {
   const [showFpForm, setShowFpForm] = useState(false);
   const [fpReason, setFpReason] = useState("");
@@ -507,9 +514,13 @@ export function FindingDetailsDrawer({
           onClose={() => setShowPRModal(false)}
           fix={codeFix}
           finding={{
+            id: finding.id,
             ruleTitle: finding.ruleTitle,
             selector: finding.selector,
           }}
+          scanUrl={scanUrl || ''}
+          scanStandard={scanStandard}
+          scanViewport={scanViewport}
         />
       )}
 

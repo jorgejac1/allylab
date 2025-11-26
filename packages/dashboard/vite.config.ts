@@ -20,12 +20,16 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core React - loaded immediately
           'vendor-react': ['react', 'react-dom'],
+          // PDF generation - lazy loaded on export
           'vendor-pdf': ['jspdf', 'html2canvas'],
+          // Excel generation - lazy loaded on export
+          'vendor-excel': ['exceljs'],
         },
       },
     },
