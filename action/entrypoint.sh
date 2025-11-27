@@ -1,151 +1,124 @@
 #!/bin/bash
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+echo "🔬 AllyLab Accessibility Scanner"
+echo "================================"
 
-echo -e "${BLUE}🔍 AllyLab Accessibility Scanner${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Parse inputs
-URL="${INPUT_URL}"
-STANDARD="${INPUT_STANDARD:-wcag21aa}"
-VIEWPORT="${INPUT_VIEWPORT:-desktop}"
-FAIL_ON="${INPUT_FAIL_ON}"
-MAX_PAGES="${INPUT_MAX_PAGES:-1}"
-MAX_DEPTH="${INPUT_MAX_DEPTH:-2}"
-OUTPUT_FILE="${INPUT_OUTPUT_FILE}"
-
-if [ -z "$URL" ]; then
-  echo -e "${RED}Error: URL is required${NC}"
-  exit 1
-fi
-
-echo -e "URL:      ${YELLOW}$URL${NC}"
-echo -e "Standard: ${YELLOW}$STANDARD${NC}"
-echo -e "Viewport: ${YELLOW}$VIEWPORT${NC}"
-[ -n "$FAIL_ON" ] && echo -e "Fail on:  ${YELLOW}$FAIL_ON${NC}"
-echo ""
-
-# Start the API server in background
-echo -e "${BLUE}Starting AllyLab API...${NC}"
+# Start the API server in the background
 cd /allylab
 node packages/api/dist/index.js &
 API_PID=$!
 
 # Wait for API to be ready
-echo "Waiting for API to start..."
+echo "⏳ Starting AllyLab API..."
 for i in {1..30}; do
   if curl -s http://localhost:3001/health > /dev/null 2>&1; then
-    echo -e "${GREEN}✓ API is ready${NC}"
+    echo "✅ API is ready!"
     break
   fi
   if [ $i -eq 30 ]; then
-    echo -e "${RED}Error: API failed to start${NC}"
+    echo "❌ Error: API failed to start after 30 seconds"
     exit 1
   fi
   sleep 1
 done
 
+# Parse inputs
+URL="${INPUT_URL}"
+STANDARD="${INPUT_STANDARD:-wcag21aa}"
+VIEWPORT="${INPUT_VIEWPORT:-desktop}"
+FAIL_ON="${INPUT_FAIL_ON:-}"
+MAX_PAGES="${INPUT_MAX_PAGES:-1}"
+MAX_DEPTH="${INPUT_MAX_DEPTH:-2}"
+OUTPUT_FILE="${INPUT_OUTPUT_FILE:-}"
+
+echo ""
+echo "📋 Configuration:"
+echo "   URL: $URL"
+echo "   Standard: $STANDARD"
+echo "   Viewport: $VIEWPORT"
+echo "   Max Pages: $MAX_PAGES"
+echo "   Fail On: ${FAIL_ON:-none}"
 echo ""
 
-# Build CLI command
-CLI_CMD="node /allylab/packages/cli/dist/index.js"
-REPORT_FILE="${OUTPUT_FILE:-/tmp/allylab-report.json}"
-
+# Determine scan type
 if [ "$MAX_PAGES" -gt 1 ]; then
-  # Site scan
-  echo -e "${BLUE}Running site scan (max $MAX_PAGES pages)...${NC}"
-  $CLI_CMD site "$URL" \
-    --max-pages "$MAX_PAGES" \
-    --max-depth "$MAX_DEPTH" \
-    --standard "$STANDARD" \
-    --format json \
-    --output "$REPORT_FILE" \
-    --api-url http://localhost:3001 \
-    ${FAIL_ON:+--fail-on "$FAIL_ON"} || SCAN_EXIT=$?
+  echo "🌐 Running site scan (max $MAX_PAGES pages, depth $MAX_DEPTH)..."
+  SCAN_CMD="site $URL --max-pages $MAX_PAGES --max-depth $MAX_DEPTH"
 else
-  # Single page scan
-  echo -e "${BLUE}Running single page scan...${NC}"
-  $CLI_CMD scan "$URL" \
-    --standard "$STANDARD" \
-    --viewport "$VIEWPORT" \
-    --format json \
-    --output "$REPORT_FILE" \
-    --api-url http://localhost:3001 \
-    ${FAIL_ON:+--fail-on "$FAIL_ON"} || SCAN_EXIT=$?
+  echo "📄 Running single page scan..."
+  SCAN_CMD="scan $URL"
 fi
 
-# Stop API
-kill $API_PID 2>/dev/null || true
+# Build full command
+CMD="node /allylab/packages/cli/dist/index.js $SCAN_CMD --standard $STANDARD --viewport $VIEWPORT --format json"
 
-# Parse results for GitHub outputs
-if [ -f "$REPORT_FILE" ]; then
-  SCORE=$(jq -r '.score // .averageScore // 0' "$REPORT_FILE")
-  TOTAL=$(jq -r '.totalIssues // 0' "$REPORT_FILE")
-  CRITICAL=$(jq -r '.critical // 0' "$REPORT_FILE")
-  SERIOUS=$(jq -r '.serious // 0' "$REPORT_FILE")
-  MODERATE=$(jq -r '.moderate // 0' "$REPORT_FILE")
-  MINOR=$(jq -r '.minor // 0' "$REPORT_FILE")
+if [ -n "$FAIL_ON" ]; then
+  CMD="$CMD --fail-on $FAIL_ON"
+fi
 
-  # Set GitHub Action outputs
-  echo "score=$SCORE" >> $GITHUB_OUTPUT
-  echo "total-issues=$TOTAL" >> $GITHUB_OUTPUT
-  echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
-  echo "serious=$SERIOUS" >> $GITHUB_OUTPUT
-  echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
-  echo "minor=$MINOR" >> $GITHUB_OUTPUT
-  echo "report-path=$REPORT_FILE" >> $GITHUB_OUTPUT
+# Run the scan and capture output
+set +e
+RESULT=$($CMD 2>&1)
+EXIT_CODE=$?
+set -e
 
-  # Copy to workspace if output file specified
-  if [ -n "$OUTPUT_FILE" ] && [ "$OUTPUT_FILE" != "$REPORT_FILE" ]; then
-    cp "$REPORT_FILE" "$GITHUB_WORKSPACE/$OUTPUT_FILE" 2>/dev/null || true
-    echo "report-path=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+# Try to parse as JSON
+if echo "$RESULT" | jq -e . > /dev/null 2>&1; then
+  SCORE=$(echo "$RESULT" | jq -r '.score // "N/A"')
+  TOTAL=$(echo "$RESULT" | jq -r '.totalIssues // 0')
+  CRITICAL=$(echo "$RESULT" | jq -r '.critical // 0')
+  SERIOUS=$(echo "$RESULT" | jq -r '.serious // 0')
+  MODERATE=$(echo "$RESULT" | jq -r '.moderate // 0')
+  MINOR=$(echo "$RESULT" | jq -r '.minor // 0')
+
+  # Set outputs for GitHub Actions
+  if [ -n "$GITHUB_OUTPUT" ]; then
+    echo "score=$SCORE" >> $GITHUB_OUTPUT
+    echo "total-issues=$TOTAL" >> $GITHUB_OUTPUT
+    echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+    echo "serious=$SERIOUS" >> $GITHUB_OUTPUT
+    echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
+    echo "minor=$MINOR" >> $GITHUB_OUTPUT
+  fi
+
+  # Save to file if requested
+  if [ -n "$OUTPUT_FILE" ]; then
+    echo "$RESULT" > "$OUTPUT_FILE"
+    if [ -n "$GITHUB_OUTPUT" ]; then
+      echo "report-path=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+    fi
+    echo "📁 Report saved to: $OUTPUT_FILE"
   fi
 
   # Print summary
   echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo -e "${BLUE}📊 Results Summary${NC}"
+  echo "╔════════════════════════════════════╗"
+  echo "║         📊 SCAN RESULTS            ║"
+  echo "╠════════════════════════════════════╣"
+  printf "║  Score:     %-22s ║\n" "$SCORE/100"
+  echo "╠════════════════════════════════════╣"
+  printf "║  🔴 Critical:  %-19s ║\n" "$CRITICAL"
+  printf "║  🟠 Serious:   %-19s ║\n" "$SERIOUS"
+  printf "║  🟡 Moderate:  %-19s ║\n" "$MODERATE"
+  printf "║  🔵 Minor:     %-19s ║\n" "$MINOR"
+  echo "╠════════════════════════════════════╣"
+  printf "║  Total Issues: %-19s ║\n" "$TOTAL"
+  echo "╚════════════════════════════════════╝"
   echo ""
-  echo -e "  Score:     ${GREEN}$SCORE/100${NC}"
-  echo ""
-  echo "  Issues Found:"
-  echo -e "    🔴 Critical:  $CRITICAL"
-  echo -e "    🟠 Serious:   $SERIOUS"
-  echo -e "    🟡 Moderate:  $MODERATE"
-  echo -e "    🔵 Minor:     $MINOR"
-  echo "    ────────────────────"
-  echo -e "    Total:       $TOTAL"
-  echo ""
 
-  # Write job summary
-  cat >> $GITHUB_STEP_SUMMARY << EOF
-## 🔍 AllyLab Accessibility Scan Results
-
-| Metric | Value |
-|--------|-------|
-| **URL** | $URL |
-| **Score** | $SCORE/100 |
-| **Standard** | $STANDARD |
-
-### Issues by Severity
-
-| Severity | Count |
-|----------|-------|
-| 🔴 Critical | $CRITICAL |
-| 🟠 Serious | $SERIOUS |
-| 🟡 Moderate | $MODERATE |
-| 🔵 Minor | $MINOR |
-| **Total** | **$TOTAL** |
-
-EOF
-
+  # Determine pass/fail message
+  if [ $EXIT_CODE -eq 0 ]; then
+    echo "✅ Scan completed successfully!"
+  else
+    echo "❌ Scan failed: Issues found matching --fail-on threshold"
+  fi
+else
+  echo "⚠️ Scan output:"
+  echo "$RESULT"
 fi
 
-# Exit with scan result
-exit ${SCAN_EXIT:-0}
+# Cleanup
+kill $API_PID 2>/dev/null || true
+
+exit $EXIT_CODE

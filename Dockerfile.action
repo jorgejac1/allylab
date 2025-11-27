@@ -32,17 +32,19 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /allylab
 
 # Copy package files
-COPY package*.json ./
-COPY packages/api/package*.json ./packages/api/
-COPY packages/cli/package*.json ./packages/cli/
+COPY package.json package-lock.json ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/cli/package.json ./packages/cli/
+
+# Copy tsconfig
+COPY tsconfig.base.json ./
 
 # Install dependencies
-RUN npm ci --workspace=@allylab/api --workspace=@allylab/cli
+RUN npm ci
 
 # Copy source code
 COPY packages/api ./packages/api
 COPY packages/cli ./packages/cli
-COPY tsconfig.base.json ./
 
 # Build packages
 RUN npm run build --workspace=@allylab/api && \

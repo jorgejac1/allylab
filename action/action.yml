@@ -1,6 +1,6 @@
 name: 'AllyLab Accessibility Scanner'
 description: 'AI-powered accessibility scanner with WCAG 2.0/2.1/2.2 support and fix suggestions'
-author: 'Jorge Jacinto'
+author: 'Jorge Jacome'
 branding:
   icon: 'eye'
   color: 'blue'
@@ -56,7 +56,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/jorgejac1/allylab-action:latest'
   env:
     INPUT_URL: ${{ inputs.url }}
     INPUT_STANDARD: ${{ inputs.standard }}
