@@ -31,6 +31,9 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /allylab
 
+# Set Playwright browser path to a fixed location (not affected by HOME changes)
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-browsers
+
 # Copy package files
 COPY package.json package-lock.json ./
 COPY packages/api/package.json ./packages/api/
@@ -50,7 +53,7 @@ COPY packages/cli ./packages/cli
 RUN npm run build --workspace=@allylab/api && \
     npm run build --workspace=@allylab/cli
 
-# Install Playwright browsers
+# Install Playwright browsers to the fixed path
 RUN npx playwright install chromium
 
 # Copy entrypoint
