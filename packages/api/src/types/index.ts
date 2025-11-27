@@ -51,5 +51,27 @@ export interface ScanRequest {
   includeWarnings?: boolean;
 }
 
+// Report Settings
+export interface ScoreGoalSettings {
+  scoreGoal: number;
+  showScoreGoal: boolean;
+  showGoalProgress: boolean;
+}
+
+export interface PdfExportSettings {
+  includeScoreTrend: boolean;
+  includeIssueTrend: boolean;
+  includeDistribution: boolean;
+  includeStats: boolean;
+  includeSummary: boolean;
+  companyName: string;
+  logoUrl: string;
+}
+
+export interface ReportSettings {
+  scoreGoal: ScoreGoalSettings;
+  pdfExport: PdfExportSettings;
+}
+
 export * from './jira';
 export * from './schedule';

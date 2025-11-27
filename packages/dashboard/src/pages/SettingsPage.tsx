@@ -8,6 +8,7 @@ import {
   WebhookManager,
   GitHubSettings,
   AlertSettings,
+  ReportSettings,
 } from "../components/settings";
 import { useLocalStorage } from "../hooks";
 import type { WCAGStandard } from "../types";
@@ -26,10 +27,11 @@ const DEFAULT_SETTINGS: Settings = {
   maxScansStored: 100,
 };
 
-type TabId = "general" | "alerts" | "schedules" | "webhooks" | "jira" | "github" | "cicd" | "api";
+type TabId = "general" | "reports" | "alerts" | "schedules" | "webhooks" | "jira" | "github" | "cicd" | "api";
 
 const TABS = [
   { id: "general", label: "General" },
+  { id: "reports", label: "Reports" },
   { id: "alerts", label: "Alerts" },
   { id: "schedules", label: "Scheduled Scans" },
   { id: "webhooks", label: "Notifications" },
@@ -245,6 +247,9 @@ export function SettingsPage() {
 
         {/* Alert Settings */}
         {activeTab === "alerts" && <AlertSettings />}
+
+        {/* Report Settings */}
+        {activeTab === "reports" && <ReportSettings />}
 
         {/* Scheduled Scans */}
         {activeTab === "schedules" && <ScheduleManager />}
