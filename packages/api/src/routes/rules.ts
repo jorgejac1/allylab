@@ -1,15 +1,16 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { CustomRule, CreateRuleRequest, UpdateRuleRequest } from '../types/rules';
 import { randomUUID } from 'crypto';
+import { JsonStorage } from '../utils/storage';
 
-// In-memory storage (replace with database in production)
-const rulesStore: Map<string, CustomRule> = new Map();
+// File-based persistent storage
+const rulesStore = new JsonStorage<CustomRule>({ filename: 'rules.json' });
 
 export async function rulesRoutes(fastify: FastifyInstance) {
   // GET /rules - List all custom rules
   fastify.get('/rules', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const rules = Array.from(rulesStore.values());
+      const rules = rulesStore.getAll();
       
       return reply.send({
         success: true,
@@ -258,11 +259,11 @@ export async function rulesRoutes(fastify: FastifyInstance) {
   );
 
   // POST /rules/import - Import rules from JSON
-  fastify.post<{ Body: { rules: CustomRule[] } }>(
+  fastify.post<{ Body: { rules: CustomRule[]; replace?: boolean } }>(
     '/rules/import',
-    async (request: FastifyRequest<{ Body: { rules: CustomRule[] } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: { rules: CustomRule[]; replace?: boolean } }>, reply: FastifyReply) => {
       try {
-        const { rules } = request.body;
+        const { rules, replace = false } = request.body;
 
         if (!rules || !Array.isArray(rules)) {
           return reply.status(400).send({
@@ -271,29 +272,27 @@ export async function rulesRoutes(fastify: FastifyInstance) {
           });
         }
 
-        let imported = 0;
         const now = new Date().toISOString();
+        
+        // Normalize rules before import
+        const normalizedRules = rules
+          .filter(rule => rule.name && rule.selector && rule.type && rule.severity)
+          .map(rule => ({
+            ...rule,
+            id: rule.id || `rule-${randomUUID().slice(0, 8)}`,
+            createdAt: rule.createdAt || now,
+            updatedAt: now,
+          }));
 
-        for (const rule of rules) {
-          if (rule.name && rule.selector && rule.type && rule.severity) {
-            const newRule: CustomRule = {
-              ...rule,
-              id: rule.id || `rule-${randomUUID().slice(0, 8)}`,
-              createdAt: rule.createdAt || now,
-              updatedAt: now,
-            };
-            rulesStore.set(newRule.id, newRule);
-            imported++;
-          }
-        }
+        const imported = rulesStore.import(normalizedRules, replace);
 
-        fastify.log.info(`[Rules] Imported ${imported} rules`);
+        fastify.log.info(`[Rules] Imported ${imported} rules (replace: ${replace})`);
 
         return reply.send({
           success: true,
           data: {
             imported,
-            total: rulesStore.size,
+            total: rulesStore.size(),
           },
         });
       } catch (error) {
@@ -310,7 +309,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
   // GET /rules/export - Export all rules as JSON
   fastify.get('/rules/export', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const rules = Array.from(rulesStore.values());
+      const rules = rulesStore.getAll();
 
       return reply.send({
         success: true,
@@ -329,4 +328,28 @@ export async function rulesRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // GET /rules/enabled - Get only enabled rules (for scanner integration)
+  fastify.get('/rules/enabled', async (_request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const rules = rulesStore.getAll().filter(r => r.enabled);
+
+      return reply.send({
+        success: true,
+        data: rules,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      fastify.log.error(`[Rules] Enabled rules error: ${message}`);
+      return reply.status(500).send({
+        success: false,
+        error: message,
+      });
+    }
+  });
+}
+
+// Export for use in scanner service
+export function getEnabledRules(): CustomRule[] {
+  return rulesStore.getAll().filter(r => r.enabled);
 }

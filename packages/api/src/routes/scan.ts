@@ -6,7 +6,13 @@ import type { ScanRequest } from '../types/index.js';
 
 export async function scanRoutes(server: FastifyInstance) {
   server.post('/scan', async (request: FastifyRequest<{ Body: ScanRequest }>, reply: FastifyReply) => {
-    const { url, standard = 'wcag21aa', viewport = 'desktop', includeWarnings = false } = request.body;
+    const { 
+      url, 
+      standard = 'wcag21aa', 
+      viewport = 'desktop', 
+      includeWarnings = false,
+      includeCustomRules = true,
+    } = request.body;
 
     if (!url) {
       return reply.status(400).send({ error: 'URL is required' });
@@ -28,6 +34,7 @@ export async function scanRoutes(server: FastifyInstance) {
         standard,
         viewport,
         includeWarnings,
+        includeCustomRules,
         onProgress: (progress) => {
           sendSSE(reply, 'progress', progress);
         },
@@ -47,6 +54,7 @@ export async function scanRoutes(server: FastifyInstance) {
         serious: result.findings.filter(f => f.impact === 'serious').length,
         moderate: result.findings.filter(f => f.impact === 'moderate').length,
         minor: result.findings.filter(f => f.impact === 'minor').length,
+        customRulesCount: result.customRulesCount,
       });
 
       // Trigger if critical issues found

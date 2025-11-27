@@ -34,6 +34,7 @@ export interface WebhookPayload {
     error?: string;
     pagesScanned?: number;
     duration?: number;
+    customRulesCount?: number;
   };
 }
 

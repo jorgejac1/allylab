@@ -2,6 +2,8 @@ export type Severity = 'critical' | 'serious' | 'moderate' | 'minor';
 
 export type Viewport = 'desktop' | 'tablet' | 'mobile';
 
+export type FindingSource = 'axe-core' | 'custom-rule';
+
 export interface ViewportConfig {
   width: number;
   height: number;
@@ -24,9 +26,10 @@ export interface Finding {
   impact: Severity;
   selector: string;
   html: string;
-  helpUrl: string;
+  helpUrl?: string;
   wcagTags: string[];
   page?: string;
+  source?: FindingSource;
 }
 
 export interface ScanResult {
@@ -42,6 +45,7 @@ export interface ScanResult {
   findings: Finding[];
   scanDuration: number;
   viewport?: Viewport;
+  customRulesCount?: number;
 }
 
 export interface ScanRequest {
@@ -49,6 +53,7 @@ export interface ScanRequest {
   standard?: string;
   viewport?: Viewport;
   includeWarnings?: boolean;
+  includeCustomRules?: boolean;
 }
 
 // Report Settings

@@ -2,13 +2,16 @@ import AxeBuilder from '@axe-core/playwright';
 import { createPage } from './browser.js';
 import { calculateScore } from '../utils/scoring.js';
 import { getWcagTags } from '../utils/wcag.js';
+import { evaluateCustomRules, getEnabledRulesCount } from './rule-evaluator.js';
 import type { Finding, ScanResult, Severity, Viewport } from '../types/index.js';
+import type { RuleViolation } from '../types/rules.js';
 
 interface ScanOptions {
   url: string;
   standard?: string;
   viewport?: Viewport;
   includeWarnings?: boolean;
+  includeCustomRules?: boolean;
   onProgress?: (progress: { percent: number; message: string }) => void;
   onFinding?: (finding: Finding) => void;
 }
@@ -18,13 +21,15 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
     url, 
     standard = 'wcag21aa', 
     viewport = 'desktop',
-    includeWarnings = false, 
+    includeWarnings = false,
+    includeCustomRules = true,
     onProgress, 
     onFinding 
   } = options;
   
   const startTime = Date.now();
   const viewportLabel = viewport === 'desktop' ? '🖥️ Desktop' : viewport === 'tablet' ? '📱 Tablet' : '📲 Mobile';
+  const customRulesCount = includeCustomRules ? getEnabledRulesCount() : 0;
 
   const page = await createPage(viewport);
 
@@ -61,7 +66,7 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
 
     const results = await axeBuilder.analyze();
 
-    onProgress?.({ percent: 70, message: 'Processing results...' });
+    onProgress?.({ percent: 60, message: 'Processing axe-core results...' });
 
     // Process violations into findings
     const findings: Finding[] = [];
@@ -86,11 +91,32 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
           html: node.html,
           helpUrl: violation.helpUrl,
           wcagTags: violation.tags.filter((t: string) => t.startsWith('wcag')),
+          source: 'axe-core',
         };
 
         findings.push(finding);
         onFinding?.(finding);
       }
+    }
+
+    // Run custom rules if enabled
+    if (includeCustomRules && customRulesCount > 0) {
+      onProgress?.({ percent: 75, message: `Running ${customRulesCount} custom rules...` });
+
+      const customViolations = await evaluateCustomRules({
+        page,
+        onViolation: (violation) => {
+          const finding = ruleViolationToFinding(violation, findings.length);
+          findings.push(finding);
+          severityCounts[violation.severity]++;
+          onFinding?.(finding);
+        },
+      });
+
+      onProgress?.({ 
+        percent: 85, 
+        message: `Custom rules found ${customViolations.length} issues` 
+      });
     }
 
     onProgress?.({ percent: 90, message: 'Calculating score...' });
@@ -108,6 +134,7 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
       findings,
       scanDuration,
       viewport,
+      customRulesCount,
     };
 
     onProgress?.({ percent: 100, message: 'Scan complete!' });
@@ -116,4 +143,22 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
   } finally {
     await page.close();
   }
+}
+
+/**
+ * Convert a RuleViolation to a Finding
+ */
+function ruleViolationToFinding(violation: RuleViolation, index: number): Finding {
+  return {
+    id: `custom-${violation.ruleId}-${index}`,
+    ruleId: violation.ruleId,
+    ruleTitle: violation.ruleName,
+    description: violation.message,
+    impact: violation.severity,
+    selector: violation.selector,
+    html: violation.html,
+    helpUrl: undefined,
+    wcagTags: violation.wcagTags,
+    source: 'custom-rule',
+  };
 }
