@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Card, Button } from "../ui";
-import { TrendLine, DonutChart, IssueTrendChart } from "../charts";
+import { TrendLine, DonutChart, IssueTrendChart, GoalProgress } from "../charts";
+import { TrendsPDFButton } from "./TrendsPDFButton";
+import { useReportSettings } from "../../hooks";
 import type { SavedScan, TrendDataPoint, IssueTrendDataPoint } from "../../types";
 import type { RegressionInfo } from "../../hooks/useScans";
 import { SEVERITY_COLORS } from "../../utils/constants";
@@ -11,10 +13,18 @@ interface TrendChartsProps {
   recentRegressions?: RegressionInfo[];
 }
 
-type ChartType = 'area' | 'line';
+type ChartType = "area" | "line";
 
-export function TrendCharts({ scans, url, recentRegressions = [] }: TrendChartsProps) {
-  const [issueChartType, setIssueChartType] = useState<ChartType>('area');
+export function TrendCharts({
+  scans,
+  url,
+  recentRegressions = [],
+}: TrendChartsProps) {
+  const [issueChartType, setIssueChartType] = useState<ChartType>("area");
+  
+  // Get report settings for goal line and PDF export
+  const { settings } = useReportSettings();
+  const { scoreGoal, pdfExport } = settings;
 
   // Filter scans by URL if provided
   const filteredScans = useMemo(() => {
@@ -119,9 +129,40 @@ export function TrendCharts({ scans, url, recentRegressions = [] }: TrendChartsP
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Header with Export Button */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
+          📊 Accessibility Trends
+        </h3>
+        <TrendsPDFButton
+          scans={filteredScans}
+          settings={pdfExport}
+          scoreGoal={scoreGoal.scoreGoal}
+        />
+      </div>
+
       {/* Regression Alert Banner */}
       {recentRegressions.length > 0 && (
         <RegressionAlertBanner regressions={recentRegressions} />
+      )}
+
+      {/* Goal Progress Bar */}
+      {scoreGoal.showGoalProgress && aggregateStats && (
+        <GoalProgress
+          currentScore={aggregateStats.currentScore}
+          goalScore={scoreGoal.scoreGoal}
+          previousScore={
+            filteredScans.length >= 2
+              ? filteredScans[filteredScans.length - 2].score
+              : undefined
+          }
+        />
       )}
 
       {/* Stats Row */}
@@ -154,13 +195,48 @@ export function TrendCharts({ scans, url, recentRegressions = [] }: TrendChartsP
         </div>
       )}
 
-      {/* Score Trend */}
+      {/* Score Trend with Goal Line */}
       <Card>
-        <h4 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 16px" }}>
-          📈 Score Trend
-        </h4>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
+            📈 Score Trend
+          </h4>
+          {scoreGoal.showScoreGoal && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12,
+                color: "#64748b",
+              }}
+            >
+              <span
+                style={{
+                  width: 16,
+                  height: 2,
+                  background: "#f59e0b",
+                  borderTop: "2px dashed #f59e0b",
+                }}
+              />
+              <span>Goal: {scoreGoal.scoreGoal}</span>
+            </div>
+          )}
+        </div>
         {scoreTrendData.length >= 2 ? (
-          <TrendLine data={scoreTrendData} width={800} height={250} />
+          <TrendLine
+            data={scoreTrendData}
+            width={800}
+            height={250}
+            goalScore={scoreGoal.showScoreGoal ? scoreGoal.scoreGoal : undefined}
+          />
         ) : (
           <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
             Need at least 2 scans to show trends.
@@ -183,18 +259,18 @@ export function TrendCharts({ scans, url, recentRegressions = [] }: TrendChartsP
           </h4>
           <div style={{ display: "flex", gap: 4 }}>
             <Button
-              variant={issueChartType === 'area' ? 'primary' : 'secondary'}
+              variant={issueChartType === "area" ? "primary" : "secondary"}
               size="sm"
-              onClick={() => setIssueChartType('area')}
-              style={{ padding: '4px 12px', fontSize: 12 }}
+              onClick={() => setIssueChartType("area")}
+              style={{ padding: "4px 12px", fontSize: 12 }}
             >
               Stacked
             </Button>
             <Button
-              variant={issueChartType === 'line' ? 'primary' : 'secondary'}
+              variant={issueChartType === "line" ? "primary" : "secondary"}
               size="sm"
-              onClick={() => setIssueChartType('line')}
-              style={{ padding: '4px 12px', fontSize: 12 }}
+              onClick={() => setIssueChartType("line")}
+              style={{ padding: "4px 12px", fontSize: 12 }}
             >
               Lines
             </Button>
@@ -237,13 +313,21 @@ export function TrendCharts({ scans, url, recentRegressions = [] }: TrendChartsP
               change={aggregateStats.issueChanges.minor}
               color={SEVERITY_COLORS.minor}
             />
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                marginLeft: "auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
               <span style={{ fontSize: 12, color: "#64748b" }}>Net change:</span>
               <span
                 style={{
                   fontSize: 14,
                   fontWeight: 600,
-                  color: aggregateStats.issueChange <= 0 ? "#10b981" : "#ef4444",
+                  color:
+                    aggregateStats.issueChange <= 0 ? "#10b981" : "#ef4444",
                 }}
               >
                 {aggregateStats.issueChange > 0 ? "+" : ""}
@@ -392,7 +476,11 @@ function IssueChangeBadge({
 // Regression Alert Banner Component
 // ==============================================
 
-function RegressionAlertBanner({ regressions }: { regressions: RegressionInfo[] }) {
+function RegressionAlertBanner({
+  regressions,
+}: {
+  regressions: RegressionInfo[];
+}) {
   const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",

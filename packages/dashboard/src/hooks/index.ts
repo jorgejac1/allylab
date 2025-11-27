@@ -12,3 +12,4 @@ export { useWebhooks } from './useWebhooks';
 export { useGitHub } from './useGitHub';
 export { usePRTracking } from './usePRTracking';
 export { useAlertSettings } from './useAlertSettings';
+export { useReportSettings } from './useReportSettings';

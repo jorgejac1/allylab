@@ -207,6 +207,27 @@ export interface AlertSettings {
   showRegressionAlerts: boolean;
 }
 
+export interface ScoreGoalSettings {
+  scoreGoal: number;
+  showScoreGoal: boolean;
+  showGoalProgress: boolean;
+}
+
+export interface PdfExportSettings {
+  includeScoreTrend: boolean;
+  includeIssueTrend: boolean;
+  includeDistribution: boolean;
+  includeStats: boolean;
+  includeSummary: boolean;
+  companyName: string;
+  logoUrl: string;
+}
+
+export interface ReportSettings {
+  scoreGoal: ScoreGoalSettings;
+  pdfExport: PdfExportSettings;
+}
+
 export type DateRangeOption = 'all' | '7days' | '30days' | '90days' | 'custom';
 
 export type SortOption = 'newest' | 'oldest' | 'score-high' | 'score-low' | 'issues-high' | 'issues-low';

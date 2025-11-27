@@ -1,103 +1,129 @@
-import type { TrendDataPoint } from '../../types';
-import { getScoreColor } from '../../utils/scoring';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
+import type { TrendDataPoint } from "../../types";
 
 interface TrendLineProps {
   data: TrendDataPoint[];
   width?: number;
   height?: number;
-  showArea?: boolean;
+  goalScore?: number; // Optional goal line
+  showGoal?: boolean; // Deprecated: use goalScore instead
 }
 
-export function TrendLine({ 
-  data, 
-  width = 600, 
+export function TrendLine({
+  data,
+  width = 600,
   height = 200,
-  showArea = true 
+  goalScore,
 }: TrendLineProps) {
-  if (data.length < 2) return null;
+  // Calculate min/max for Y axis with padding
+  const scores = data.map((d) => d.score);
+  const minScore = Math.min(...scores);
+  const maxScore = Math.max(...scores);
+  
+  // Include goal in range calculation if provided
+  const rangeMin = goalScore ? Math.min(minScore, goalScore) : minScore;
+  const rangeMax = goalScore ? Math.max(maxScore, goalScore) : maxScore;
+  
+  const yMin = Math.max(0, Math.floor(rangeMin / 10) * 10 - 10);
+  const yMax = Math.min(100, Math.ceil(rangeMax / 10) * 10 + 10);
 
-  const padding = { top: 20, right: 20, bottom: 40, left: 40 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-
-  const scores = data.map(d => d.score);
-  const minScore = Math.min(...scores, 0);
-  const maxScore = Math.max(...scores, 100);
-  const range = maxScore - minScore || 1;
-
-  const points = data.map((d, i) => ({
-    x: padding.left + (i / (data.length - 1)) * chartWidth,
-    y: padding.top + chartHeight - ((d.score - minScore) / range) * chartHeight,
-    ...d,
-  }));
-
-  const linePath = points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-    .join(' ');
-
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartHeight} L ${points[0].x} ${padding.top + chartHeight} Z`;
-
-  const trendColor = points[points.length - 1].score >= points[0].score ? '#10b981' : '#ef4444';
+  // Determine line color based on trend
+  const firstScore = data[0]?.score ?? 0;
+  const lastScore = data[data.length - 1]?.score ?? 0;
+  const trendColor = lastScore >= firstScore ? "#10b981" : "#ef4444";
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <svg width={width} height={height}>
-        {/* Grid lines */}
-        {[0, 25, 50, 75, 100].map(v => {
-          const y = padding.top + chartHeight - ((v - minScore) / range) * chartHeight;
-          if (y < padding.top || y > padding.top + chartHeight) return null;
-          return (
-            <g key={v}>
-              <line
-                x1={padding.left}
-                y1={y}
-                x2={width - padding.right}
-                y2={y}
-                stroke="#e2e8f0"
-                strokeDasharray="4,4"
-              />
-              <text x={padding.left - 8} y={y + 4} textAnchor="end" fontSize={11} fill="#9ca3af">
-                {v}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Area fill */}
-        {showArea && (
-          <path d={areaPath} fill={`${trendColor}15`} />
-        )}
-
-        {/* Line */}
-        <path
-          d={linePath}
-          fill="none"
-          stroke={trendColor}
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <ResponsiveContainer width={width} height={height}>
+      <LineChart
+        data={data}
+        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 11, fill: "#64748b" }}
+          tickLine={false}
+          axisLine={{ stroke: "#e2e8f0" }}
         />
-
-        {/* Points */}
-        {points.map((p, i) => (
-          <g key={i}>
-            <circle
-              cx={p.x}
-              cy={p.y}
-              r={6}
-              fill="#fff"
-              stroke={getScoreColor(p.score)}
-              strokeWidth={3}
-            />
-            <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize={11} fontWeight={600} fill="#374151">
-              {p.score}
-            </text>
-            <text x={p.x} y={height - 10} textAnchor="middle" fontSize={11} fill="#6b7280">
-              {p.date}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </div>
+        <YAxis
+          domain={[yMin, yMax]}
+          tick={{ fontSize: 11, fill: "#64748b" }}
+          tickLine={false}
+          axisLine={{ stroke: "#e2e8f0" }}
+          tickFormatter={(value) => `${value}`}
+        />
+        <Tooltip
+          contentStyle={{
+            background: "#fff",
+            border: "1px solid #e2e8f0",
+            borderRadius: 8,
+            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+            padding: "8px 12px",
+          }}
+          labelStyle={{ fontWeight: 600, marginBottom: 4 }}
+          formatter={(value: number, name: string) => {
+            if (name === "score") return [`${value}/100`, "Score"];
+            return [value, name];
+          }}
+          labelFormatter={(label, payload) => {
+            const item = payload?.[0]?.payload;
+            if (item?.fullDate) {
+              return new Date(item.fullDate).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              });
+            }
+            return label;
+          }}
+        />
+        
+        {/* Goal Reference Line */}
+        {goalScore && (
+          <ReferenceLine
+            y={goalScore}
+            stroke="#f59e0b"
+            strokeDasharray="5 5"
+            strokeWidth={2}
+            label={{
+              value: `Goal: ${goalScore}`,
+              position: "right",
+              fill: "#f59e0b",
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          />
+        )}
+        
+        {/* Score Line */}
+        <Line
+          type="monotone"
+          dataKey="score"
+          stroke={trendColor}
+          strokeWidth={2}
+          dot={{
+            fill: trendColor,
+            strokeWidth: 2,
+            r: 4,
+          }}
+          activeDot={{
+            fill: trendColor,
+            strokeWidth: 0,
+            r: 6,
+          }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 }

@@ -1,6 +1,7 @@
-export { ScanHistory } from './ScanHistory';
 export { ComparisonView } from './ComparisonView';
-export { TrendCharts } from './TrendCharts';
 export { ExportOptions } from './ExportOptions';
-export { ReportsView } from './ReportsView';
 export { PDFReportButton } from './PDFReportButton';
+export { ReportsView } from './ReportsView';
+export { ScanHistory } from './ScanHistory';
+export { TrendCharts } from './TrendCharts';
+export { TrendsPDFButton } from './TrendsPDFButton';
