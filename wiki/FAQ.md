@@ -207,7 +207,7 @@ Settings → General → Danger Zone → Clear All Data
 
 ### How can I contribute?
 
-See [CONTRIBUTING.md](https://github.com/yourusername/allylab/blob/main/CONTRIBUTING.md):
+See [CONTRIBUTING.md](https://github.com/jorgejac1/allylab/blob/main/CONTRIBUTING.md):
 1. Fork the repository
 2. Create a feature branch
 3. Make changes
@@ -215,7 +215,7 @@ See [CONTRIBUTING.md](https://github.com/yourusername/allylab/blob/main/CONTRIBU
 
 ### How do I report bugs?
 
-Open an issue on [GitHub](https://github.com/yourusername/allylab/issues) with:
+Open an issue on [GitHub](https://github.com/jorgejac1/allylab/issues) with:
 - Steps to reproduce
 - Expected behavior
 - Actual behavior
@@ -223,4 +223,4 @@ Open an issue on [GitHub](https://github.com/yourusername/allylab/issues) with:
 
 ### Can I request features?
 
-Yes! Open a [GitHub Discussion](https://github.com/yourusername/allylab/discussions) or issue with the "enhancement" label.
+Yes! Open a [GitHub Discussion](https://github.com/jorgejac1/allylab/discussions) or issue with the "enhancement" label.

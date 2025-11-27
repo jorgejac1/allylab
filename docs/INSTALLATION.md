@@ -43,7 +43,7 @@ AllyLab uses Playwright with Chromium for scanning. The browser is installed aut
 ## Quick Install
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/allylab.git
+git clone https://github.com/jorgejac1/allylab.git
 cd allylab
 
 # Install all dependencies
@@ -66,7 +66,7 @@ npm run dev
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/yourusername/allylab.git
+git clone https://github.com/jorgejac1/allylab.git
 cd allylab
 ```
 
@@ -437,7 +437,7 @@ npm run build
 
 ### Getting Help
 
-1. Check [GitHub Issues](https://github.com/yourusername/allylab/issues)
+1. Check [GitHub Issues](https://github.com/jorgejac1/allylab/issues)
 2. Open a new issue with:
    - Node.js version (`node -v`)
    - npm version (`npm -v`)

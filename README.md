@@ -136,7 +136,7 @@ allylab scan https://example.com --fail-on critical --format json
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/allylab.git
+git clone https://github.com/jorgejac1/allylab.git
 cd allylab
 
 # Install dependencies
@@ -472,7 +472,7 @@ Configure via Settings page:
 ### Quick Start with Docker Compose
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/allylab.git
+git clone https://github.com/jorgejac1/allylab.git
 cd allylab
 
 # Copy environment file
@@ -569,20 +569,20 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ### Wiki
 
-Visit our [GitHub Wiki](https://github.com/yourusername/allylab/wiki) for comprehensive documentation:
+Visit our [GitHub Wiki](https://github.com/jorgejac1/allylab/wiki) for comprehensive documentation:
 
-- [Home](https://github.com/yourusername/allylab/wiki) - Welcome page
-- [Getting Started](https://github.com/yourusername/allylab/wiki/Getting-Started) - Quick start guide
-- [Features](https://github.com/yourusername/allylab/wiki/Features) - Complete feature list
-- [Custom Rules](https://github.com/yourusername/allylab/wiki/Custom-Rules) - Create custom checks
-- [Historical Trends](https://github.com/yourusername/allylab/wiki/Historical-Trends) - Track progress
-- [Integrations](https://github.com/yourusername/allylab/wiki/Integrations) - GitHub, JIRA, Slack
-- [CI/CD Integration](https://github.com/yourusername/allylab/wiki/CI-CD-Integration) - Pipeline setup
-- [API Reference](https://github.com/yourusername/allylab/wiki/API-Reference) - Full API docs
-- [Configuration](https://github.com/yourusername/allylab/wiki/Configuration) - Settings reference
-- [Architecture](https://github.com/yourusername/allylab/wiki/Architecture) - Technical design
-- [Troubleshooting](https://github.com/yourusername/allylab/wiki/Troubleshooting) - Common issues
-- [FAQ](https://github.com/yourusername/allylab/wiki/FAQ) - Questions & answers
+- [Home](https://github.com/jorgejac1/allylab/wiki) - Welcome page
+- [Getting Started](https://github.com/jorgejac1/allylab/wiki/Getting-Started) - Quick start guide
+- [Features](https://github.com/jorgejac1/allylab/wiki/Features) - Complete feature list
+- [Custom Rules](https://github.com/jorgejac1/allylab/wiki/Custom-Rules) - Create custom checks
+- [Historical Trends](https://github.com/jorgejac1/allylab/wiki/Historical-Trends) - Track progress
+- [Integrations](https://github.com/jorgejac1/allylab/wiki/Integrations) - GitHub, JIRA, Slack
+- [CI/CD Integration](https://github.com/jorgejac1/allylab/wiki/CI-CD-Integration) - Pipeline setup
+- [API Reference](https://github.com/jorgejac1/allylab/wiki/API-Reference) - Full API docs
+- [Configuration](https://github.com/jorgejac1/allylab/wiki/Configuration) - Settings reference
+- [Architecture](https://github.com/jorgejac1/allylab/wiki/Architecture) - Technical design
+- [Troubleshooting](https://github.com/jorgejac1/allylab/wiki/Troubleshooting) - Common issues
+- [FAQ](https://github.com/jorgejac1/allylab/wiki/FAQ) - Questions & answers
 
 ### Local Documentation
 

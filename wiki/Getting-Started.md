@@ -12,7 +12,7 @@ This guide will help you get AllyLab up and running in minutes.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/allylab.git
+git clone https://github.com/jorgejac1/allylab.git
 cd allylab
 ```
 

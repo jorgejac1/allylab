@@ -304,7 +304,7 @@ RUN npx playwright install --with-deps chromium
 ## Getting Help
 
 1. **Check this guide** for common issues
-2. **Search [GitHub Issues](https://github.com/yourusername/allylab/issues)**
+2. **Search [GitHub Issues](https://github.com/jorgejac1/allylab/issues)**
 3. **Open new issue** with:
    - Node.js version (`node -v`)
    - npm version (`npm -v`)

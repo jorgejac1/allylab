@@ -41,10 +41,10 @@ Welcome to the AllyLab documentation wiki! AllyLab is an enterprise-grade web ac
 
 | Resource | Description |
 |----------|-------------|
-| [GitHub Repository](https://github.com/yourusername/allylab) | Source code |
-| [Issue Tracker](https://github.com/yourusername/allylab/issues) | Report bugs |
-| [Discussions](https://github.com/yourusername/allylab/discussions) | Community support |
-| [Changelog](https://github.com/yourusername/allylab/blob/main/CHANGELOG.md) | Version history |
+| [GitHub Repository](https://github.com/jorgejac1/allylab) | Source code |
+| [Issue Tracker](https://github.com/jorgejac1/allylab/issues) | Report bugs |
+| [Discussions](https://github.com/jorgejac1/allylab/discussions) | Community support |
+| [Changelog](https://github.com/jorgejac1/allylab/blob/main/CHANGELOG.md) | Version history |
 
 ---
 
@@ -110,10 +110,10 @@ AllyLab is a comprehensive accessibility testing platform that helps development
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [Contributing Guide](https://github.com/yourusername/allylab/blob/main/CONTRIBUTING.md) for details.
+We welcome contributions! See our [Contributing Guide](https://github.com/jorgejac1/allylab/blob/main/CONTRIBUTING.md) for details.
 
 ---
 
 ## 📄 License
 
-AllyLab is [MIT licensed](https://github.com/yourusername/allylab/blob/main/LICENSE).
+AllyLab is [MIT licensed](https://github.com/jorgejac1/allylab/blob/main/LICENSE).
