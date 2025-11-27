@@ -28,6 +28,7 @@
 - **Multi-viewport** testing (Desktop, Tablet, Mobile)
 - **Multi-page site scanning** with automatic crawling
 - **Real-time streaming** results via Server-Sent Events
+- **Custom accessibility rules** - extend built-in checks with your own rules
 - Powered by [axe-core](https://github.com/dequelabs/axe-core) and [Playwright](https://playwright.dev/)
 
 ### 💻 CLI Tool
@@ -56,6 +57,20 @@ allylab scan https://example.com --fail-on critical --format json
 - Top issues by frequency
 - Site rankings with grade cards (A-F)
 - **PDF export** for stakeholder reporting
+
+### 📈 Historical Trends & Analytics
+- **Score trends** over time with visualizations
+- **Issue trends** by severity (critical, serious, moderate, minor)
+- **Period comparison** - compare two time ranges
+- **Aggregate statistics** with percentiles and projections
+- Track improvement velocity and projected scans to reach goals
+
+### 📏 Custom Accessibility Rules
+- **Create custom rules** to extend axe-core checks
+- Support for selector, attribute, content, and structure checks
+- **Test rules** against sample HTML before deployment
+- **Import/Export** rules as JSON for sharing across teams
+- WCAG tag mapping for compliance reporting
 
 ### 🔄 Issue Tracking
 - Automatic fingerprinting to track issues across scans
@@ -91,6 +106,7 @@ allylab scan https://example.com --fail-on critical --format json
 - **Microsoft Teams** with Adaptive Cards
 - Webhook notifications on scan completion
 - Color-coded severity indicators
+- **Toast notifications** in dashboard for user feedback
 
 ### 🔗 JIRA Integration
 - Export issues directly to JIRA
@@ -256,6 +272,7 @@ allylab/
 │   │   ├── src/
 │   │   │   ├── routes/      # API endpoints
 │   │   │   ├── services/    # Scanner, scheduler, AI, GitHub
+│   │   │   ├── types/       # TypeScript types
 │   │   │   └── utils/       # Scoring, WCAG helpers
 │   │   └── Dockerfile
 │   │
@@ -296,6 +313,28 @@ allylab/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/fixes/generate` | Generate AI-powered fix suggestions |
+
+### Custom Rules Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/rules` | List all custom rules |
+| `GET` | `/rules/:id` | Get a single rule |
+| `POST` | `/rules` | Create a new rule |
+| `PUT` | `/rules/:id` | Update a rule |
+| `DELETE` | `/rules/:id` | Delete a rule |
+| `POST` | `/rules/test` | Test a rule against HTML |
+| `POST` | `/rules/import` | Import rules from JSON |
+| `GET` | `/rules/export` | Export all rules as JSON |
+
+### Historical Trends Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/trends` | Get score trends over time |
+| `POST` | `/trends/issues` | Get issue trends by severity |
+| `POST` | `/trends/compare` | Compare two time periods |
+| `POST` | `/trends/stats` | Get aggregate statistics |
 
 ### GitHub Endpoints
 
@@ -363,6 +402,28 @@ curl -X POST http://localhost:3001/fixes/generate \
       "impact": "critical"
     }
   }'
+
+# Create custom rule
+curl -X POST http://localhost:3001/rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Skip Navigation Link",
+    "type": "selector",
+    "severity": "serious",
+    "selector": "body > a[href^=\"#\"]:first-child",
+    "condition": { "operator": "not-exists" },
+    "message": "Add a skip navigation link",
+    "wcagTags": ["wcag2a", "wcag241"]
+  }'
+
+# Get historical trends
+curl -X POST http://localhost:3001/trends \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scans": [...],
+    "url": "https://example.com",
+    "limit": 50
+  }'
 ```
 
 See [docs/API.md](docs/API.md) for full API documentation.
@@ -396,6 +457,7 @@ JIRA_MOCK_MODE=true
 
 Configure via Settings page:
 - **General**: WCAG standard, warnings, storage limits
+- **Rules**: Create and manage custom accessibility rules
 - **Scheduled Scans**: Automated monitoring
 - **GitHub**: Connect GitHub for PR creation
 - **Notifications**: Slack/Teams webhooks

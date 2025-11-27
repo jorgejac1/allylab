@@ -11,6 +11,8 @@ Backend API for AllyLab accessibility scanning. Built with Fastify, Playwright, 
 - 📅 **Scheduled Scans** - Automated recurring scans
 - 🔔 **Webhooks** - Slack, Teams, and custom notifications
 - 📊 **JIRA Integration** - Export issues to JIRA
+- 📏 **Custom Rules** - Create and manage custom accessibility rules
+- 📈 **Historical Trends** - Track score and issue trends over time
 
 ## Quick Start
 
@@ -54,6 +56,28 @@ curl http://localhost:3001/health
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/fixes/generate` | Generate AI-powered fix suggestions |
+
+### Custom Rules
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/rules` | List all custom rules |
+| `GET` | `/rules/:id` | Get a single rule |
+| `POST` | `/rules` | Create a new rule |
+| `PUT` | `/rules/:id` | Update a rule |
+| `DELETE` | `/rules/:id` | Delete a rule |
+| `POST` | `/rules/test` | Test a rule against HTML |
+| `POST` | `/rules/import` | Import rules from JSON |
+| `GET` | `/rules/export` | Export all rules as JSON |
+
+### Historical Trends
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/trends` | Get score trends over time |
+| `POST` | `/trends/issues` | Get issue trends by severity |
+| `POST` | `/trends/compare` | Compare two time periods |
+| `POST` | `/trends/stats` | Get aggregate statistics |
 
 ### GitHub
 
@@ -144,6 +168,49 @@ curl -X POST http://localhost:3001/fixes/generate \
   }'
 ```
 
+### Create Custom Rule
+```bash
+curl -X POST http://localhost:3001/rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Skip Navigation Link",
+    "description": "Page should have a skip navigation link",
+    "type": "selector",
+    "severity": "serious",
+    "selector": "body > a[href^=\"#\"]:first-child",
+    "condition": { "operator": "not-exists" },
+    "message": "Add a skip to main content link",
+    "wcagTags": ["wcag2a", "wcag241"]
+  }'
+```
+
+### Get Historical Trends
+```bash
+curl -X POST http://localhost:3001/trends \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scans": [
+      {"id": "1", "url": "https://example.com", "timestamp": "2024-01-01", "score": 75, "totalIssues": 20, "critical": 2, "serious": 5, "moderate": 8, "minor": 5},
+      {"id": "2", "url": "https://example.com", "timestamp": "2024-01-15", "score": 82, "totalIssues": 15, "critical": 1, "serious": 3, "moderate": 7, "minor": 4}
+    ],
+    "url": "https://example.com",
+    "limit": 50
+  }'
+```
+
+### Compare Time Periods
+```bash
+curl -X POST http://localhost:3001/trends/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scans": [...],
+    "period1Start": "2024-01-01",
+    "period1End": "2024-01-31",
+    "period2Start": "2024-02-01",
+    "period2End": "2024-02-28"
+  }'
+```
+
 ### Create GitHub PR
 ```bash
 curl -X POST http://localhost:3001/github/pr \
@@ -198,9 +265,11 @@ src/
 │   ├── health.ts        # Health check
 │   ├── index.ts         # Route registration
 │   ├── jira.ts          # JIRA integration routes
+│   ├── rules.ts         # Custom rules routes
 │   ├── scan-json.ts     # JSON scan route
 │   ├── scan.ts          # SSE scan route
 │   ├── schedules.ts     # Schedule routes
+│   ├── trends.ts        # Historical trends routes
 │   └── webhooks.ts      # Webhook routes
 ├── services/
 │   ├── ai-fixes.ts      # Claude AI integration
@@ -215,6 +284,7 @@ src/
 │   ├── github.ts        # GitHub types
 │   ├── index.ts         # Core types
 │   ├── jira.ts          # JIRA types
+│   ├── rules.ts         # Custom rules types
 │   ├── schedule.ts      # Schedule types
 │   └── webhook.ts       # Webhook types
 ├── utils/

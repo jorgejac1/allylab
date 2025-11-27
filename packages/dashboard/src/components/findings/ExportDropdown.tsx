@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button } from '../ui';
+import { Button, Toast } from '../ui';
+import { useToast } from '../../hooks';
 import type { TrackedFinding } from '../../types';
 import { getApiBase } from '../../utils/api';
 
@@ -12,6 +13,7 @@ interface ExportDropdownProps {
 export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const { toasts, success, error, closeToast } = useToast();
 
   const handleExport = async (format: 'csv' | 'json' | 'excel') => {
     setIsExporting(true);
@@ -42,6 +44,10 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
           }),
         });
 
+        if (!response.ok) {
+          throw new Error(`Export failed with status ${response.status}`);
+        }
+
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -52,9 +58,11 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
-    } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+
+      success(`Exported ${findings.length} findings as ${format.toUpperCase()}`);
+    } catch (err) {
+      console.error('Export failed:', err);
+      error(`Failed to export as ${format.toUpperCase()}. Please try again.`);
     } finally {
       setIsExporting(false);
     }
@@ -62,6 +70,9 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Toast Container */}
+      <Toast toasts={toasts} onClose={closeToast} />
+
       <Button
         variant="secondary"
         size="sm"
@@ -162,7 +173,6 @@ function DropdownItem({
   );
 }
 
-// Client-side Excel export
 // Client-side Excel export using ExcelJS
 async function exportToExcel(
   findings: TrackedFinding[],

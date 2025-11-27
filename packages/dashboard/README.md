@@ -17,6 +17,9 @@ React-based web dashboard for AllyLab accessibility scanning. Built with React 1
 - 🔔 **Webhooks** - Configure Slack/Teams notifications
 - 📋 **JIRA Integration** - Export issues to JIRA
 - 📄 **PDF Export** - Generate stakeholder reports
+- 📏 **Custom Rules** - Create and manage custom accessibility rules
+- 🔔 **Toast Notifications** - User-friendly feedback system
+- ✅ **Confirm Dialogs** - Safe confirmation for destructive actions
 
 ## Quick Start
 
@@ -86,6 +89,7 @@ Competitive analysis:
 
 Configuration tabs:
 - **General** - Default WCAG standard, storage settings
+- **Rules** - Create and manage custom accessibility rules
 - **Scheduled Scans** - Create/manage recurring scans
 - **GitHub** - Connect GitHub account for PR creation
 - **Notifications** - Slack/Teams webhook setup
@@ -114,6 +118,10 @@ src/
 │   │   ├── SiteRankings.tsx
 │   │   ├── TopIssuesTable.tsx
 │   │   └── index.ts
+│   ├── export/            # Export functionality
+│   │   ├── ExportDropdown.tsx
+│   │   ├── PDFReportButton.tsx
+│   │   └── index.ts
 │   ├── findings/          # Issue display & management
 │   │   ├── batch-pr/      # Batch PR creation
 │   │   │   ├── FilePathMapper.tsx
@@ -126,7 +134,6 @@ src/
 │   │   ├── VerificationModal.tsx
 │   │   ├── BatchPRModal.tsx
 │   │   ├── CreatePRModal.tsx
-│   │   ├── ExportDropdown.tsx
 │   │   ├── FindingDetails.tsx
 │   │   ├── FindingDetailsDrawer.tsx
 │   │   ├── FindingsFilterBar.tsx
@@ -143,7 +150,6 @@ src/
 │   │   └── index.ts
 │   ├── reports/           # Reports & history
 │   │   ├── ComparisonView.tsx
-│   │   ├── PDFReportButton.tsx
 │   │   ├── ReportsView.tsx
 │   │   ├── ScanHistory.tsx
 │   │   ├── TrendCharts.tsx
@@ -158,9 +164,12 @@ src/
 │   ├── scanner/           # Site scanner
 │   │   └── SiteScanner.tsx
 │   ├── settings/          # Settings panels
+│   │   ├── AlertSettings.tsx
 │   │   ├── CICDGenerator.tsx
+│   │   ├── CustomRulesManager.tsx
 │   │   ├── GitHubSettings.tsx
 │   │   ├── JiraSettings.tsx
+│   │   ├── ReportSettings.tsx
 │   │   ├── ScheduleManager.tsx
 │   │   ├── WebhookManager.tsx
 │   │   └── index.ts
@@ -168,6 +177,7 @@ src/
 │       ├── Badge.tsx
 │       ├── Button.tsx
 │       ├── Card.tsx
+│       ├── ConfirmDialog.tsx
 │       ├── EmptyState.tsx
 │       ├── Input.tsx
 │       ├── Modal.tsx
@@ -178,10 +188,13 @@ src/
 │       ├── Table.tsx
 │       ├── Tabs.tsx
 │       ├── Textarea.tsx
+│       ├── Toast.tsx
 │       └── index.ts
 ├── hooks/                 # Custom React hooks
 │   ├── useApiStatus.ts    # API health monitoring
 │   ├── useCompetitors.ts  # Competitor management
+│   ├── useConfirmDialog.ts # Confirmation dialog state
+│   ├── useCustomRules.ts  # Custom rules management
 │   ├── useDashboardData.ts # Executive dashboard data
 │   ├── useGitHub.ts       # GitHub integration
 │   ├── useJiraExport.ts   # JIRA export
@@ -191,6 +204,7 @@ src/
 │   ├── useScanSSE.ts      # SSE scan streaming
 │   ├── useSchedules.ts    # Scheduled scans
 │   ├── useSiteScan.ts     # Multi-page scan
+│   ├── useToast.ts        # Toast notifications
 │   ├── useWebhooks.ts     # Webhook management
 │   └── index.ts
 ├── pages/                 # Page components
@@ -208,6 +222,7 @@ src/
 │   ├── github.ts
 │   ├── index.ts
 │   ├── jira.ts
+│   ├── rules.ts
 │   ├── schedule.ts
 │   └── webhook.ts
 ├── utils/                 # Utility functions
@@ -290,6 +305,115 @@ const {
   getPRsForFinding,
   refreshAllStatuses
 } = usePRTracking();
+```
+
+### `useCustomRules`
+Custom accessibility rules management.
+```tsx
+const {
+  rules,
+  loading,
+  error,
+  totalRules,
+  enabledRules,
+  createRule,
+  updateRule,
+  deleteRule,
+  toggleRule,
+  testRule,
+  importRules,
+  exportRules,
+} = useCustomRules();
+```
+
+### `useToast`
+Toast notification management.
+```tsx
+const { toasts, success, error, warning, info, closeToast } = useToast();
+
+// Usage
+success('Settings saved successfully');
+error('Failed to delete rule');
+warning('Please enter a valid URL');
+info('Scan started');
+```
+
+### `useConfirmDialog`
+Confirmation dialog with promise-based API.
+```tsx
+const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+
+// Usage
+const confirmed = await confirm({
+  title: 'Delete Rule',
+  message: 'Are you sure you want to delete this rule?',
+  confirmLabel: 'Delete',
+  cancelLabel: 'Cancel',
+  variant: 'danger', // 'danger' | 'warning' | 'info'
+});
+
+if (confirmed) {
+  // User clicked confirm
+}
+```
+
+## UI Components
+
+### Toast
+Display notification messages.
+```tsx
+import { Toast } from '../components/ui';
+import { useToast } from '../hooks';
+
+function MyComponent() {
+  const { toasts, success, closeToast } = useToast();
+
+  return (
+    <>
+      <Toast toasts={toasts} onClose={closeToast} />
+      <button onClick={() => success('Action completed!')}>
+        Show Toast
+      </button>
+    </>
+  );
+}
+```
+
+### ConfirmDialog
+Display confirmation modal for destructive actions.
+```tsx
+import { ConfirmDialog } from '../components/ui';
+import { useConfirmDialog } from '../hooks';
+
+function MyComponent() {
+  const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+
+  const handleDelete = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Item',
+      message: 'This action cannot be undone.',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      // Perform delete
+    }
+  };
+
+  return (
+    <>
+      <ConfirmDialog
+        isOpen={isOpen}
+        title={options.title}
+        message={options.message}
+        variant={options.variant}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+      <button onClick={handleDelete}>Delete</button>
+    </>
+  );
+}
 ```
 
 ## Configuration

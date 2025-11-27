@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PageContainer } from "../components/layout";
-import { Card, Button, Input, Select, Tabs } from "../components/ui";
+import { Card, Button, Input, Select, Tabs, ConfirmDialog, Toast } from "../components/ui";
 import {
   CICDGenerator,
   JiraSettings,
@@ -9,8 +9,9 @@ import {
   GitHubSettings,
   AlertSettings,
   ReportSettings,
+  CustomRulesManager,
 } from "../components/settings";
-import { useLocalStorage } from "../hooks";
+import { useLocalStorage, useConfirmDialog, useToast } from "../hooks";
 import type { WCAGStandard } from "../types";
 
 interface Settings {
@@ -27,10 +28,11 @@ const DEFAULT_SETTINGS: Settings = {
   maxScansStored: 100,
 };
 
-type TabId = "general" | "reports" | "alerts" | "schedules" | "webhooks" | "jira" | "github" | "cicd" | "api";
+type TabId = "general" | "rules" | "reports" | "alerts" | "schedules" | "webhooks" | "jira" | "github" | "cicd" | "api";
 
 const TABS = [
   { id: "general", label: "General" },
+  { id: "rules", label: "Rules" },
   { id: "reports", label: "Reports" },
   { id: "alerts", label: "Alerts" },
   { id: "schedules", label: "Scheduled Scans" },
@@ -49,6 +51,9 @@ export function SettingsPage() {
   );
   const [saved, setSaved] = useState(false);
 
+  const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirmDialog();
+  const { toasts, success, closeToast } = useToast();
+
   const handleChange = <K extends keyof Settings>(
     key: K,
     value: Settings[K]
@@ -59,20 +64,36 @@ export function SettingsPage() {
 
   const handleSave = () => {
     setSaved(true);
+    success("Settings saved successfully");
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleReset = () => {
-    setSettings(DEFAULT_SETTINGS);
-    setSaved(false);
+  const handleReset = async () => {
+    const confirmed = await confirm({
+      title: "Reset Settings",
+      message: "Are you sure you want to reset all settings to their default values?",
+      confirmLabel: "Reset",
+      cancelLabel: "Cancel",
+      variant: "warning",
+    });
+
+    if (confirmed) {
+      setSettings(DEFAULT_SETTINGS);
+      setSaved(false);
+      success("Settings reset to defaults");
+    }
   };
 
-  const handleClearData = () => {
-    if (
-      confirm(
-        "Are you sure you want to clear all scan data? This cannot be undone."
-      )
-    ) {
+  const handleClearData = async () => {
+    const confirmed = await confirm({
+      title: "Clear All Data",
+      message: "Are you sure you want to clear all scan data and issue tracking history? This action cannot be undone.",
+      confirmLabel: "Clear Data",
+      cancelLabel: "Cancel",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       localStorage.removeItem("allylab_scans");
       localStorage.removeItem("allylab_tracked_issues");
       window.location.reload();
@@ -84,6 +105,21 @@ export function SettingsPage() {
       title="Settings"
       subtitle="Configure your AllyLab preferences"
     >
+      {/* Toast Container */}
+      <Toast toasts={toasts} onClose={closeToast} />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={isOpen}
+        title={options.title}
+        message={options.message}
+        confirmLabel={options.confirmLabel}
+        cancelLabel={options.cancelLabel}
+        variant={options.variant}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         {/* Tabs */}
         <Tabs
@@ -245,6 +281,9 @@ export function SettingsPage() {
           </div>
         )}
 
+        {/* Custom Rules */}
+        {activeTab === "rules" && <CustomRulesManager />}
+
         {/* Alert Settings */}
         {activeTab === "alerts" && <AlertSettings />}
 
@@ -302,10 +341,12 @@ function APISettings() {
     "http://localhost:3001"
   );
   const [copied, setCopied] = useState(false);
+  const { success } = useToast();
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
+    success("Copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -397,6 +438,24 @@ function APISettings() {
             method="POST"
             path="/github/pr"
             description="Create a Pull Request with fixes"
+            onCopy={handleCopy}
+          />
+          <EndpointRow
+            method="GET"
+            path="/rules"
+            description="List all custom rules"
+            onCopy={handleCopy}
+          />
+          <EndpointRow
+            method="POST"
+            path="/rules"
+            description="Create a custom rule"
+            onCopy={handleCopy}
+          />
+          <EndpointRow
+            method="POST"
+            path="/trends"
+            description="Get score trends over time"
             onCopy={handleCopy}
           />
           <EndpointRow

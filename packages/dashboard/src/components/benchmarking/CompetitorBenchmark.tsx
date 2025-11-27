@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Card, Button, Input, EmptyState } from '../ui';
-import { useCompetitors } from '../../hooks';
+import { Card, Button, Input, EmptyState, Toast } from '../ui';
+import { useCompetitors, useToast } from '../../hooks';
 import type { BenchmarkData } from '../../types';
 
 interface CompetitorBenchmarkProps {
@@ -20,6 +20,8 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
     getBenchmarkData,
   } = useCompetitors(yourSiteUrl, yourSiteScore);
 
+  const { toasts, success, error, warning, closeToast } = useToast();
+
   const [newUrl, setNewUrl] = useState('');
   const [newName, setNewName] = useState('');
 
@@ -31,15 +33,33 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
     try {
       new URL(newUrl); // Validate URL
       addCompetitor(newUrl.trim(), newName.trim() || undefined);
+      success(`Added competitor: ${newName.trim() || new URL(newUrl).hostname}`);
       setNewUrl('');
       setNewName('');
     } catch {
-      alert('Please enter a valid URL');
+      warning('Please enter a valid URL (e.g., https://example.com)');
+    }
+  };
+
+  const handleRemove = (id: string, name: string) => {
+    removeCompetitor(id);
+    success(`Removed competitor: ${name}`);
+  };
+
+  const handleScanAll = async () => {
+    try {
+      await scanAll();
+      success('All competitors scanned successfully');
+    } catch {
+      error('Failed to scan some competitors');
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Toast Container */}
+      <Toast toasts={toasts} onClose={closeToast} />
+
       {/* Summary Cards */}
       {benchmarkData && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
@@ -108,7 +128,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
           {competitors.length > 0 && (
             <Button
               variant="secondary"
-              onClick={scanAll}
+              onClick={handleScanAll}
               disabled={isScanning}
             >
               {isScanning ? '⏳ Scanning...' : '🔄 Scan All'}
@@ -146,7 +166,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
                   lastScanned={competitor.lastScanned}
                   isScanning={scanningId === competitor.id}
                   onScan={() => scanCompetitor(competitor)}
-                  onDelete={() => removeCompetitor(competitor.id)}
+                  onDelete={() => handleRemove(competitor.id, competitor.name)}
                 />
               ))}
           </div>

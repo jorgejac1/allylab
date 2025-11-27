@@ -9,6 +9,8 @@ import { webhookRoutes } from './webhooks';
 import { crawlRoutes } from './crawl';
 import { githubRoutes } from './github.js';
 import { fixesRoutes } from './fixes.js';
+import { trendsRoutes } from './trends.js';
+import { rulesRoutes } from './rules.js';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(healthRoutes);
@@ -21,4 +23,6 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(crawlRoutes);
   await fastify.register(githubRoutes);
   await fastify.register(fixesRoutes);
+  await fastify.register(trendsRoutes);
+  await fastify.register(rulesRoutes);
 }

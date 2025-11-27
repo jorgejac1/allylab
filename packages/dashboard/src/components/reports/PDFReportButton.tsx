@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button } from '../ui';
+import { Button, Toast } from '../ui';
+import { useToast } from '../../hooks';
 import { generateExecutiveReportPDF } from '../../utils/pdfExport';
 import type { PDFDashboardData, SiteStats, TopIssue } from '../../types/executive';
 
@@ -17,6 +18,7 @@ export function PDFReportButton({
   companyName = 'AllyLab' 
 }: PDFReportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toasts, success, error, closeToast } = useToast();
 
   const handleExport = async () => {
     setIsGenerating(true);
@@ -31,22 +33,26 @@ export function PDFReportButton({
           day: 'numeric',
         })}`,
       });
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      success('PDF report generated successfully');
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      error('Failed to generate PDF. Please try again.');
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
-      onClick={handleExport}
-      disabled={isGenerating || sites.length === 0}
-    >
-      {isGenerating ? '⏳ Generating...' : '📄 Export PDF'}
-    </Button>
+    <>
+      <Toast toasts={toasts} onClose={closeToast} />
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={handleExport}
+        disabled={isGenerating || sites.length === 0}
+      >
+        {isGenerating ? '⏳ Generating...' : '📄 Export PDF'}
+      </Button>
+    </>
   );
 }

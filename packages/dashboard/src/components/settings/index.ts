@@ -6,3 +6,4 @@ export { JiraSettings } from './JiraSettings';
 export { ReportSettings } from './ReportSettings';
 export { ScheduleManager } from './ScheduleManager';
 export { WebhookManager } from './WebhookManager';
+export { CustomRulesManager } from "./CustomRulesManager";
