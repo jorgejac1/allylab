@@ -565,6 +565,33 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 ---
 
+## 📖 Documentation
+
+### Wiki
+
+Visit our [GitHub Wiki](https://github.com/yourusername/allylab/wiki) for comprehensive documentation:
+
+- [Home](https://github.com/yourusername/allylab/wiki) - Welcome page
+- [Getting Started](https://github.com/yourusername/allylab/wiki/Getting-Started) - Quick start guide
+- [Features](https://github.com/yourusername/allylab/wiki/Features) - Complete feature list
+- [Custom Rules](https://github.com/yourusername/allylab/wiki/Custom-Rules) - Create custom checks
+- [Historical Trends](https://github.com/yourusername/allylab/wiki/Historical-Trends) - Track progress
+- [Integrations](https://github.com/yourusername/allylab/wiki/Integrations) - GitHub, JIRA, Slack
+- [CI/CD Integration](https://github.com/yourusername/allylab/wiki/CI-CD-Integration) - Pipeline setup
+- [API Reference](https://github.com/yourusername/allylab/wiki/API-Reference) - Full API docs
+- [Configuration](https://github.com/yourusername/allylab/wiki/Configuration) - Settings reference
+- [Architecture](https://github.com/yourusername/allylab/wiki/Architecture) - Technical design
+- [Troubleshooting](https://github.com/yourusername/allylab/wiki/Troubleshooting) - Common issues
+- [FAQ](https://github.com/yourusername/allylab/wiki/FAQ) - Questions & answers
+
+### Local Documentation
+
+- [docs/API.md](docs/API.md) - API Reference
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - Configuration Guide
+- [docs/INSTALLATION.md](docs/INSTALLATION.md) - Installation Guide
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
