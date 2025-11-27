@@ -5,3 +5,4 @@ export { ReportsView } from './ReportsView';
 export { ScanHistory } from './ScanHistory';
 export { TrendCharts } from './TrendCharts';
 export { TrendsPDFButton } from './TrendsPDFButton';
+export { PeriodComparison } from './PeriodComparison';

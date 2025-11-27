@@ -10,7 +10,8 @@ import { FindingsSelectionBar } from "./FindingsSelectionBar";
 import { FindingsRow } from "./FindingsRow";
 import { JiraExportModal } from "./JiraExportModal";
 import { useLocalStorage } from "../../hooks";
-import type { TrackedFinding, Severity, IssueStatus } from "../../types";
+import type { TrackedFinding, Severity, IssueStatus, FindingSource } from "../../types";
+import type { SourceFilterValue } from "./SourceFilter";
 import {
   markAsFalsePositive,
   unmarkFalsePositive,
@@ -43,6 +44,7 @@ export function FindingsTable({
   // Filters
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IssueStatus | "all">("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilterValue>("all");
   const [fpFilter, setFpFilter] = useState<FalsePositiveFilter>("active");
   const [fpVersion, setFpVersion] = useState(0);
 
@@ -96,16 +98,39 @@ export function FindingsTable({
     return applyFalsePositiveStatus(findings);
   }, [findings, fpVersion]);
 
+  // Calculate source counts
+  const sourceCounts = useMemo(() => {
+    const axeCore = findingsWithFpStatus.filter(f => !f.source || f.source === 'axe-core').length;
+    const customRule = findingsWithFpStatus.filter(f => f.source === 'custom-rule').length;
+    return {
+      axeCore,
+      customRule,
+      total: findingsWithFpStatus.length,
+    };
+  }, [findingsWithFpStatus]);
+
   // Filter findings
   const filtered = useMemo(() => {
     return findingsWithFpStatus.filter((f) => {
+      // False positive filter
       if (fpFilter === "active" && f.falsePositive) return false;
       if (fpFilter === "false-positive" && !f.falsePositive) return false;
+      
+      // Source filter
+      if (sourceFilter !== "all") {
+        const findingSource: FindingSource = f.source || 'axe-core';
+        if (findingSource !== sourceFilter) return false;
+      }
+      
+      // Severity filter
       if (severityFilter !== "all" && f.impact !== severityFilter) return false;
+      
+      // Status filter
       if (statusFilter !== "all" && f.status !== statusFilter) return false;
+      
       return true;
     });
-  }, [findingsWithFpStatus, severityFilter, statusFilter, fpFilter]);
+  }, [findingsWithFpStatus, severityFilter, statusFilter, sourceFilter, fpFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filtered.length / pageSize);
@@ -239,12 +264,27 @@ export function FindingsTable({
           fpFilter={fpFilter}
           severityFilter={severityFilter}
           statusFilter={statusFilter}
+          sourceFilter={sourceFilter}
+          sourceCounts={sourceCounts}
           findings={filtered}
           scanUrl={pageUrl}
           scanDate={new Date().toISOString()}
-          onFpFilterChange={setFpFilter}
-          onSeverityFilterChange={setSeverityFilter}
-          onStatusFilterChange={setStatusFilter}
+          onFpFilterChange={(filter) => {
+            setFpFilter(filter);
+            setCurrentPage(1);
+          }}
+          onSeverityFilterChange={(severity) => {
+            setSeverityFilter(severity);
+            setCurrentPage(1);
+          }}
+          onStatusFilterChange={(status) => {
+            setStatusFilter(status);
+            setCurrentPage(1);
+          }}
+          onSourceFilterChange={(source) => {
+            setSourceFilter(source);
+            setCurrentPage(1);
+          }}
           onExportToJira={handleOpenJiraExport}
         />
 
@@ -281,6 +321,7 @@ export function FindingsTable({
                 <th style={{ ...thStyle, width: 100 }}>Severity</th>
                 <th style={{ ...thStyle, width: 100 }}>Status</th>
                 <th style={thStyle}>Issue</th>
+                <th style={{ ...thStyle, width: 80 }}>Source</th>
                 <th style={{ ...thStyle, width: 100 }}>WCAG</th>
                 <th style={{ ...thStyle, width: 110 }}>JIRA</th>
                 <th style={{ ...thStyle, width: 150 }}>PR Status</th>

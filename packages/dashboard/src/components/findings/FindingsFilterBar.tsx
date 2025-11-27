@@ -1,6 +1,7 @@
 import { Button } from '../ui';
 import { FilterButton, PillButton, Divider } from './FilterButton';
 import { ExportDropdown } from './ExportDropdown';
+import { SourceFilter, SourceFilterValue } from './SourceFilter';
 import type { Severity, IssueStatus, TrackedFinding } from '../../types';
 
 export type FalsePositiveFilter = 'all' | 'active' | 'false-positive';
@@ -19,6 +20,14 @@ interface FindingsFilterBarProps {
   fpFilter: FalsePositiveFilter;
   severityFilter: Severity | 'all';
   statusFilter: IssueStatus | 'all';
+  sourceFilter?: SourceFilterValue;
+  
+  // Source counts
+  sourceCounts?: {
+    axeCore: number;
+    customRule: number;
+    total: number;
+  };
   
   // Export data
   findings: TrackedFinding[];
@@ -29,6 +38,7 @@ interface FindingsFilterBarProps {
   onFpFilterChange: (filter: FalsePositiveFilter) => void;
   onSeverityFilterChange: (severity: Severity | 'all') => void;
   onStatusFilterChange: (status: IssueStatus | 'all') => void;
+  onSourceFilterChange?: (source: SourceFilterValue) => void;
   onExportToJira: () => void;
 }
 
@@ -49,12 +59,15 @@ export function FindingsFilterBar({
   fpFilter,
   severityFilter,
   statusFilter,
+  sourceFilter = 'all',
+  sourceCounts,
   findings,
   scanUrl,
   scanDate,
   onFpFilterChange,
   onSeverityFilterChange,
   onStatusFilterChange,
+  onSourceFilterChange,
   onExportToJira,
 }: FindingsFilterBarProps) {
   return (
@@ -86,6 +99,18 @@ export function FindingsFilterBar({
           label={`All (${totalCount})`}
         />
       </div>
+
+      {/* Source Filter - Only show if custom rules exist */}
+      {sourceCounts && onSourceFilterChange && (
+        <>
+          <Divider />
+          <SourceFilter
+            value={sourceFilter}
+            onChange={onSourceFilterChange}
+            counts={sourceCounts}
+          />
+        </>
+      )}
 
       <Divider />
       

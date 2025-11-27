@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Input, Select } from '../ui';
+import { CustomRulesIndicator } from './CustomRulesIndicator';
 import type { WCAGStandard, Viewport } from '../../types';
 
 interface ScanFormProps {
@@ -23,7 +24,6 @@ const VIEWPORTS: { value: Viewport; label: string; icon: string }[] = [
 ];
 
 export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps) {
-  // Initialize directly from prop - parent should use key={initialUrl} to reset
   const [url, setUrl] = useState(initialUrl);
   const [standard, setStandard] = useState<WCAGStandard>('wcag21aa');
   const [viewport, setViewport] = useState<Viewport>('desktop');
@@ -112,12 +112,27 @@ export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps)
         </Button>
       </div>
       
-      {/* Viewport Info */}
-      <div style={{ marginTop: 12, fontSize: 12, color: '#64748b' }}>
-        Testing as: {VIEWPORTS.find(v => v.value === viewport)?.icon}{' '}
-        {viewport === 'desktop' && '1280×720'}
-        {viewport === 'tablet' && '768×1024'}
-        {viewport === 'mobile' && '375×667 (2x scale)'}
+      {/* Bottom Info Row */}
+      <div 
+        style={{ 
+          marginTop: 12, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        {/* Viewport Info */}
+        <div style={{ fontSize: 12, color: '#64748b' }}>
+          Testing as: {VIEWPORTS.find(v => v.value === viewport)?.icon}{' '}
+          {viewport === 'desktop' && '1280×720'}
+          {viewport === 'tablet' && '768×1024'}
+          {viewport === 'mobile' && '375×667 (2x scale)'}
+        </div>
+
+        {/* Custom Rules Indicator */}
+        <CustomRulesIndicator />
       </div>
     </div>
   );

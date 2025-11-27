@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, Button, Tabs, EmptyState } from '../ui';
 import { ScanHistory } from './ScanHistory';
 import { ComparisonView } from './ComparisonView';
+import { PeriodComparison } from './PeriodComparison';
 import { TrendCharts } from './TrendCharts';
 import { ExportOptions } from './ExportOptions';
 import { ScanResults } from '../scan';
@@ -12,12 +13,11 @@ interface ReportsViewProps {
   scans: SavedScan[];
   onDeleteScan?: (scanId: string) => void;
   onRescan?: (url: string) => void;
-  // New regression props
   recentRegressions?: RegressionInfo[];
   hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
 
-type TabId = 'history' | 'trends' | 'export';
+type TabId = 'history' | 'trends' | 'compare' | 'export';
 
 export function ReportsView({ 
   scans, 
@@ -36,7 +36,8 @@ export function ReportsView({
 
   const tabs = [
     { id: 'history', label: 'Scan History', icon: '📋', count: scans.length },
-    { id: 'trends', label: 'Trends & Analytics', icon: '📈' },
+    { id: 'trends', label: 'Trends', icon: '📈' },
+    { id: 'compare', label: 'Period Compare', icon: '📅' },
     { id: 'export', label: 'Export', icon: '📤' },
   ];
 
@@ -163,6 +164,13 @@ export function ReportsView({
             <TrendCharts 
               scans={scans} 
               recentRegressions={recentRegressions}
+            />
+          )}
+
+          {activeTab === 'compare' && (
+            <PeriodComparison
+              scans={scans}
+              onClose={() => setActiveTab('history')}
             />
           )}
 

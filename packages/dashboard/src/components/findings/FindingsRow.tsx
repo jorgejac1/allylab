@@ -1,6 +1,7 @@
 import { Button } from '../ui';
 import { SeverityBadge } from './SeverityBadge';
 import { IssueStatus as StatusBadge } from './IssueStatus';
+import { SourceBadge } from './SourceBadge';
 import { JiraCell } from './JiraCell';
 import type { TrackedFinding } from '../../types';
 
@@ -105,6 +106,11 @@ export function FindingsRow({
             False Positive
           </span>
         )}
+      </td>
+
+      {/* Source */}
+      <td style={tdStyle}>
+        <SourceBadge source={finding.source} />
       </td>
 
       {/* WCAG Tags */}

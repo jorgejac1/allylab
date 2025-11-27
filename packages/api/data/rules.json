@@ -1,0 +1,21 @@
+[
+  {
+    "id": "rule-c1a19f64",
+    "name": "Missing Skip Link",
+    "description": "Pages should have a skip to main content link",
+    "type": "selector",
+    "severity": "serious",
+    "selector": "a[href=\"#main\"], a[href=\"#content\"], .skip-link",
+    "condition": {
+      "operator": "not-exists"
+    },
+    "message": "Page is missing a skip navigation link",
+    "wcagTags": [
+      "wcag211",
+      "wcag241"
+    ],
+    "enabled": true,
+    "createdAt": "2025-11-27T02:58:24.597Z",
+    "updatedAt": "2025-11-27T02:58:24.597Z"
+  }
+]

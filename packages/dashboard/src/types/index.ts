@@ -24,6 +24,7 @@ export interface Finding {
   wcagTags: string[];
   page?: string;
   fixSuggestion?: string;
+  source?: FindingSource;
 }
 
 export interface TrackedFinding extends Finding {
@@ -231,6 +232,8 @@ export interface ReportSettings {
 export type DateRangeOption = 'all' | '7days' | '30days' | '90days' | 'custom';
 
 export type SortOption = 'newest' | 'oldest' | 'score-high' | 'score-low' | 'issues-high' | 'issues-low';
+
+export type FindingSource = 'axe-core' | 'custom-rule';
 
 export * from './jira';
 export * from './schedule';

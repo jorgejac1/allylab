@@ -5,3 +5,4 @@ export { ImpactAnalysis } from './ImpactAnalysis';
 export { ScanResults } from './ScanResults';
 export { ScanResultsCompact } from './ScanResultsCompact';
 export { ScanResultsHeader } from './ScanResultsHeader';
+export { CustomRulesIndicator } from './CustomRulesIndicator';
