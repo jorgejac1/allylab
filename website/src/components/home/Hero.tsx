@@ -1,162 +1,181 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { Play, Search, BarChart3, Settings, ArrowRight } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="min-h-screen pt-32 pb-20 px-6 gradient-mesh">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-        {/* Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full text-sm text-text-secondary mb-8">
-            <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            Now with WCAG 2.2 Support
-          </div>
+    <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 gradient-mesh opacity-50" />
+      
+      <div className="relative max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Badge variant="green" className="mb-6">
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse mr-2" />
+              Now with WCAG 2.2 Support
+            </Badge>
 
-          {/* Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
-            Accessibility Testing
-            <br />
-            That <span className="gradient-text">Actually Fixes</span> Issues
-          </h1>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+              Accessibility Testing That{" "}
+              <span className="gradient-text">Actually Fixes</span> Issues
+            </h1>
 
-          {/* Description */}
-          <p className="text-xl text-text-secondary mb-8 max-w-lg">
-            Enterprise-grade web accessibility scanning with AI-powered fix suggestions. Stop just
-            finding problems — start solving them automatically.
-          </p>
+            <p className="text-lg text-text-secondary mb-8 max-w-lg">
+              Stop just finding problems. AllyLab generates production-ready code fixes 
+              and creates GitHub pull requests automatically. Fix accessibility issues 
+              in minutes, not days.
+            </p>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-4 mb-12">
-            <Button size="lg">
-              Start Free Trial
-              <ArrowRight size={18} />
-            </Button>
-            <Button variant="secondary" size="lg">
-              <Play size={18} />
-              Watch Demo
-            </Button>
-          </div>
-
-          {/* Trust */}
-          <div>
-            <p className="text-sm text-text-muted mb-3">Trusted by teams at</p>
-            <div className="flex gap-8">
-              {["Disney", "ESPN", "ABC", "Discovery"].map((brand) => (
-                <span key={brand} className="text-text-dim font-semibold">
-                  {brand}
-                </span>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Dashboard Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="hidden lg:block"
-        >
-          <div className="bg-surface border border-border rounded-2xl overflow-hidden glow">
-            {/* Browser Chrome */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-surface-tertiary border-b border-border">
-              <div className="flex gap-2">
-                <span className="w-3 h-3 rounded-full bg-accent-red" />
-                <span className="w-3 h-3 rounded-full bg-accent-yellow" />
-                <span className="w-3 h-3 rounded-full bg-primary" />
-              </div>
-              <span className="text-xs text-text-muted font-mono">app.allylab.io/dashboard</span>
+            <div className="flex flex-wrap gap-4 mb-8">
+              <Link href="/signup">
+                <Button size="lg">
+                  Start Free Trial
+                  <ArrowRight size={18} />
+                </Button>
+              </Link>
+              <Link href="/features">
+                <Button variant="secondary" size="lg">
+                  <Play size={18} />
+                  See How It Works
+                </Button>
+              </Link>
             </div>
 
-            {/* Content */}
-            <div className="grid grid-cols-[140px_1fr] min-h-[320px]">
-              {/* Sidebar */}
-              <div className="bg-surface-secondary border-r border-border p-3 space-y-1">
-                {[
-                  { icon: "🔍", label: "Scanner", active: true },
-                  { icon: "📊", label: "Dashboard" },
-                  { icon: "📈", label: "Trends" },
-                  { icon: "⚙️", label: "Settings" },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm ${
-                      item.active
-                        ? "bg-primary/10 text-text-primary border-l-2 border-primary"
-                        : "text-text-muted"
-                    }`}
-                  >
-                    <span>{item.icon}</span>
-                    <span>{item.label}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Value props instead of logos */}
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-text-muted">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                Free forever plan
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                No credit card required
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                Setup in 2 minutes
+              </span>
+            </div>
+          </motion.div>
 
-              {/* Main */}
-              <div className="p-6 flex gap-6">
-                {/* Score */}
-                <div className="text-center">
-                  <div className="relative w-24 h-24 mb-2">
-                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#1f1f22"
-                        strokeWidth="8"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#22c55e"
-                        strokeWidth="8"
-                        strokeDasharray="283"
-                        strokeDashoffset="50"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-primary">
-                      82
-                    </span>
-                  </div>
-                  <p className="text-xs text-text-muted">Accessibility Score</p>
+          {/* Dashboard Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="hidden lg:block"
+          >
+            <div className="bg-surface border border-border rounded-2xl overflow-hidden glow">
+              {/* Browser Chrome */}
+              <div className="flex items-center gap-3 px-4 py-3 bg-surface-tertiary border-b border-border">
+                <div className="flex gap-2">
+                  <span className="w-3 h-3 rounded-full bg-accent-red" />
+                  <span className="w-3 h-3 rounded-full bg-accent-yellow" />
+                  <span className="w-3 h-3 rounded-full bg-primary" />
                 </div>
+                <div className="flex-1 bg-surface rounded-lg px-3 py-1">
+                  <span className="text-xs text-text-muted font-mono">app.allylab.io/dashboard</span>
+                </div>
+              </div>
 
-                {/* Issues */}
-                <div className="flex-1 space-y-2">
-                  {[
-                    { severity: "Critical", label: "Missing alt text on 3 images", color: "red" },
-                    { severity: "Serious", label: "Low contrast ratio on buttons", color: "orange" },
-                    { severity: "Moderate", label: "Missing form labels", color: "yellow" },
-                  ].map((issue) => (
-                    <div
-                      key={issue.label}
-                      className="flex items-center gap-2 px-3 py-2 bg-surface-secondary rounded text-sm"
-                    >
-                      <span
-                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded bg-accent-${issue.color}/20 text-accent-${issue.color}`}
+              {/* Dashboard Content */}
+              <div className="flex">
+                {/* Sidebar */}
+                <div className="w-48 bg-surface-secondary border-r border-border p-4 hidden xl:block">
+                  <div className="space-y-1">
+                    {[
+                      { icon: Search, label: "Scanner", active: true },
+                      { icon: BarChart3, label: "Dashboard", active: false },
+                      { icon: Settings, label: "Settings", active: false },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                          item.active
+                            ? "bg-primary/15 text-primary"
+                            : "text-text-muted hover:bg-surface-tertiary"
+                        }`}
                       >
-                        {issue.severity}
-                      </span>
-                      <span className="text-text-secondary text-xs">{issue.label}</span>
+                        <item.icon size={16} />
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 p-6">
+                  {/* Score Card */}
+                  <div className="flex items-center gap-6 mb-6">
+                    <div className="relative w-24 h-24">
+                      <svg className="w-full h-full -rotate-90">
+                        <circle
+                          cx="48"
+                          cy="48"
+                          r="40"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          className="text-surface-tertiary"
+                        />
+                        <circle
+                          cx="48"
+                          cy="48"
+                          r="40"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          strokeDasharray={`${82 * 2.51} 251`}
+                          className="text-primary"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-bold">82</span>
+                      </div>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-sm text-text-muted mb-1">Accessibility Score</p>
+                      <p className="text-2xl font-bold">Good</p>
+                      <p className="text-xs text-primary">+5 from last scan</p>
+                    </div>
+                  </div>
+
+                  {/* Issues */}
+                  <div className="space-y-2">
+                    {[
+                      { severity: "Critical", count: 0, color: "bg-accent-red" },
+                      { severity: "Serious", count: 2, color: "bg-accent-orange" },
+                      { severity: "Moderate", count: 6, color: "bg-accent-yellow" },
+                      { severity: "Minor", count: 4, color: "bg-accent-blue" },
+                    ].map((issue) => (
+                      <div
+                        key={issue.severity}
+                        className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2.5 h-2.5 rounded-full ${issue.color}`} />
+                          <span className="text-sm">{issue.severity}</span>
+                        </div>
+                        <span className="font-mono font-semibold">{issue.count}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
