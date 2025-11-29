@@ -90,7 +90,7 @@ async function runScheduledScan(schedule: Schedule): Promise<ScheduleRunResult> 
 }
 
 // Start a scheduled job
-function startJob(schedule: Schedule): void {
+export function startJob(schedule: Schedule): void {
   if (!schedule.enabled) return;
 
   // Clear existing job if any

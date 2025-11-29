@@ -190,6 +190,95 @@ describe("services/webhooks", () => {
       expect(updated?.type).toBe("slack");
     });
 
+    it("updates webhook URL and re-detects Teams type", () => {
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      expect(webhook.type).toBe("generic");
+
+      const updated = updateWebhook(webhook.id, {
+        url: "https://outlook.office.com/webhook/abc",
+      });
+
+      expect(updated?.type).toBe("teams");
+    });
+
+    it("re-detects Teams type for webhook.office.com URL", () => {
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      const updated = updateWebhook(webhook.id, {
+        url: "https://webhook.office.com/webhookb2/xyz",
+      });
+
+      expect(updated?.type).toBe("teams");
+    });
+
+    it("re-detects Teams type for outlook.office.com URL", () => {
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      const updated = updateWebhook(webhook.id, {
+        url: "https://outlook.office.com/webhook/def",
+      });
+
+      expect(updated?.type).toBe("teams");
+    });
+
+    it("keeps existing type when URL change is neither Slack nor Teams", () => {
+      const webhook = createWebhook({
+        name: "Generic Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      expect(webhook.type).toBe("generic");
+
+      const updated = updateWebhook(webhook.id, {
+        url: "https://not-slack-or-teams.com/webhook",
+      });
+
+      expect(updated?.type).toBe("generic");
+    });
+
+    it("respects explicitly provided type on update", () => {
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      const updated = updateWebhook(webhook.id, {
+        url: "https://hooks.slack.com/services/xxx",
+        type: "generic",
+      });
+
+      expect(updated?.type).toBe("generic");
+    });
+
+    it("updates secret when provided", () => {
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      expect(webhook.secret).toBeUndefined();
+
+      const updated = updateWebhook(webhook.id, { secret: "new-secret" });
+
+      expect(updated?.secret).toBe("new-secret");
+    });
+
     it("updates webhook events", () => {
       const webhook = createWebhook({
         name: "Test Webhook",
@@ -500,6 +589,82 @@ describe("services/webhooks", () => {
       expect(result.error).toBe("Connection refused");
     });
 
+    it("sends generic webhook test headers without signature when secret missing", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      const webhook = createWebhook({
+        name: "Generic Test Webhook",
+        url: "https://example.com/generic",
+        events: ["scan.completed"],
+        type: "generic",
+      });
+
+      await testWebhook(webhook.id);
+
+      const call = mockFetch.mock.calls[0];
+      const headers = call[1].headers as Record<string, string>;
+
+      expect(headers["X-AllyLab-Event"]).toBe("test");
+      expect(headers["X-AllyLab-Delivery"]).toBeDefined();
+      expect(headers["X-AllyLab-Signature"]).toBeUndefined();
+    });
+
+    it("includes signature header for generic webhook test when secret provided", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      const webhook = createWebhook({
+        name: "Generic Secure Test Webhook",
+        url: "https://example.com/generic",
+        events: ["scan.completed"],
+        type: "generic",
+        secret: "super-secret",
+      });
+
+      await testWebhook(webhook.id);
+
+      const call = mockFetch.mock.calls[0];
+      const headers = call[1].headers as Record<string, string>;
+
+      expect(headers["X-AllyLab-Event"]).toBe("test");
+      expect(headers["X-AllyLab-Delivery"]).toBeDefined();
+      expect(headers["X-AllyLab-Signature"]).toMatch(/^sha256=/);
+    });
+
+    it("does not add generic headers for non-generic webhook test", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      const webhook = createWebhook({
+        name: "Slack Test Webhook",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+        type: "slack",
+      });
+
+      await testWebhook(webhook.id);
+
+      const call = mockFetch.mock.calls[0];
+      const headers = call[1].headers as Record<string, string>;
+
+      expect(headers["X-AllyLab-Event"]).toBeUndefined();
+      expect(headers["X-AllyLab-Delivery"]).toBeUndefined();
+      expect(headers["X-AllyLab-Signature"]).toBeUndefined();
+    });
+
+    it("returns default Network error string when thrown value is not Error", async () => {
+      mockFetch.mockRejectedValue("boom");
+
+      const webhook = createWebhook({
+        name: "Test Webhook",
+        url: "https://example.com/webhook",
+        events: ["scan.completed"],
+      });
+
+      const result = await testWebhook(webhook.id);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Network error");
+    });
+
     it("sends test payload with sample data", async () => {
       mockFetch.mockResolvedValue({ ok: true, status: 200 });
 
@@ -567,6 +732,335 @@ describe("services/webhooks", () => {
       expect(body.text).toContain("Failed");
       expect(body.blocks).toBeDefined();
     });
+
+    it("uses green emoji for scores >= 90 in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack High Score",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://high-score.com",
+        score: 95,
+        totalIssues: 1,
+        critical: 0,
+        serious: 0,
+        moderate: 1,
+        minor: 0,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("🟢");
+    });
+
+    it("uses orange emoji for scores between 50 and 69 in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Medium Score",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://medium-score.com",
+        score: 60,
+        totalIssues: 5,
+        critical: 0,
+        serious: 1,
+        moderate: 2,
+        minor: 2,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("🟠");
+    });
+
+    it("uses score dropped title for score.dropped event in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Score Dropped",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["score.dropped"],
+      });
+
+      await triggerWebhooks("score.dropped", {
+        scanUrl: "https://score-dropped.com",
+        previousScore: 90,
+        score: 70,
+        totalIssues: 10,
+        critical: 1,
+        serious: 3,
+        moderate: 4,
+        minor: 2,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("Accessibility Score Dropped");
+    });
+
+    it("uses red emoji for scores below 50 in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Low Score",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://low-score.com",
+        score: 40,
+        totalIssues: 20,
+        critical: 5,
+        serious: 5,
+        moderate: 5,
+        minor: 5,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("🔴");
+    });
+
+    it("uses 'Unknown error' when error is missing in failed Slack scan", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Failed Webhook",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.failed"],
+      });
+
+      await triggerWebhooks("scan.failed", {
+        scanUrl: "https://test.com",
+        // no error field on purpose to hit `data.error || 'Unknown error'`
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      const sectionText = body.blocks[1].text.text as string;
+
+      expect(sectionText).toContain("Unknown error");
+    });
+
+    it("falls back to score 0 when score is missing in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack No Score",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://no-score.com",
+        // score intentionally omitted to trigger (score || 0)
+        totalIssues: 5,
+        critical: 1,
+        serious: 2,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("🔴");
+    });
+
+    it("includes a plus sign when score increased in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Score Increase",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://score-up.com",
+        score: 85,
+        previousScore: 80,
+        totalIssues: 5,
+        critical: 1,
+        serious: 2,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("(+5)");
+    });
+
+    it("falls back to 0 when totalIssues is missing in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Missing Total Issues",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://missing-total.com",
+        score: 75,
+        // totalIssues intentionally omitted → fallback to 0
+        critical: 1,
+        serious: 1,
+        moderate: 2,
+        minor: 2,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      const totalIssuesField = JSON.stringify(body);
+
+      expect(totalIssuesField).toContain("*Total Issues*");
+      expect(totalIssuesField).toContain("0");
+    });
+
+    it("falls back to 0 when moderate is missing in Slack payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Missing Moderate",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://missing-moderate.com",
+        score: 72,
+        totalIssues: 10,
+        critical: 1,
+        serious: 2,
+        // moderate omitted → fallback 0
+        minor: 3,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      const moderateField = JSON.stringify(body);
+
+      expect(moderateField).toContain("🟡 Moderate");
+      expect(moderateField).toContain("0");
+    });
+
+    it("includes pages scanned section when pagesScanned is provided", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Pages Scanned",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://with-pages.com",
+        score: 80,
+        totalIssues: 5,
+        critical: 0,
+        serious: 1,
+        moderate: 2,
+        minor: 2,
+        pagesScanned: 12,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        blocks: Array<{ type: string; elements?: Array<{ text: string }> }>;
+      }>;
+
+      const blocks = attachments[0].blocks;
+
+      const contextBlock = blocks.find(
+        (block: { type: string }): boolean => block.type === "context"
+      );
+
+      expect(JSON.stringify(contextBlock)).toContain("12 pages scanned");
+    });
+
+    it("uses red (#dc2626) color for Slack critical.found event", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Slack Critical",
+        url: "https://hooks.slack.com/services/xxx",
+        events: ["critical.found"],
+      });
+
+      await triggerWebhooks("critical.found", {
+        scanUrl: "https://critical.com",
+        score: 40,
+        totalIssues: 20,
+        critical: 5,
+        serious: 5,
+        moderate: 5,
+        minor: 5,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{ color: string }>;
+
+      expect(attachments[0].color).toBe("#dc2626");
+    });
+
+    it("uses themeColor 'warning' for Teams score.dropped event", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Score Dropped",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["score.dropped"],
+      });
+
+      await triggerWebhooks("score.dropped", {
+        scanUrl: "https://drop.com",
+        previousScore: 90,
+        score: 70,
+        totalIssues: 10,
+        critical: 1,
+        serious: 2,
+        moderate: 3,
+        minor: 4,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{ color?: string }>;
+        };
+      }>;
+
+      const cardBody = attachments[0].content.body;
+
+      const titleBlock = cardBody[0];
+
+      expect(titleBlock.color).toBe("Warning");
+    });
   });
 
   describe("Teams formatting", () => {
@@ -618,6 +1112,293 @@ describe("services/webhooks", () => {
 
       expect(body.type).toBe("message");
       expect(body.attachments[0].content.body[0].text).toContain("Failed");
+    });
+
+    it("falls back to 'N/A' for missing scanUrl in Teams failed payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Missing URL",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.failed"],
+      });
+
+      await triggerWebhooks("scan.failed", {
+        // scanUrl intentionally omitted to trigger fallback
+        error: "Some failure",
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{
+            facts?: Array<{ title: string; value: string }>;
+          }>;
+        };
+      }>;
+
+      const factSet = attachments[0].content.body.find(
+        (b) => Array.isArray(b.facts)
+      );
+
+      const urlFact = factSet?.facts?.find((f) => f.title === "URL");
+
+      expect(urlFact?.value).toBe("N/A");
+    });
+
+    it("falls back to 'Unknown error' when error is missing in Teams failed payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Missing Error",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.failed"],
+      });
+
+      await triggerWebhooks("scan.failed", {
+        scanUrl: "https://no-error.com",
+        // error intentionally omitted → triggers fallback
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{
+            facts?: Array<{ title: string; value: string }>;
+          }>;
+        };
+      }>;
+
+      const factSet = attachments[0].content.body.find(
+        (b) => Array.isArray(b.facts)
+      );
+
+      const errorFact = factSet?.facts?.find((f) => f.title === "Error");
+
+      expect(errorFact?.value).toBe("Unknown error");
+    });
+
+    it("uses red score emoji when score is missing in Teams payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams No Score",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://no-score-teams.com",
+        totalIssues: 5,
+        critical: 1,
+        serious: 2,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: { body: unknown[] };
+      }>;
+
+      const bodyString = JSON.stringify(attachments[0].content.body);
+
+      expect(bodyString).toContain("🔴");
+    });
+
+    it("shows +diff in Teams score when score increased", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Score Increased",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://score-up-teams.com",
+        score: 85,
+        previousScore: 80,
+        totalIssues: 5,
+        critical: 1,
+        serious: 1,
+        moderate: 2,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: { body: unknown[] };
+      }>;
+
+      const bodyString = JSON.stringify(attachments[0].content.body);
+
+      expect(bodyString).toContain("(+5)");
+    });
+
+    it("falls back to empty string when scanUrl is missing in Teams payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Missing URL Card",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        // scanUrl intentionally omitted to trigger data.scanUrl || ''
+        score: 75,
+        totalIssues: 3,
+        critical: 0,
+        serious: 1,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{ type: string; text?: string }>;
+        };
+      }>;
+
+      const bodyBlocks = attachments[0].content.body;
+
+      const urlBlock = bodyBlocks[1];
+
+      expect(urlBlock.type).toBe("TextBlock");
+      expect(urlBlock.text).toBe("");
+    });
+
+    it("falls back to 0 for missing serious/moderate/minor in Teams payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Missing Severities",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://missing-severities.com",
+        score: 70,
+        totalIssues: 3,
+        critical: 1,
+        // serious/moderate/minor intentionally omitted to hit || 0 fallbacks
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{
+            type?: string;
+            columns?: Array<{ items?: Array<{ facts?: Array<{ title: string; value: string }> }> }>;
+          }>;
+        };
+      }>;
+
+      const body = attachments[0].content.body;
+      const columnSet = body.find((b) => b.type === "ColumnSet");
+      const facts =
+        columnSet?.columns?.[1]?.items?.find((item) => Array.isArray(item.facts))
+          ?.facts ?? [];
+
+      expect(facts.length).toBeGreaterThan(0);
+
+      const serious = facts.find((f) => f.title === "🟠 Serious");
+      const moderate = facts.find((f) => f.title === "🟡 Moderate");
+      const minor = facts.find((f) => f.title === "🔵 Minor");
+
+      expect(serious?.value).toBe("0");
+      expect(moderate?.value).toBe("0");
+      expect(minor?.value).toBe("0");
+    });
+
+    it("falls back to 0 when totalIssues is missing in Teams payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Missing Total Issues",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://teams-total-issues.com",
+        score: 75,
+        // totalIssues intentionally omitted to trigger || 0
+        critical: 0,
+        serious: 0,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{ type: string; text?: string }>;
+        };
+      }>;
+
+      const bodyBlocks = attachments[0].content.body;
+      const totalIssuesBlock = bodyBlocks.find(
+        (block) => block.type === "TextBlock" && block.text?.startsWith("Total Issues:")
+      );
+
+      expect(totalIssuesBlock?.text).toContain("Total Issues: 0");
+      expect(totalIssuesBlock?.text).not.toContain("pages scanned");
+    });
+
+    it("includes pages scanned text when pagesScanned is provided in Teams payload", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      createWebhook({
+        name: "Teams Pages Scanned",
+        url: "https://outlook.office.com/webhook/xxx",
+        events: ["scan.completed"],
+      });
+
+      await triggerWebhooks("scan.completed", {
+        scanUrl: "https://teams-pages.com",
+        score: 82,
+        totalIssues: 4,
+        critical: 0,
+        serious: 1,
+        moderate: 2,
+        minor: 1,
+        pagesScanned: 9,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const parsed = JSON.parse(call[1].body as string);
+
+      const attachments = parsed.attachments as Array<{
+        content: {
+          body: Array<{ type: string; text?: string }>;
+        };
+      }>;
+
+      const bodyBlocks = attachments[0].content.body;
+      const totalIssuesBlock = bodyBlocks.find(
+        (block) => block.type === "TextBlock" && block.text?.startsWith("Total Issues:")
+      );
+
+      expect(totalIssuesBlock?.text).toContain("Total Issues: 4");
+      expect(totalIssuesBlock?.text).toContain("9 pages scanned");
     });
   });
 
@@ -677,6 +1458,33 @@ describe("services/webhooks", () => {
       const call = mockFetch.mock.calls[0];
       const body = JSON.parse(call[1].body);
       expect(body.type).toBe("message");
+    });
+
+    it("uses default AllyLab Notification title for unknown event", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 200 });
+
+      const unknownEvent = "unknown.event" as WebhookEvent;
+
+      createWebhook({
+        name: "Slack Unknown Event",
+        url: "https://hooks.slack.com/services/xxx",
+        events: [unknownEvent],
+      });
+
+      await triggerWebhooks(unknownEvent, {
+        scanUrl: "https://unknown-event.com",
+        score: 80,
+        totalIssues: 3,
+        critical: 0,
+        serious: 1,
+        moderate: 1,
+        minor: 1,
+      });
+
+      const call = mockFetch.mock.calls[0];
+      const body = JSON.parse(call[1].body as string);
+
+      expect(JSON.stringify(body)).toContain("AllyLab Notification");
     });
   });
 

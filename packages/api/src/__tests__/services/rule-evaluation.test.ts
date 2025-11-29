@@ -128,6 +128,158 @@ describe("services/rule-evaluator", () => {
         // The actual implementation generates its own message format
         expect(violations[0].message).toContain('a[href="#main"]');
       });
+
+      it("executes selector HTML extraction callback", async () => {
+        const rule = createMockRule({
+          id: "rule-cb-selector",
+          name: "Selector HTML callback",
+          description: "Covers outerHTML slice callback",
+          type: "selector",
+          selector: "div.test",
+          condition: { operator: "exists" },
+          message: "Found element",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: "<div class='test'>Hello</div>" })
+            ),
+        };
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(mockElement.evaluate).toHaveBeenCalled();
+      });
+
+      it("defaults selector operator to 'exists' when not provided", async () => {
+        const rule = createMockRule({
+          id: "rule-default-exists",
+          name: "Default exists operator",
+          description: "Covers condition.operator || 'exists' fallback",
+          type: "selector",
+          selector: "div.default-exists",
+          condition: {} as CustomRule["condition"],
+          message: "Div should trigger exists violation",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          evaluate: vi
+            .fn()
+            .mockResolvedValue("<div class='default-exists'>Hello</div>"),
+        };
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-default-exists");
+      });
+
+      it("triggers selector exists branch when elements are present", async () => {
+        const rule = createMockRule({
+          id: "rule-selector-exists-branch",
+          name: "Selector exists branch",
+          description:
+            "Covers else-if (operator === 'exists' && elements.length > 0)",
+          type: "selector",
+          selector: ".forbidden-div",
+          condition: { operator: "exists" },
+          message: "Forbidden element found",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: '<div class="forbidden-div">Bad</div>' })
+            ),
+        };
+
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-selector-exists-branch");
+      });
+
+      it("triggers selector exists branch when elements are present", async () => {
+        const rule = createMockRule({
+          id: "rule-selector-exists-branch",
+          name: "Selector exists branch",
+          description:
+            "Covers else-if (operator === 'exists' && elements.length > 0)",
+          type: "selector",
+          selector: ".exists-branch",
+          condition: { operator: "exists" },
+          message: "Forbidden element found",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: '<div class="exists-branch">Bad</div>' })
+            ),
+        };
+
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-selector-exists-branch");
+      });
+
+      it("takes selector else path when exists operator and no elements", async () => {
+        const rule = createMockRule({
+          id: "rule-selector-else-branch",
+          name: "Selector else branch",
+          description: "Covers else (no if/else-if match)",
+          type: "selector",
+          selector: ".else-branch",
+          condition: { operator: "exists" },
+          message: "Should not be triggered",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        mockPage.$$.mockResolvedValue([]); // elements.length === 0
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(0);
+      });
     });
 
     describe("attribute rules", () => {
@@ -255,6 +407,79 @@ describe("services/rule-evaluator", () => {
 
         expect(violations).toHaveLength(1);
       });
+
+      it("evaluates matches operator when attrValue and value are both present", async () => {
+        const rule = createMockRule({
+          id: "rule-attr-matches",
+          name: "Attribute matches pattern",
+          description: "Covers attrValue !== null && value branch",
+          type: "attribute",
+          selector: "[data-test]",
+          condition: {
+            attribute: "data-test",
+            operator: "matches",
+            value: "^foo", // valid, non-empty regex
+          },
+          message: "data-test starts with foo",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          getAttribute: vi.fn().mockResolvedValue("foobar"),
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: '<div data-test="foobar"></div>' })
+            ),
+        };
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-attr-matches");
+      });
+
+      it("detects attribute existence with default 'exists' operator", async () => {
+        const rule = createMockRule({
+          id: "rule-attr-exists",
+          name: "Attribute exists",
+          description: "Covers case 'exists' in attribute switch",
+          type: "attribute",
+          selector: "button",
+          condition: {
+            attribute: "aria-label", // no operator provided → defaults to 'exists'
+          } as CustomRule["condition"],
+          message: "Button has aria-label",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          getAttribute: vi.fn().mockResolvedValue("Submit"), // non-null → isViolation = true
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: '<button aria-label="Submit">Submit</button>' })
+            ),
+        };
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-attr-exists");
+        expect(mockElement.getAttribute).toHaveBeenCalledWith("aria-label");
+      });
     });
 
     describe("content rules", () => {
@@ -343,6 +568,77 @@ describe("services/rule-evaluator", () => {
         });
 
         expect(violations).toHaveLength(1);
+      });
+
+      it("ignores invalid regex in content pattern without throwing", async () => {
+        const rule = createMockRule({
+          id: "rule-content-invalid-regex",
+          name: "Invalid content regex",
+          description: "Covers pattern invalid regex catch",
+          type: "content",
+          selector: "p",
+          condition: {
+            pattern: "[", // invalid regex
+          },
+          message: "Should not trigger",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          textContent: vi.fn().mockResolvedValue("Some regular text"),
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: "<p>Some regular text</p>" })
+            ),
+        };
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(0);
+        expect(mockElement.evaluate).toHaveBeenCalled();
+      });
+      it("uses empty string fallback when textContent is null (covers textContent || '')", async () => {
+        const rule = createMockRule({
+          id: "rule-content-empty-fallback",
+          name: "Content fallback test",
+          description: "Covers textContent null → ''",
+          type: "content",
+          selector: "p",
+          condition: {
+            minLength: 1,
+          },
+          message: "Content too short",
+          severity: "minor",
+        });
+
+        mockGetEnabledRules.mockReturnValue([rule]);
+
+        const mockElement = {
+          textContent: vi.fn().mockResolvedValue(null), // forces fallback ''
+          evaluate: vi
+            .fn()
+            .mockImplementation(
+              async (cb: (el: { outerHTML: string }) => string) =>
+                cb({ outerHTML: "<p></p>" })
+            ),
+        };
+
+        mockPage.$$.mockResolvedValue([mockElement]);
+
+        const violations = await evaluateCustomRules({
+          page: mockPage as unknown as Page,
+        });
+
+        expect(violations).toHaveLength(1);
+        expect(violations[0].ruleId).toBe("rule-content-empty-fallback");
+        expect(mockElement.textContent).toHaveBeenCalled();
       });
     });
 
@@ -541,6 +837,109 @@ describe("services/rule-evaluator", () => {
 
       expect(violations).toHaveLength(1);
     });
+
+    it("ignores invalid regex in attribute matches operator without throwing", async () => {
+      const rule = createMockRule({
+        id: "rule-attr-invalid-regex",
+        name: "Invalid attribute regex",
+        type: "attribute",
+        selector: "[data-test]",
+        condition: {
+          attribute: "data-test",
+          operator: "matches",
+          value: "[", // invalid regex
+        },
+        message: "Should never trigger due to invalid regex",
+        severity: "minor",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        getAttribute: vi.fn().mockResolvedValue("abc"),
+        evaluate: vi
+          .fn()
+          .mockImplementation(
+            async (cb: (el: { outerHTML: string }) => string) =>
+              cb({ outerHTML: '<div data-test="abc"></div>' })
+          ),
+      };
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(0);
+      expect(mockElement.evaluate).toHaveBeenCalled();
+    });
+
+    it("returns no violations when attribute is missing (covers if !attribute)", async () => {
+      const rule = createMockRule({
+        id: "rule-missing-attribute",
+        name: "Missing attribute field",
+        type: "attribute",
+        selector: "img",
+        condition: {
+          // no "attribute" field → triggers: if (!attribute) return violations;
+          operator: "exists",
+        },
+        message: "Should not run because attribute is missing",
+        severity: "minor",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        getAttribute: vi.fn().mockResolvedValue("ignored"),
+        evaluate: vi.fn().mockResolvedValue("<img>"),
+      };
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toEqual([]);
+      expect(mockElement.getAttribute).not.toHaveBeenCalled();
+    });
+
+    it("does not evaluate matches when value is missing (covers else branch of matches)", async () => {
+      const rule = createMockRule({
+        id: "rule-attr-matches-no-value",
+        name: "Matches without value",
+        description: "Covers attrValue !== null && value false branch",
+        type: "attribute",
+        selector: "[data-test]",
+        condition: {
+          attribute: "data-test",
+          operator: "matches",
+          // value intentionally omitted → value === undefined
+        } as CustomRule["condition"],
+        message: "Should not trigger without value",
+        severity: "minor",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        getAttribute: vi.fn().mockResolvedValue("foobar"),
+        evaluate: vi
+          .fn()
+          .mockImplementation(
+            async (cb: (el: { outerHTML: string }) => string) =>
+              cb({ outerHTML: '<div data-test="foobar"></div>' })
+          ),
+      };
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(0);
+      expect(mockElement.getAttribute).toHaveBeenCalledWith("data-test");
+    });
   });
 
   describe("structure rules extended", () => {
@@ -572,6 +971,199 @@ describe("services/rule-evaluator", () => {
       });
 
       expect(violations).toHaveLength(1);
+    });
+
+    it("handles siblings check when parent element is missing", async () => {
+      const rule = createMockRule({
+        id: "rule-structure-parent-null",
+        name: "Siblings with no parent",
+        type: "structure",
+        selector: "input",
+        condition: {
+          siblings: "label",
+        },
+        message: "Input missing label sibling when no parent",
+        severity: "serious",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        evaluate: vi
+          .fn()
+          .mockImplementation(
+            async (
+              cb: (
+                el: {
+                  outerHTML: string;
+                  parentElement: {
+                    querySelector: (sel: string) => unknown;
+                  } | null;
+                },
+                selectorArg?: string
+              ) => unknown,
+              selectorArg?: string
+            ) => {
+              if (cb.length === 1) {
+                return cb({ outerHTML: "<input>", parentElement: null });
+              }
+              return cb(
+                { outerHTML: "<input>", parentElement: null },
+                selectorArg
+              );
+            }
+          ),
+      };
+
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(1);
+      expect(mockElement.evaluate).toHaveBeenCalled();
+    });
+    it("structure rule evaluates parent selector callback (covers el.closest)", async () => {
+      const rule = createMockRule({
+        id: "rule-parent-ok",
+        name: "Parent exists",
+        type: "structure",
+        selector: "span",
+        condition: { parent: "div" },
+        message: "Parent missing",
+        severity: "minor",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        evaluate: vi.fn().mockImplementation(async (cb, parentSelector) => {
+          return cb(
+            {
+              outerHTML: "<span></span>",
+              closest: (sel: string) => (sel === parentSelector ? {} : null),
+            },
+            parentSelector
+          );
+        }),
+      };
+
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(0);
+      expect(mockElement.evaluate).toHaveBeenCalled();
+    });
+
+    it("structure rule evaluates children selector callback (covers el.querySelector)", async () => {
+      const rule = createMockRule({
+        id: "rule-children-ok",
+        name: "Children exist",
+        type: "structure",
+        selector: "div",
+        condition: { children: "span" },
+        message: "Missing span",
+        severity: "minor",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        evaluate: vi.fn().mockImplementation(async (cb, childSelector) => {
+          return cb(
+            {
+              outerHTML: "<div><span></span></div>",
+              querySelector: (sel: string) =>
+                sel === childSelector ? {} : null,
+            },
+            childSelector
+          );
+        }),
+      };
+
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(0);
+      expect(mockElement.evaluate).toHaveBeenCalled();
+    });
+
+    it("structure rule covers siblings callback parent null branch (if !parent return false)", async () => {
+      const rule = createMockRule({
+        id: "rule-siblings-no-parent",
+        name: "Sibling check with no parent",
+        type: "structure",
+        selector: "input",
+        condition: { siblings: "label" },
+        message: "Missing sibling",
+        severity: "serious",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        evaluate: vi.fn().mockImplementation(async (cb, siblingSelector) => {
+          return cb(
+            {
+              outerHTML: "<input>",
+              parentElement: null, // triggers: if (!parent) return false
+            },
+            siblingSelector
+          );
+        }),
+      };
+
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(1);
+    });
+
+    it("structure rule evaluates sibling selector callback (covers parent.querySelector)", async () => {
+      const rule = createMockRule({
+        id: "rule-siblings-ok",
+        name: "Sibling exists",
+        type: "structure",
+        selector: "input",
+        condition: { siblings: "label" },
+        message: "Missing label",
+        severity: "serious",
+      });
+
+      mockGetEnabledRules.mockReturnValue([rule]);
+
+      const mockElement = {
+        evaluate: vi.fn().mockImplementation(async (cb, siblingSelector) => {
+          return cb(
+            {
+              outerHTML: "<input>",
+              parentElement: {
+                querySelector: (sel: string) =>
+                  sel === siblingSelector ? {} : null,
+              },
+            },
+            siblingSelector
+          );
+        }),
+      };
+
+      mockPage.$$.mockResolvedValue([mockElement]);
+
+      const violations = await evaluateCustomRules({
+        page: mockPage as unknown as Page,
+      });
+
+      expect(violations).toHaveLength(0);
     });
   });
 

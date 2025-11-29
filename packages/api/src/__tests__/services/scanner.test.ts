@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  createSchedule,
+  deleteSchedule,
+  runScheduleNow,
+  startJob,
+} from "../../services/scheduler";
+import * as scannerModule from "../../services/scanner";
+import * as schedulerModule from "../../services/scheduler";
+import type { ScheduleFrequency } from "../../types/schedule.js";
 import type { Page } from "playwright";
 
-// Create mock functions at module scope (before vi.mock)
 const mockAnalyze = vi.fn();
 const mockWithTags = vi.fn();
 
-// Mock dependencies before importing scanner
 vi.mock("../../services/browser.js", () => ({
   createPage: vi.fn(),
 }));
@@ -23,7 +30,6 @@ vi.mock("../../utils/wcag.js", () => ({
   getWcagTags: vi.fn(),
 }));
 
-// Mock AxeBuilder - the class must be defined inside the factory
 vi.mock("@axe-core/playwright", () => {
   return {
     default: class MockAxeBuilder {
@@ -53,9 +59,6 @@ const mockGetEnabledRulesCount = vi.mocked(getEnabledRulesCount);
 const mockCalculateScore = vi.mocked(calculateScore);
 const mockGetWcagTags = vi.mocked(getWcagTags);
 
-/**
- * Mock Page interface for testing
- */
 interface MockPage {
   goto: ReturnType<typeof vi.fn>;
   waitForTimeout: ReturnType<typeof vi.fn>;
@@ -68,7 +71,6 @@ describe("services/scanner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Setup mock page
     mockPage = {
       goto: vi.fn().mockResolvedValue(null),
       waitForTimeout: vi.fn().mockResolvedValue(undefined),
@@ -77,7 +79,6 @@ describe("services/scanner", () => {
 
     mockCreatePage.mockResolvedValue(mockPage as unknown as Page);
 
-    // Setup AxeBuilder mock defaults
     mockAnalyze.mockResolvedValue({
       violations: [],
       incomplete: [],
@@ -85,7 +86,6 @@ describe("services/scanner", () => {
       inapplicable: [],
     });
 
-    // Setup other mocks
     mockGetWcagTags.mockReturnValue(["wcag2a", "wcag2aa", "wcag21aa"]);
     mockCalculateScore.mockReturnValue(100);
     mockGetEnabledRulesCount.mockReturnValue(0);
@@ -200,8 +200,6 @@ describe("services/scanner", () => {
       expect(result.totalIssues).toBe(1);
     });
 
-    // Replace these tests in scanner.test.ts:
-
     it("processes multiple nodes per violation", async () => {
       mockAnalyze.mockResolvedValue({
         violations: [
@@ -227,7 +225,6 @@ describe("services/scanner", () => {
       const result = await runScan({ url: "https://example.com" });
 
       expect(result.findings).toHaveLength(3);
-      // Severity is counted per violation, not per node
       expect(result.critical).toBe(1);
     });
 
@@ -295,16 +292,13 @@ describe("services/scanner", () => {
     });
 
     it("calls calculateScore with severity counts", async () => {
-      // Reset all mocks first
       vi.clearAllMocks();
 
-      // Re-setup default mocks
       mockCreatePage.mockResolvedValue(mockPage as unknown as Page);
       mockGetWcagTags.mockReturnValue(["wcag2a", "wcag2aa", "wcag21aa"]);
       mockGetEnabledRulesCount.mockReturnValue(0);
       mockEvaluateCustomRules.mockResolvedValue([]);
 
-      // Setup specific mock for this test
       mockAnalyze.mockResolvedValue({
         violations: [
           {
@@ -817,6 +811,127 @@ describe("services/scanner", () => {
       expect(desktopResult.viewport).toBe("desktop");
       expect(mobileResult.viewport).toBe("mobile");
       expect(tabletResult.viewport).toBe("tablet");
+    });
+  });
+
+  describe("scheduler default cases", () => {
+    it("calculateNextRun falls back to daily when frequency is unknown", () => {
+      vi.useFakeTimers();
+      const base = new Date("2025-01-01T00:00:00.000Z");
+      vi.setSystemTime(base);
+
+      const DAY_MS = 24 * 60 * 60 * 1000;
+
+      const freq = "unknown" as ScheduleFrequency;
+      const schedule = createSchedule("https://example.com", freq);
+
+      const nextRun = new Date(schedule.nextRun!);
+      const diff = nextRun.getTime() - base.getTime();
+
+      expect(diff).toBe(DAY_MS);
+
+      deleteSchedule(schedule.id);
+      vi.useRealTimers();
+    });
+
+    it("getIntervalMs falls back to daily interval for unknown frequency", () => {
+      const setIntervalSpy = vi.spyOn(global, "setInterval");
+
+      const freq = "weird" as ScheduleFrequency;
+      const schedule = createSchedule("https://example.com", freq);
+
+      const DAY_MS = 24 * 60 * 60 * 1000;
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), DAY_MS);
+
+      setIntervalSpy.mockRestore();
+      deleteSchedule(schedule.id);
+    });
+  });
+
+  describe("scheduler error handling", () => {
+    it("sets Unknown error when runScan throws non-Error value", async () => {
+      const freq = "daily" as ScheduleFrequency;
+      const schedule = createSchedule("https://example.com", freq);
+
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      const runScanSpy = vi
+        .spyOn(scannerModule, "runScan")
+        .mockRejectedValueOnce("non-error-failure" as never);
+
+      const result = await runScheduleNow(schedule.id);
+
+      expect(result).not.toBeNull();
+      expect(result?.success).toBe(false);
+      expect(result?.error).toBe("Unknown error");
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `[Scheduler] Scan failed: ${schedule.url}`,
+        "non-error-failure"
+      );
+
+      runScanSpy.mockRestore();
+      consoleSpy.mockRestore();
+      deleteSchedule(schedule.id);
+    });
+  });
+
+  describe("scheduler startJob branches", () => {
+    it("covers else branch in interval callback when schedule is disabled", () => {
+      const setIntervalSpy = vi.spyOn(global, "setInterval");
+
+      const freq: ScheduleFrequency = "daily";
+      const schedule = createSchedule("https://example.com", freq);
+
+      expect(setIntervalSpy).toHaveBeenCalled();
+
+      const intervalCall = setIntervalSpy.mock.calls[0];
+      const callback = intervalCall[0] as () => void;
+
+      schedule.enabled = false;
+
+      callback();
+
+      setIntervalSpy.mockRestore();
+      deleteSchedule(schedule.id);
+    });
+
+    it("does not start job when schedule.enabled is false", () => {
+      const freq: ScheduleFrequency = "daily";
+      const schedule = createSchedule("https://example.com", freq);
+
+      schedule.enabled = false;
+
+      const setIntervalSpy = vi.spyOn(global, "setInterval");
+
+      startJob(schedule);
+
+      expect(setIntervalSpy).not.toHaveBeenCalled();
+
+      setIntervalSpy.mockRestore();
+      deleteSchedule(schedule.id);
+    });
+  });
+
+  describe("scheduler initScheduler branches", () => {
+    it("does NOT call startJob for disabled schedules (covers else path)", () => {
+      const freq: ScheduleFrequency = "daily";
+
+      const schedule = createSchedule("https://example.com", freq);
+
+      schedule.enabled = false;
+
+      const startJobSpy = vi.spyOn(schedulerModule, "startJob");
+
+      schedulerModule.initScheduler();
+
+      expect(startJobSpy).not.toHaveBeenCalled();
+
+      startJobSpy.mockRestore();
+      deleteSchedule(schedule.id);
     });
   });
 });
