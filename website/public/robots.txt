@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://allylab.io/sitemap.xml
+
+# Block admin/API paths if any
+Disallow: /api/
