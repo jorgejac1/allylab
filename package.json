@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "dev:website": "npm run dev --workspace=website",
+    "build:website": "npm run build --workspace=website",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:dashboard\"",
     "dev:api": "npm run dev --workspace=@allylab/api",
     "dev:dashboard": "npm run dev --workspace=@allylab/dashboard",
@@ -15,8 +17,14 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "clean": "rm -rf packages/*/dist packages/*/.turbo node_modules/.cache",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:api": "vitest run --project api",
+    "test:dashboard": "vitest run --project dashboard",
+    "test:cli": "vitest run --project cli",
+    "clean": "rm -rf packages/*/dist packages/*/.turbo node_modules/.cache packages/*/coverage",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -55,6 +63,9 @@
   "devDependencies": {
     "@eslint/js": "^9.15.0",
     "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "concurrently": "^9.2.1",
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.14",
@@ -62,6 +73,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "typescript": "^5.3.0",
-    "typescript-eslint": "^8.15.0"
+    "typescript-eslint": "^8.15.0",
+    "vitest": "^4.0.14"
   }
 }

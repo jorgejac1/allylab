@@ -12,9 +12,9 @@ export function getWcagTags(standard: string): string[] {
 }
 
 export function getWcagLevel(tags: string[]): string {
-  if (tags.some(t => t.includes('aaa'))) return 'AAA';
-  if (tags.some(t => t.includes('aa'))) return 'AA';
-  if (tags.some(t => t.includes('a'))) return 'A';
+  if (tags.some(t => t.match(/wcag\d*aaa/))) return 'AAA';
+  if (tags.some(t => t.match(/wcag\d*aa/))) return 'AA';
+  if (tags.some(t => t.match(/wcag\d+a(?!a)/))) return 'A';
   return 'Best Practice';
 }
 
