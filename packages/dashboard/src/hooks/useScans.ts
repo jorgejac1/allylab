@@ -15,7 +15,7 @@ export interface RegressionInfo {
 }
 
 // Helper function to filter recent regressions
-function filterRecentRegressions(
+export function filterRecentRegressions(
   regressions: Map<string, RegressionInfo>,
   recentDays: number
 ): RegressionInfo[] {

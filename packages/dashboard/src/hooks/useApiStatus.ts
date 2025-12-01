@@ -27,7 +27,7 @@ async function fetchHealth(): Promise<{ ok: boolean; data: ApiHealth | null }> {
   }
 }
 
-export function useApiStatus(checkInterval = 60000) { // Changed to 60 seconds
+export function useApiStatus(checkInterval = 60000, runInitialCheck = true) { // Changed to 60 seconds
   const [status, setStatus] = useState<ApiStatus>('checking');
   const [health, setHealth] = useState<ApiHealth | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
@@ -62,7 +62,7 @@ export function useApiStatus(checkInterval = 60000) { // Changed to 60 seconds
 
   // Initial check - only run once
   useEffect(() => {
-    if (hasInitialCheckRef.current) return;
+    if (!runInitialCheck || hasInitialCheckRef.current) return;
     hasInitialCheckRef.current = true;
     
     let cancelled = false;

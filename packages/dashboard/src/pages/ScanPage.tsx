@@ -4,8 +4,8 @@ import { ScanForm, ScanProgress, ScanResults } from '../components/scan';
 import { EmptyState, Button } from '../components/ui';
 import { useScanSSE, useScans } from '../hooks';
 import { getScansForUrl } from '../utils/storage';
-import type { SavedScan, WCAGStandard, Viewport } from '../types';
-import type { DrillDownTarget } from '../types';
+import { performRescan } from '../utils/scan';
+import type { SavedScan, WCAGStandard, Viewport, DrillDownTarget } from '../types';
 
 interface ScanPageProps {
   currentScan: SavedScan | null;
@@ -49,9 +49,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
   };
 
   const handleRescan = () => {
-    if (currentScan) {
-      handleScan(currentScan.url, { standard: 'wcag21aa', viewport: 'desktop' });
-    }
+    return performRescan(currentScan, handleScan);
   };
 
   const handleCancel = () => {

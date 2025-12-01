@@ -14,6 +14,10 @@ interface UseSchedulesReturn {
   refresh: () => Promise<void>;
 }
 
+export function appendSchedule(prev: Schedule[] | undefined, schedule: Schedule): Schedule[] {
+  return [...(prev ?? []), schedule];
+}
+
 export function useSchedules(): UseSchedulesReturn {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +58,7 @@ export function useSchedules(): UseSchedulesReturn {
       }
 
       const schedule = await response.json();
-      setSchedules(prev => [...prev, schedule]);
+      setSchedules(prev => appendSchedule(prev, schedule));
       return schedule;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

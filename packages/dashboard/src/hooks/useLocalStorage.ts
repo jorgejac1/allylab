@@ -13,15 +13,16 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
 
   // Update localStorage when state changes
   const setValue = useCallback((value: T | ((prev: T) => T)) => {
-    try {
-      setStoredValue(prev => {
+    setStoredValue(prev => {
+      try {
         const newValue = value instanceof Function ? value(prev) : value;
         localStorage.setItem(key, JSON.stringify(newValue));
         return newValue;
-      });
-    } catch (error) {
-      console.error(`Error saving to localStorage key "${key}":`, error);
-    }
+      } catch (error) {
+        console.error(`Error saving to localStorage key "${key}":`, error);
+        return prev;
+      }
+    });
   }, [key]);
 
   // Listen for changes from other tabs/windows

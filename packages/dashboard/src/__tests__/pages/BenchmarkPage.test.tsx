@@ -13,6 +13,14 @@ describe("pages/BenchmarkPage", () => {
     vi.clearAllMocks();
   });
 
+  it("renders without scans when storage empty", () => {
+    mockUseLocalStorage.mockReturnValueOnce([[], vi.fn()]);
+    render(<BenchmarkPage />);
+    const benchmark = screen.getByTestId("competitor-benchmark");
+    expect(benchmark).toHaveAttribute("data-url", "");
+    expect(benchmark).toHaveAttribute("data-score", "");
+  });
+
   it("passes latest scan data to competitor benchmark", () => {
     const scans: SavedScan[] = [
       { id: "1", url: "https://example.com", score: 92, timestamp: "", totalIssues: 0, critical: 0, serious: 0, moderate: 0, minor: 0, findings: [], scanDuration: 1 },

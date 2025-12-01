@@ -31,9 +31,12 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
   }, []);
 
   // Save scans to localStorage
-  const saveScans = useCallback((updated: CompetitorScan[]) => {
-    localStorage.setItem(SCANS_KEY, JSON.stringify(updated));
-    setScans(updated);
+  const saveScans = useCallback((updater: (prev: CompetitorScan[]) => CompetitorScan[]) => {
+    setScans(prev => {
+      const updated = updater(prev);
+      localStorage.setItem(SCANS_KEY, JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
   // Add competitor
@@ -53,8 +56,8 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
   // Remove competitor
   const removeCompetitor = useCallback((id: string) => {
     saveCompetitors(competitors.filter(c => c.id !== id));
-    saveScans(scans.filter(s => s.competitorId !== id));
-  }, [competitors, scans, saveCompetitors, saveScans]);
+    saveScans(prev => prev.filter(s => s.competitorId !== id));
+  }, [competitors, saveCompetitors, saveScans]);
 
   // Update competitor
   const updateCompetitor = useCallback((id: string, updates: Partial<Competitor>) => {
@@ -104,11 +107,10 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
       });
 
       // Add to scans history (keep latest per competitor)
-      const updatedScans = [
+      saveScans(prev => [
         scan,
-        ...scans.filter(s => s.competitorId !== competitor.id),
-      ];
-      saveScans(updatedScans);
+        ...prev.filter(s => s.competitorId !== competitor.id),
+      ]);
 
       return scan;
     } catch (error) {
@@ -117,7 +119,7 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
     } finally {
       setScanningId(null);
     }
-  }, [scans, saveScans, updateCompetitor]);
+  }, [saveScans, updateCompetitor]);
 
   // Scan all enabled competitors
   const scanAll = useCallback(async () => {

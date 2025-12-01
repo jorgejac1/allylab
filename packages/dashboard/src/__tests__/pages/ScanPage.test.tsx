@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { ScanPage } from "../../pages/ScanPage";
+import { performRescan } from "../../utils/scan";
 import type { SavedScan } from "../../types";
 import { mockUseScanSSE, mockUseScans } from "../__mocks__/hooks";
 import { mockGetScansForUrl } from "../__mocks__/storage";
@@ -81,6 +82,28 @@ describe("pages/ScanPage", () => {
     expect(startScan).toHaveBeenCalledWith("https://scan.me", { standard: "wcag21aa", viewport: "desktop" });
   });
 
+  it("calls onComplete hook and passes saved scan", () => {
+    const savedScan = { ...baseScan, id: "saved" };
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn().mockReturnValue(savedScan) });
+    const onScanComplete = vi.fn();
+
+    render(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+
+    const options = mockUseScanSSE.mock.calls[0]?.[0] as { onComplete: (scan: SavedScan) => void };
+    options.onComplete(baseScan);
+
+    expect(onScanComplete).toHaveBeenCalledWith(savedScan);
+  });
+
   it("loads latest scan for drilldown site context", async () => {
     mockUseScanSSE.mockReturnValue({
       isScanning: false,
@@ -99,5 +122,137 @@ describe("pages/ScanPage", () => {
     render(<ScanPage currentScan={null} onScanComplete={onScanComplete} drillDownContext={{ type: "site", url: baseScan.url }} />);
 
     await waitFor(() => expect(onScanComplete).toHaveBeenCalledWith(latest));
+  });
+
+  it("skips onScanComplete when no scans found for site drilldown", async () => {
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+    mockGetScansForUrl.mockReturnValue([]);
+
+    render(<ScanPage currentScan={null} onScanComplete={onScanComplete} drillDownContext={{ type: "site", url: baseScan.url }} />);
+
+    await waitFor(() => expect(onScanComplete).not.toHaveBeenCalled());
+  });
+
+  it("shows progress and cancel button when scanning", () => {
+    mockUseScanSSE.mockReturnValue({
+      isScanning: true,
+      progress: { percent: 25, message: "Scanning", status: "running" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+
+    render(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+
+    expect(screen.getByTestId("scan-progress")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("✕ Cancel Scan"));
+  });
+
+  it("renders success banner and empty state depending on result/error", () => {
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "complete" },
+      result: { ...baseScan, totalIssues: 3, score: 80 },
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+
+    const { rerender } = render(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+    expect(screen.getByText(/Scan Complete/)).toBeInTheDocument();
+
+    mockUseScanSSE.mockReturnValueOnce({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: "Oops",
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    rerender(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+    expect(screen.getByText("Oops")).toBeInTheDocument();
+
+    mockUseScanSSE.mockReturnValueOnce({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    rerender(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+    expect(screen.getByTestId("empty-state")).toBeInTheDocument();
+  });
+
+  it("handles rescan and cancel actions", () => {
+    const startScan = vi.fn();
+    const reset = vi.fn();
+    const cancelScan = vi.fn();
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan,
+      cancelScan,
+      reset,
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+
+    const { container: firstContainer } = render(<ScanPage currentScan={baseScan} onScanComplete={onScanComplete} />);
+    fireEvent.click(within(firstContainer).getByTestId("rescan"));
+    expect(reset).toHaveBeenCalled();
+    expect(onScanComplete).toHaveBeenCalledWith(null);
+    expect(startScan).toHaveBeenCalledWith(baseScan.url, { standard: "wcag21aa", viewport: "desktop" });
+
+    mockUseScanSSE.mockReturnValue({
+      isScanning: true,
+      progress: { percent: 50, message: "Halfway", status: "running" },
+      result: null,
+      error: null,
+      startScan,
+      cancelScan,
+      reset,
+    });
+    const { container: secondContainer, rerender } = render(<ScanPage currentScan={baseScan} onScanComplete={onScanComplete} />);
+    rerender(<ScanPage currentScan={baseScan} onScanComplete={onScanComplete} />);
+    fireEvent.click(within(secondContainer).getByText("✕ Cancel Scan"));
+    expect(cancelScan).toHaveBeenCalled();
+
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan,
+      cancelScan,
+      reset,
+    });
+    const { container: thirdContainer } = render(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
+    startScan.mockClear();
+    expect(within(thirdContainer).queryByTestId("rescan")).toBeNull();
+    expect(startScan).not.toHaveBeenCalled();
+
+    expect(performRescan(null, startScan)).toBe(false);
   });
 });

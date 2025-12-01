@@ -65,7 +65,6 @@ export function SettingsPage() {
   const handleSave = () => {
     setSaved(true);
     success("Settings saved successfully");
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleReset = async () => {
@@ -347,7 +346,6 @@ function APISettings() {
     await navigator.clipboard.writeText(text);
     setCopied(true);
     success("Copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
