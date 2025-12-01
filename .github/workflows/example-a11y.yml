@@ -22,7 +22,7 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run AllyLab Scan
         id: allylab
@@ -82,7 +82,7 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run Site Scan
         uses: jorgejac1/allylab/action@main
