@@ -37,7 +37,7 @@ jobs:
           # anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Upload Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: accessibility-report
@@ -95,7 +95,7 @@ jobs:
           output-file: site-report.json
 
       - name: Upload Site Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: site-accessibility-report
           path: site-report.json
