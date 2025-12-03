@@ -228,6 +228,8 @@ function getFileName(platform: Platform): string {
       return '.gitlab-ci.yml';
     case 'harness':
       return 'harness-pipeline.yaml';
+    default:
+      return '';
   }
 }
 

@@ -41,6 +41,12 @@ const localStorageMock = {
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+// Mock window.confirm
+Object.defineProperty(window, 'confirm', {
+  writable: true,
+  value: vi.fn(() => true),
+});
+
 // Reset mocks after each test
 afterEach(() => {
   vi.clearAllMocks();

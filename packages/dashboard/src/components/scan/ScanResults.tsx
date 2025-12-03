@@ -29,7 +29,7 @@ type TabId = "findings" | "patterns" | "impact" | "rules";
 export function ScanResults({
   scan,
   trackingStats,
-  onGenerateFix,
+  onGenerateFix = async () => Promise.resolve(),
   onRescan,
 }: ScanResultsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("findings");
@@ -73,10 +73,9 @@ export function ScanResults({
   };
 
   const handleGenerateFix = async (finding: TrackedFinding) => {
-    if (!onGenerateFix) return;
     setIsGeneratingFix(true);
     try {
-      await onGenerateFix(finding);
+      await (onGenerateFix ? onGenerateFix(finding) : Promise.resolve());
     } finally {
       setIsGeneratingFix(false);
     }
@@ -256,7 +255,7 @@ export function ScanResults({
         isOpen={selectedFinding !== null}
         finding={selectedFinding}
         onClose={() => setSelectedFinding(null)}
-        onGenerateFix={onGenerateFix ? handleGenerateFix : undefined}
+        onGenerateFix={handleGenerateFix}
         isGeneratingFix={isGeneratingFix}
         onFalsePositiveChange={handleFalsePositiveChange}
       />

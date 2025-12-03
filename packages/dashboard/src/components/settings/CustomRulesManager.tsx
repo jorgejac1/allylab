@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Card, Button, Input, Select, ConfirmDialog, Toast } from "../ui";
 import { useCustomRules, useConfirmDialog, useToast } from "../../hooks";
+import { resolveWcagTags } from "../../utils/wcag";
 import type {
   CustomRule,
   CreateRuleRequest,
@@ -238,7 +239,7 @@ export function CustomRulesManager() {
   };
 
   const handleWcagTagToggle = (tag: string) => {
-    const tags = formData.wcagTags || [];
+    const tags = resolveWcagTags(formData.wcagTags);
     if (tags.includes(tag)) {
       setFormData({ ...formData, wcagTags: tags.filter((t) => t !== tag) });
     } else {
