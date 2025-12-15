@@ -61,19 +61,19 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.15.0",
+    "@eslint/js": "^9.39.2",
     "@types/node": "^24.10.1",
-    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.14",
     "concurrently": "^9.2.1",
-    "eslint": "^9.15.0",
+    "eslint": "^9.39.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.14",
+    "eslint-plugin-react-refresh": "^0.4.25",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "typescript": "^5.3.0",
-    "typescript-eslint": "^8.15.0",
+    "typescript-eslint": "^8.49.0",
     "vitest": "^4.0.14"
   }
 }
