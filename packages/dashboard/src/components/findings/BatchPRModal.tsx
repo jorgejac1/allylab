@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Modal, Button } from "../ui";
 import { useGitHub } from "../../hooks/useGitHub";
 import { usePRTracking } from "../../hooks/usePRTracking";
@@ -9,7 +9,7 @@ import {
   FilePathMapper,
   PRSuccessView,
 } from "./batch-pr";
-import { generateBatchDescription } from "../../utils/batchPrDescription";
+import { generateBatchDescription, generateSmartBranchName, generateSmartTitle } from "../../utils/batchPrDescription";
 import type { TrackedFinding } from "../../types";
 import type { FindingWithFix, BatchPRResult } from "../../types/batch-pr";
 import type { GitHubRepo, GitHubBranch } from "../../types/github";
@@ -33,7 +33,7 @@ export function BatchPRModal({
   scanStandard,
   scanViewport,
 }: BatchPRModalProps) {
-  const { connection, getRepos, getBranches, createPR } = useGitHub();
+  const { connection, getRepos, getBranches, searchCode, getFileContent, createPR } = useGitHub();
   const { trackPR } = usePRTracking();
 
   const [step, setStep] = useState<Step>("fixes");
@@ -50,9 +50,19 @@ export function BatchPRModal({
   const [prDescription, setPrDescription] = useState("");
   const [prResult, setPrResult] = useState<BatchPRResult | null>(null);
 
-  // Initialize findings
+  // Ref to always have access to latest findingsWithFixes
+  const findingsRef = useRef<FindingWithFix[]>([]);
+  findingsRef.current = findingsWithFixes;
+
+  // Simple flag to prevent re-initialization during the same modal session
+  const isInitializedRef = useRef(false);
+
+  // Initialize findings ONCE when modal opens
   useEffect(() => {
-    if (isOpen && findings.length > 0) {
+    if (isOpen && findings.length > 0 && !isInitializedRef.current) {
+      console.log('[BatchPRModal] Initializing with', findings.length, 'findings');
+      isInitializedRef.current = true;
+      
       setFindingsWithFixes(
         findings.map((f) => ({
           finding: f,
@@ -64,12 +74,21 @@ export function BatchPRModal({
       );
       setStep("fixes");
     }
-  }, [isOpen, findings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // ONLY depend on isOpen - intentionally ignore findings changes after init
+  
+  // Reset flag when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      isInitializedRef.current = false;
+    }
+  }, [isOpen]);
 
   // Generate fix for single finding
   const generateFix = useCallback(
     async (index: number) => {
-      const item = findingsWithFixes[index];
+      // Get the current item from ref (always latest state)
+      const item = findingsRef.current[index];
       if (!item) return;
 
       setFindingsWithFixes((prev) =>
@@ -121,19 +140,24 @@ export function BatchPRModal({
         );
       }
     },
-    [findingsWithFixes]
+    [] // No dependencies - we use the ref
   );
 
   // Generate all fixes
   const generateAllFixes = useCallback(async () => {
-    const unfixed = findingsWithFixes
+    // Use ref to get current state without stale closure issues
+    const currentFindings = findingsRef.current;
+    
+    const unfixed = currentFindings
       .map((f, i) => ({ ...f, index: i }))
       .filter((f) => !f.fix && !f.isGenerating);
+
+    console.log('[BatchPRModal] Generating all fixes, count:', unfixed.length);
 
     for (const item of unfixed) {
       await generateFix(item.index);
     }
-  }, [findingsWithFixes, generateFix]);
+  }, [generateFix]);
 
   // Load repos
   const loadRepos = useCallback(async () => {
@@ -153,6 +177,7 @@ export function BatchPRModal({
 
   // Load branches
   const loadBranches = useCallback(async () => {
+    /* istanbul ignore if -- @preserve defensive guard, unreachable via UI */
     if (!selectedRepo) return;
     setIsLoading(true);
     try {
@@ -180,12 +205,9 @@ export function BatchPRModal({
   useEffect(() => {
     if (selectedRepo) {
       loadBranches();
-      const fixCount = findingsWithFixes.filter((f) => f.fix).length;
-      setPrTitle(
-        `[AllyLab] Fix ${fixCount} accessibility issue${
-          fixCount > 1 ? "s" : ""
-        }`
-      );
+      // Generate smart title based on fixes
+      const fixedItems = findingsWithFixes.filter((f) => f.fix);
+      setPrTitle(generateSmartTitle(fixedItems));
     }
   }, [selectedRepo, loadBranches, findingsWithFixes]);
 
@@ -203,6 +225,31 @@ export function BatchPRModal({
   const handleRemoveFinding = (index: number) => {
     setFindingsWithFixes((prev) => prev.filter((_, i) => i !== index));
   };
+
+  // Wrapper for searchCode to return simpler results
+  const searchCodeWrapper = useCallback(async (
+    owner: string, 
+    repo: string, 
+    query: string
+  ): Promise<Array<{ path: string }>> => {
+    try {
+      const results = await searchCode(owner, repo, query);
+      return results.map(r => ({ path: r.path }));
+    } catch (err) {
+      console.error('[BatchPRModal] Search failed:', err);
+      return [];
+    }
+  }, [searchCode]);
+
+  // Wrapper for getFileContent
+  const getFileContentWrapper = useCallback(async (
+    owner: string,
+    repo: string,
+    path: string,
+    branch: string
+  ): Promise<string | null> => {
+    return getFileContent(owner, repo, path, branch);
+  }, [getFileContent]);
 
   const handleCreatePR = async () => {
     if (!selectedRepo || !selectedBranch) {
@@ -231,13 +278,17 @@ export function BatchPRModal({
         ruleTitle: f.finding.ruleTitle,
       }));
 
+      // Generate smart branch name
+      const branchName = generateSmartBranchName(fixesWithPaths);
+
       const result = await createPR(
         selectedRepo.owner.login,
         selectedRepo.name,
         selectedBranch,
         fixes,
         prTitle,
-        prDescription || generateBatchDescription(fixesWithPaths)
+        prDescription || generateBatchDescription(fixesWithPaths, scanUrl),
+        branchName
       );
 
       if (result.success && result.prUrl && result.prNumber) {
@@ -271,6 +322,7 @@ export function BatchPRModal({
   };
 
   const handleClose = () => {
+    console.log('[BatchPRModal] Closing modal');
     setStep("fixes");
     setSelectedRepo(null);
     setSelectedBranch("");
@@ -279,6 +331,8 @@ export function BatchPRModal({
     setPrDescription("");
     setPrResult(null);
     setError(null);
+    // Reset flag so next open will reinitialize
+    isInitializedRef.current = false;
     onClose();
   };
 
@@ -317,7 +371,7 @@ export function BatchPRModal({
       case "files":
         return "Configure Files & PR";
       case "confirm":
-        return "Pull Request Created!";
+        return "🎉 Pull Request Created!";
     }
   };
 
@@ -362,6 +416,8 @@ export function BatchPRModal({
           onBack={() => setStep("repo")}
           onCancel={handleClose}
           onSubmit={handleCreatePR}
+          searchCode={searchCodeWrapper}
+          getFileContent={getFileContentWrapper}
         />
       )}
 

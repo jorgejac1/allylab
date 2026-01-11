@@ -3,7 +3,8 @@ import type {
   GitHubRepo, 
   GitHubConnection, 
   CreatePRRequest, 
-  PRResult 
+  PRResult,
+  PRStatus 
 } from '../types/github.js';
 
 // In-memory storage for GitHub tokens (replace with DB later)
@@ -140,6 +141,141 @@ export async function getFileContent(
 }
 
 // ============================================
+// Code Search
+// ============================================
+
+export interface CodeSearchResult {
+  path: string;
+  repository: string;
+  url: string;
+  htmlUrl: string;
+  matchedLines: Array<{
+    lineNumber: number;
+    content: string;
+  }>;
+}
+
+export async function searchCode(
+  token: string,
+  owner: string,
+  repo: string,
+  query: string
+): Promise<CodeSearchResult[]> {
+  const searchQuery = encodeURIComponent(`${query} repo:${owner}/${repo}`);
+  
+  const response = await fetch(
+    `https://api.github.com/search/code?q=${searchQuery}&per_page=10`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3.text-match+json',
+        'User-Agent': 'AllyLab/1.0',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[GitHub] Code search failed:', response.status, errorText);
+    throw new Error(`GitHub code search failed: ${response.status}`);
+  }
+
+  interface GitHubCodeSearchItem {
+    path: string;
+    repository: { full_name: string };
+    url: string;
+    html_url: string;
+    text_matches?: Array<{
+      fragment: string;
+      matches: Array<{ indices: [number, number] }>;
+    }>;
+  }
+
+  interface GitHubCodeSearchResponse {
+    total_count: number;
+    incomplete_results: boolean;
+    items: GitHubCodeSearchItem[];
+  }
+
+  const data = await response.json() as GitHubCodeSearchResponse;
+
+  return data.items.map((item) => ({
+    path: item.path,
+    repository: item.repository.full_name,
+    url: item.url,
+    htmlUrl: item.html_url,
+    matchedLines: (item.text_matches || []).map((match) => ({
+      lineNumber: 0,
+      content: match.fragment.substring(0, 100) + (match.fragment.length > 100 ? '...' : ''),
+    })),
+  }));
+}
+
+// ============================================
+// Repository File Tree
+// ============================================
+
+export interface RepoFile {
+  path: string;
+  type: 'file' | 'dir';
+  size?: number;
+}
+
+export async function getRepoTree(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string = 'main'
+): Promise<RepoFile[]> {
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'AllyLab/1.0',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[GitHub] Tree fetch failed:', response.status, errorText);
+    throw new Error(`GitHub tree fetch failed: ${response.status}`);
+  }
+
+  interface GitHubTreeItem {
+    path: string;
+    type: 'blob' | 'tree';
+    size?: number;
+  }
+
+  interface GitHubTreeResponse {
+    sha: string;
+    tree: GitHubTreeItem[];
+    truncated: boolean;
+  }
+
+  const data = await response.json() as GitHubTreeResponse;
+
+  return data.tree
+    .filter(item => 
+      item.type === 'blob' && 
+      item.path.match(/\.(tsx?|jsx?|vue|svelte)$/) &&
+      !item.path.includes('node_modules') &&
+      !item.path.includes('.test.') &&
+      !item.path.includes('.spec.') &&
+      !item.path.includes('dist/') &&
+      !item.path.includes('.d.ts')
+    )
+    .map(item => ({
+      path: item.path,
+      type: 'file' as const,
+      size: item.size,
+    }));
+}
+
+// ============================================
 // PR Creation
 // ============================================
 
@@ -150,18 +286,15 @@ export async function createPullRequest(
   const { owner, repo, baseBranch, fixes, title, description } = request;
 
   try {
-    // 1. Get the base branch's latest commit SHA
     const baseBranchData = await githubFetch<{ commit: { sha: string } }>(
       `/repos/${owner}/${repo}/branches/${baseBranch}`,
       token
     );
     const baseSha = baseBranchData.commit.sha;
 
-    // 2. Create a new branch name
     const timestamp = Date.now();
     const branchName = `allylab/a11y-fixes-${timestamp}`;
 
-    // 3. Create the new branch
     await githubFetch<{ ref: string }>(
       `/repos/${owner}/${repo}/git/refs`,
       token,
@@ -176,9 +309,7 @@ export async function createPullRequest(
 
     console.log(`[GitHub] Created branch: ${branchName}`);
 
-    // 4. Commit each fix
     for (const fix of fixes) {
-      // Get current file to get its SHA (needed for update)
       const currentFile = await getFileContent(token, owner, repo, fix.filePath, branchName);
       
       if (!currentFile) {
@@ -186,7 +317,6 @@ export async function createPullRequest(
         continue;
       }
 
-      // Update file with fix
       await githubFetch<{ content: { sha: string } }>(
         `/repos/${owner}/${repo}/contents/${fix.filePath}`,
         token,
@@ -204,7 +334,6 @@ export async function createPullRequest(
       console.log(`[GitHub] Updated file: ${fix.filePath}`);
     }
 
-    // 5. Create the Pull Request
     const prTitle = title || `[AllyLab] Accessibility fixes (${fixes.length} issue${fixes.length > 1 ? 's' : ''})`;
     const prBody = description || generatePRDescription(fixes);
 
@@ -265,7 +394,7 @@ ${issuesList}
 }
 
 // ============================================
-// Source Mapping (simplified)
+// Source Mapping
 // ============================================
 
 export interface SourceMapping {
@@ -274,7 +403,6 @@ export interface SourceMapping {
   lineNumber?: number;
 }
 
-// In-memory source mappings (configured per repo)
 const sourceMappings = new Map<string, SourceMapping[]>();
 
 export function setSourceMappings(repoFullName: string, mappings: SourceMapping[]): void {
@@ -326,6 +454,3 @@ export async function getPRStatus(
     return null;
   }
 }
-
-// Import at the top of the file
-import type { PRStatus } from '../types/github.js';

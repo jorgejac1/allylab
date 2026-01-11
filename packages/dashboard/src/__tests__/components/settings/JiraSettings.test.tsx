@@ -1,5 +1,6 @@
+// @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JiraSettings } from "../../../components/settings/JiraSettings";
 import { DEFAULT_JIRA_CONFIG, DEFAULT_FIELD_MAPPING } from "../../../types/jira";
@@ -56,7 +57,6 @@ describe("settings/JiraSettings", () => {
   });
 
   it("updates fields, saves and resets", async () => {
-    vi.useFakeTimers();
     render(<JiraSettings />);
     fireEvent.change(screen.getByPlaceholderText("A11Y"), { target: { value: "NEW" } });
     expect(store.setConfig).toHaveBeenCalled();
@@ -64,15 +64,14 @@ describe("settings/JiraSettings", () => {
     const saveBtn = screen.getByRole("button", { name: "Save Settings" });
     fireEvent.click(saveBtn);
     expect(screen.getByText("✓ Saved!")).toBeInTheDocument();
-    act(() => {
-      vi.runAllTimers();
-    });
+
+    // Manually trigger animationend event since fake timers don't run CSS animations
+    fireEvent.animationEnd(saveBtn);
     expect(screen.getByText("Save Settings")).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset to Defaults" })[0]);
     expect(store.setConfig).toHaveBeenCalledWith(DEFAULT_JIRA_CONFIG);
     expect(store.setMapping).toHaveBeenCalledWith(DEFAULT_FIELD_MAPPING);
-    vi.useRealTimers();
   });
 
   it("tests connection success, failure, and network error", async () => {

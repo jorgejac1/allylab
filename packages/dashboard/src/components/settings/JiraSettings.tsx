@@ -63,7 +63,10 @@ export function JiraSettings() {
 
   const handleSave = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleSaveAnimationEnd = () => {
+    setSaved(false);
   };
 
   const handleReset = () => {
@@ -74,6 +77,12 @@ export function JiraSettings() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <style>{`
+        @keyframes savedSuccess {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+      `}</style>
       {/* Enable/Disable */}
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -197,7 +206,11 @@ export function JiraSettings() {
             <Button variant="secondary" onClick={handleReset}>
               Reset to Defaults
             </Button>
-            <Button onClick={handleSave}>
+            <Button
+              onClick={handleSave}
+              style={saved ? { animation: 'savedSuccess 2s ease-out' } : undefined}
+              onAnimationEnd={handleSaveAnimationEnd}
+            >
               {saved ? '✓ Saved!' : 'Save Settings'}
             </Button>
           </div>

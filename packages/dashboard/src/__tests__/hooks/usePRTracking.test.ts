@@ -221,31 +221,34 @@ describe("hooks/usePRTracking", () => {
 
   it("sets unknown error when refreshAllStatuses throws non-Error", async () => {
     const origAll = Promise.all;
-    // Force Promise.all rejection with non-Error
-    Promise.all = vi.fn().mockRejectedValue("weird");
+    try {
+      // Force Promise.all rejection with non-Error
+      Promise.all = vi.fn().mockRejectedValue("weird");
 
-    const tracked: PRTrackingInfo[] = [
-      {
-        id: "idUnknown",
-        prNumber: 8,
-        prUrl: "url8",
-        owner: "o",
-        repo: "r",
-        branchName: "b",
-        findingIds: [],
-        createdAt: "now",
-        status: "open",
-        scanUrl: "u",
-      },
-    ];
-    localStorage.setItem("allylab_tracked_prs", JSON.stringify(tracked));
-    const { result } = renderHook(() => usePRTracking());
+      const tracked: PRTrackingInfo[] = [
+        {
+          id: "idUnknown",
+          prNumber: 8,
+          prUrl: "url8",
+          owner: "o",
+          repo: "r",
+          branchName: "b",
+          findingIds: [],
+          createdAt: "now",
+          status: "open",
+          scanUrl: "u",
+        },
+      ];
+      localStorage.setItem("allylab_tracked_prs", JSON.stringify(tracked));
+      const { result } = renderHook(() => usePRTracking());
 
-    await act(async () => {
-      await result.current.refreshAllStatuses();
-    });
-    expect(result.current.error).toBe("Unknown error");
-    Promise.all = origAll;
+      await act(async () => {
+        await result.current.refreshAllStatuses();
+      });
+      expect(result.current.error).toBe("Unknown error");
+    } finally {
+      Promise.all = origAll;
+    }
   });
 
   it("verifies fixes and handles errors/missing PR", async () => {

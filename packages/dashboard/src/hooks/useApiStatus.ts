@@ -64,15 +64,15 @@ export function useApiStatus(checkInterval = 60000, runInitialCheck = true) { //
   useEffect(() => {
     if (!runInitialCheck || hasInitialCheckRef.current) return;
     hasInitialCheckRef.current = true;
-    
+
     let cancelled = false;
-    
+
     const doCheck = async () => {
       setStatus('checking');
       const result = await fetchHealth();
-      
+
       if (cancelled) return;
-      
+
       if (result.ok && result.data) {
         setHealth(result.data);
         setStatus('connected');
@@ -82,13 +82,13 @@ export function useApiStatus(checkInterval = 60000, runInitialCheck = true) { //
       }
       setLastChecked(new Date());
     };
-    
+
     doCheck();
-    
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [runInitialCheck]);
 
   // Periodic health check - skip if interval is 0 or less
   useEffect(() => {

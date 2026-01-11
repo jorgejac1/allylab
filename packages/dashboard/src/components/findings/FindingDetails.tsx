@@ -35,10 +35,16 @@ function FindingDetails({
     navigator.clipboard.writeText(text);
     if (type === 'selector') {
       setCopiedSelector(true);
-      setTimeout(() => setCopiedSelector(false), 2000);
     } else {
       setCopiedFix(true);
-      setTimeout(() => setCopiedFix(false), 2000);
+    }
+  };
+
+  const handleCopyAnimationEnd = (type: 'selector' | 'fix') => {
+    if (type === 'selector') {
+      setCopiedSelector(false);
+    } else {
+      setCopiedFix(false);
     }
   };
 
@@ -63,6 +69,10 @@ function FindingDetails({
         @keyframes slideIn {
           from { transform: translateX(100%); }
           to { transform: translateX(0); }
+        }
+        @keyframes fadeSuccess {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
         }
       `}</style>
 
@@ -99,6 +109,8 @@ function FindingDetails({
             variant="primary"
             size="sm"
             onClick={() => copyToClipboard(finding.selector, 'selector')}
+            style={copiedSelector ? { animation: 'fadeSuccess 2s ease-out' } : undefined}
+            onAnimationEnd={() => handleCopyAnimationEnd('selector')}
           >
             {copiedSelector ? '✓ Copied!' : '📋 Copy Selector'}
           </Button>
@@ -107,6 +119,8 @@ function FindingDetails({
               variant="primary"
               size="sm"
               onClick={() => copyToClipboard(finding.fixSuggestion!, 'fix')}
+              style={copiedFix ? { animation: 'fadeSuccess 2s ease-out' } : undefined}
+              onAnimationEnd={() => handleCopyAnimationEnd('fix')}
             >
               {copiedFix ? '✓ Copied!' : '📋 Copy Fix'}
             </Button>
@@ -274,8 +288,9 @@ function FindingDetails({
               <Button
                 variant="primary"
                 size="sm"
-                style={{ marginTop: 12 }}
+                style={copiedFix ? { marginTop: 12, animation: 'fadeSuccess 2s ease-out' } : { marginTop: 12 }}
                 onClick={() => copyToClipboard(finding.fixSuggestion!, 'fix')}
+                onAnimationEnd={() => handleCopyAnimationEnd('fix')}
               >
                 {copiedFix ? '✓ Copied!' : '📋 Copy Fix'}
               </Button>

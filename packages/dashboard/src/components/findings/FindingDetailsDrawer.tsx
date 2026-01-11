@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button, SeverityBadge, StatusBadge } from "../ui";
 import { FixCodePreview } from "./FixCodePreview";
-import { CreatePRModal } from "./CreatePRModal";
+import { ApplyFixModal } from "./ApplyFixModal";
+import { ElementScreenshot } from "./ElementScreenshot";
 import type { TrackedFinding } from "../../types";
 import type { CodeFix } from "../../types/fixes";
 import {
@@ -17,10 +18,7 @@ interface FindingDetailsDrawerProps {
   onFalsePositiveChange?: () => void;
   onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
   isGeneratingFix?: boolean;
-  // Scan settings for PR tracking
   scanUrl?: string;
-  scanStandard?: string;
-  scanViewport?: string;
 }
 
 export function FindingDetailsDrawer({
@@ -29,8 +27,6 @@ export function FindingDetailsDrawer({
   onClose,
   onFalsePositiveChange,
   scanUrl,
-  scanStandard,
-  scanViewport,
 }: FindingDetailsDrawerProps) {
   const [showFpForm, setShowFpForm] = useState(false);
   const [fpReason, setFpReason] = useState("");
@@ -42,8 +38,8 @@ export function FindingDetailsDrawer({
   const [codeFix, setCodeFix] = useState<CodeFix | null>(null);
   const [fixError, setFixError] = useState<string | null>(null);
 
-  // PR Modal state
-  const [showPRModal, setShowPRModal] = useState(false);
+  // Apply Fix Modal state
+  const [showApplyFixModal, setShowApplyFixModal] = useState(false);
 
   if (!isOpen || !finding) return null;
 
@@ -229,6 +225,14 @@ export function FindingDetailsDrawer({
             <StatusBadge status={finding.status} />
           </div>
 
+          {/* Element Screenshot */}
+          <Section title="Element Preview">
+            <ElementScreenshot
+              screenshot={finding.screenshot}
+              selector={finding.selector}
+            />
+          </Section>
+
           {/* WCAG Tags */}
           <Section title="WCAG Compliance">
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -342,9 +346,9 @@ export function FindingDetailsDrawer({
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setShowPRModal(true)}
+                    onClick={() => setShowApplyFixModal(true)}
                   >
-                    🚀 Create PR
+                    🔧 Apply Fix
                   </Button>
                   <Button
                     variant="secondary"
@@ -507,11 +511,11 @@ export function FindingDetailsDrawer({
         </div>
       </div>
 
-      {/* PR Modal */}
+      {/* Apply Fix Modal */}
       {codeFix && (
-        <CreatePRModal
-          isOpen={showPRModal}
-          onClose={() => setShowPRModal(false)}
+        <ApplyFixModal
+          isOpen={showApplyFixModal}
+          onClose={() => setShowApplyFixModal(false)}
           fix={codeFix}
           finding={{
             id: finding.id,
@@ -519,8 +523,6 @@ export function FindingDetailsDrawer({
             selector: finding.selector,
           }}
           scanUrl={scanUrl || ''}
-          scanStandard={scanStandard}
-          scanViewport={scanViewport}
         />
       )}
 

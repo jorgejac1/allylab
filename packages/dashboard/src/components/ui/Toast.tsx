@@ -28,27 +28,33 @@ const colors: Record<ToastType, { bg: string; border: string; text: string }> = 
   info: { bg: '#eff6ff', border: '#93c5fd', text: '#1e40af' },
 };
 
-function ToastItem({ 
-  id, 
-  type, 
-  message, 
-  duration = 4000, 
-  onClose 
+function ToastItem({
+  id,
+  type,
+  message,
+  duration = 4000,
+  onClose
 }: ToastItem & { onClose: (id: string) => void }) {
   const [isExiting, setIsExiting] = useState(false);
+  const [shouldAutoClose, setShouldAutoClose] = useState(false);
 
   useEffect(() => {
+    // Trigger auto-close animation after duration
     const timer = setTimeout(() => {
-      setIsExiting(true);
-      setTimeout(() => onClose(id), 200);
+      setShouldAutoClose(true);
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [id, duration, onClose]);
+  }, [id, duration]);
 
   const handleClose = () => {
     setIsExiting(true);
-    setTimeout(() => onClose(id), 200);
+  };
+
+  const handleAnimationEnd = () => {
+    if (isExiting || shouldAutoClose) {
+      onClose(id);
+    }
   };
 
   const { bg, border, text } = colors[type];
@@ -66,8 +72,9 @@ function ToastItem({
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         minWidth: 300,
         maxWidth: 450,
-        animation: isExiting ? 'toastExit 0.2s ease-out forwards' : 'toastEnter 0.2s ease-out',
+        animation: (isExiting || shouldAutoClose) ? 'toastExit 0.2s ease-out forwards' : 'toastEnter 0.2s ease-out',
       }}
+      onAnimationEnd={handleAnimationEnd}
       role="alert"
     >
       <span style={{ fontSize: 18 }}>{icons[type]}</span>

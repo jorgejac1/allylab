@@ -1,12 +1,18 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { ScanResults } from "../../../components/scan/ScanResults";
 import type { SavedScan, TrackedFinding, TrackingStats as TrackingStatsType } from "../../../types";
 import { exportToCSV, exportToJSON } from "../../../utils/export";
 
-let lastDrawerProps: any;
+let lastDrawerProps: {
+  finding?: TrackedFinding;
+  onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
+  onFalsePositiveChange?: () => void;
+  onClose?: () => void;
+  isOpen?: boolean;
+};
 
 vi.mock("../../../components/charts", () => ({
   ScoreCircle: (props: { score: number }) => <div data-testid="score-circle">{props.score}</div>,
@@ -14,18 +20,24 @@ vi.mock("../../../components/charts", () => ({
 }));
 
 vi.mock("../../../components/findings", () => ({
-  FindingsTable: (props: any) => (
-    <div data-testid="findings-table" onClick={() => props.onViewDetails?.(props.findings[0])}>
+  FindingsTable: (props: { findings?: TrackedFinding[]; onViewDetails?: (finding: TrackedFinding) => void }) => (
+    <div data-testid="findings-table" onClick={() => props.onViewDetails?.(props.findings?.[0] as TrackedFinding)}>
       findings {props.findings?.length}
     </div>
   ),
-  IssuePatterns: (props: any) => <div data-testid="issue-patterns">{props.findings?.length}</div>,
-  TrackingStats: (props: any) => <div data-testid="tracking-stats">{props.stats.total}</div>,
-  FindingDetailsDrawer: (props: any) => {
+  IssuePatterns: (props: { findings?: TrackedFinding[] }) => <div data-testid="issue-patterns">{props.findings?.length}</div>,
+  TrackingStats: (props: { stats: TrackingStatsType }) => <div data-testid="tracking-stats">{props.stats.total}</div>,
+  FindingDetailsDrawer: (props: {
+    finding?: TrackedFinding;
+    onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
+    onFalsePositiveChange?: () => void;
+    onClose?: () => void;
+    isOpen?: boolean;
+  }) => {
     lastDrawerProps = props;
     return props.isOpen ? (
       <div data-testid="drawer">
-        <button onClick={() => props.onGenerateFix?.(props.finding)}>fix</button>
+        <button onClick={() => props.onGenerateFix?.(props.finding as TrackedFinding)}>fix</button>
         <button onClick={props.onFalsePositiveChange}>fp</button>
         <button onClick={props.onClose}>close</button>
       </div>
@@ -116,14 +128,10 @@ describe("components/scan/ScanResults", () => {
     const drawer = await screen.findByTestId("drawer");
     // Debug assertion to ensure handler is wired
     expect(lastDrawerProps).toBeDefined();
-    // eslint-disable-next-line vitest/no-conditional-in-test
-    if (process.env.DEBUG_SCAN_RESULTS) {
-      // eslint-disable-next-line no-console
-      console.log("drawer props", lastDrawerProps);
-    }
     expect(typeof lastDrawerProps?.onGenerateFix).toBe("function");
-    lastDrawerProps = (lastDrawerProps || {});
-    await lastDrawerProps.onGenerateFix?.(lastDrawerProps.finding);
+    if (lastDrawerProps?.finding && lastDrawerProps?.onGenerateFix) {
+      await lastDrawerProps.onGenerateFix(lastDrawerProps.finding);
+    }
 
     fireEvent.click(within(drawer).getByText("fp"));
     await waitFor(() => expect(screen.queryByTestId("drawer")).toBeNull());
@@ -201,7 +209,7 @@ describe("components/scan/ScanResults", () => {
   });
 
   it("falls back to minor impact colors when rule impact is unknown", () => {
-    const unknownRule = makeFinding({ ruleId: "x", ruleTitle: "Mystery", impact: "unknown" as any, falsePositive: false });
+    const unknownRule = makeFinding({ ruleId: "x", ruleTitle: "Mystery", impact: "unknown" as unknown as TrackedFinding["impact"], falsePositive: false });
     const scan = makeScan({ trackedFindings: [unknownRule] });
     render(<ScanResults scan={scan} />);
 

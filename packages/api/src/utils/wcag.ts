@@ -24,3 +24,9 @@ export function getWcagVersion(tags: string[]): string {
   if (tags.some(t => t.includes('wcag2'))) return '2.0';
   return 'N/A';
 }
+
+export function resolveWcagTags(tags: string[] | undefined | null): string[] {
+  if (!tags) return [];
+  if (!Array.isArray(tags)) return [];
+  return tags;
+}

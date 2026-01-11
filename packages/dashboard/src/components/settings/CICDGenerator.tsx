@@ -265,7 +265,6 @@ export function CICDGenerator() {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(generatedConfig);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {

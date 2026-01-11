@@ -376,7 +376,7 @@ export function FindingsTable({
           <div style={{ padding: "12px 16px", borderTop: "1px solid #f1f5f9" }}>
             <Pagination
               currentPage={currentPage}
-              totalPages={totalPages || 1}
+              totalPages={totalPages}
               pageSize={pageSize}
               onPageChange={setCurrentPage}
               onPageSizeChange={(size) => {

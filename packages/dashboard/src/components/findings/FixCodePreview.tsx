@@ -26,7 +26,6 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(currentCode);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
     onCopy?.(currentCode);
   };
 

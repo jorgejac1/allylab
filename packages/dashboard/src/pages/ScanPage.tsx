@@ -3,7 +3,7 @@ import { PageContainer } from '../components/layout';
 import { ScanForm, ScanProgress, ScanResults } from '../components/scan';
 import { EmptyState, Button } from '../components/ui';
 import { useScanSSE, useScans } from '../hooks';
-import { getScansForUrl } from '../utils/storage';
+import { getScansForUrl, loadAllScans } from '../utils/storage';
 import { performRescan } from '../utils/scan';
 import type { SavedScan, WCAGStandard, Viewport, DrillDownTarget } from '../types';
 
@@ -33,11 +33,22 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
 
   // Handle drill-down from Executive Dashboard
   useEffect(() => {
-    if (drillDownContext?.type === 'site' && drillDownContext.url) {
+    if (!drillDownContext) return;
+
+    if (drillDownContext.type === 'site' && drillDownContext.url) {
       // Load the latest scan for this URL
       const scans = getScansForUrl(drillDownContext.url);
       if (scans.length > 0) {
         onScanComplete(scans[0]);
+      }
+    } else if (drillDownContext.type === 'issue' && drillDownContext.ruleId) {
+      // Load the most recent scan that contains this issue
+      const allScans = loadAllScans();
+      const scanWithIssue = allScans.find(scan => 
+        scan.findings.some(f => f.ruleId === drillDownContext.ruleId)
+      );
+      if (scanWithIssue) {
+        onScanComplete(scanWithIssue);
       }
     }
   }, [drillDownContext, onScanComplete]);
@@ -61,6 +72,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
     ? {
         ...currentScan,
         findings: currentScan.findings.filter(f => f.ruleId === drillDownContext.ruleId),
+        totalIssues: currentScan.findings.filter(f => f.ruleId === drillDownContext.ruleId).length,
       }
     : currentScan;
 

@@ -9,6 +9,8 @@ import {
   getFileContent,
   createPullRequest,
   getPRStatus,
+  searchCode,
+  getRepoTree,
 } from "../services/github.js";
 import type {
   CreatePRRequest,
@@ -40,7 +42,6 @@ export async function githubRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ error: "Token is required" });
       }
 
-      // Validate token by trying to fetch user
       try {
         const response = await fetch("https://api.github.com/user", {
           headers: {
@@ -150,6 +151,76 @@ export async function githubRoutes(fastify: FastifyInstance) {
         const message =
           error instanceof Error ? error.message : "Unknown error";
         console.error("[GitHub Routes] Failed to fetch branches:", message);
+        return reply.status(500).send({ error: message });
+      }
+    }
+  );
+
+  // Search code in repository
+  fastify.get<{
+    Params: { owner: string; repo: string };
+    Querystring: { q: string };
+  }>(
+    "/github/repos/:owner/:repo/search",
+    async (
+      request: FastifyRequest<{
+        Params: { owner: string; repo: string };
+        Querystring: { q: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      const token = getGitHubToken(DEFAULT_USER_ID);
+
+      if (!token) {
+        return reply.status(401).send({ error: "GitHub not connected" });
+      }
+
+      try {
+        const { owner, repo } = request.params;
+        const { q } = request.query;
+
+        if (!q || q.trim().length === 0) {
+          return reply.status(400).send({ error: "Search query is required" });
+        }
+
+        const results = await searchCode(token, owner, repo, q.trim());
+        return reply.send(results);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.error("[GitHub Routes] Code search failed:", message);
+        return reply.status(500).send({ error: message });
+      }
+    }
+  );
+
+  // Get repository file tree
+  fastify.get<{
+    Params: { owner: string; repo: string };
+    Querystring: { branch?: string };
+  }>(
+    "/github/repos/:owner/:repo/tree",
+    async (
+      request: FastifyRequest<{
+        Params: { owner: string; repo: string };
+        Querystring: { branch?: string };
+      }>,
+      reply: FastifyReply
+    ) => {
+      const token = getGitHubToken(DEFAULT_USER_ID);
+
+      if (!token) {
+        return reply.status(401).send({ error: "GitHub not connected" });
+      }
+
+      try {
+        const { owner, repo } = request.params;
+        const { branch } = request.query;
+
+        const files = await getRepoTree(token, owner, repo, branch || 'main');
+        return reply.send(files);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.error("[GitHub Routes] Tree fetch failed:", message);
         return reply.status(500).send({ error: message });
       }
     }
@@ -287,7 +358,6 @@ export async function githubRoutes(fastify: FastifyInstance) {
   );
 
   // Verify fix by re-scanning
-  // Verify fix by re-scanning
   fastify.post<{ Body: VerifyFixRequest }>(
     "/github/verify",
     async (
@@ -309,7 +379,6 @@ export async function githubRoutes(fastify: FastifyInstance) {
       }
 
       try {
-        // 1. Check PR is merged
         const prStatus = await getPRStatus(token, owner, repo, prNumber);
 
         if (!prStatus) {
@@ -322,7 +391,6 @@ export async function githubRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // 2. Re-scan the page with same settings as original scan
         const { runScan } = await import("../services/scanner.js");
         const scanResult = await runScan({
           url,
@@ -330,14 +398,10 @@ export async function githubRoutes(fastify: FastifyInstance) {
           viewport: viewport || "desktop",
         });
 
-        // 3. Check which findings are still present
         const currentFindings = scanResult.findings || [];
         const currentRuleIds = new Set(currentFindings.map((f) => f.ruleId));
 
-        // We need to match by fingerprint ideally, but for now match by ruleId
-        // In production use the fingerprint for more accurate matching
         const findingsVerified = findingIds.map((findingId) => {
-          // Extract ruleId from findingId (format: "ruleId-index" or just check if rule exists)
           const ruleId =
             findingId.split("-").slice(0, -1).join("-") || findingId;
           const stillPresent = currentRuleIds.has(ruleId);

@@ -25,6 +25,7 @@ export interface Finding {
   page?: string;
   fixSuggestion?: string;
   source?: FindingSource;
+  screenshot?: string;  // base64 PNG of the element
 }
 
 export interface TrackedFinding extends Finding {

@@ -8,6 +8,7 @@ import { SEVERITY_COLORS } from "../../utils/constants";
 interface PeriodComparisonProps {
   scans: SavedScan[];
   onClose: () => void;
+  initialPreset?: PresetPeriod; // For testing purposes
 }
 
 interface PeriodStats {
@@ -47,8 +48,8 @@ interface ComparisonData {
 
 type PresetPeriod = "week" | "month" | "quarter" | "custom";
 
-export function PeriodComparison({ scans, onClose }: PeriodComparisonProps) {
-  const [preset, setPreset] = useState<PresetPeriod>("month");
+export function PeriodComparison({ scans, onClose, initialPreset = "month" }: PeriodComparisonProps) {
+  const [preset, setPreset] = useState<PresetPeriod>(initialPreset);
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(
     null
   );

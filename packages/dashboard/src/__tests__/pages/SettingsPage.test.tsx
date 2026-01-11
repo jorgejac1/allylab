@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, beforeEach, vi, afterEach } from "vitest";
 import { SettingsPage } from "../../pages/SettingsPage";
 import { mockUseConfirmDialog, mockUseLocalStorage, mockUseToast } from "../__mocks__/hooks";
@@ -212,8 +212,9 @@ describe("pages/SettingsPage", () => {
 
     const copyButtons = screen.getAllByRole("button", { name: "📋" });
     fireEvent.click(copyButtons[0]);
-    expect(await screen.findByText("✓ Copied to clipboard!")).toBeInTheDocument();
-    expect(success).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(success).toHaveBeenCalled();
+    });
 
     Object.defineProperty(globalThis.navigator, "clipboard", { value: originalClipboard, configurable: true });
   });

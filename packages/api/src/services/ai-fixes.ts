@@ -3,7 +3,7 @@ import { config } from '../config/env.js';
 import type { Finding } from '../types/index.js';
 import type { CodeFix, FixGenerationRequest, FrameworkType } from '../types/fixes.js';
 
-const client = config.enableAiFixes ? new Anthropic() : null;
+const client = config.enableAiFixes ? new Anthropic({ apiKey: config.anthropicApiKey }) : null;
 
 function generateId(): string {
   return `fix_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;

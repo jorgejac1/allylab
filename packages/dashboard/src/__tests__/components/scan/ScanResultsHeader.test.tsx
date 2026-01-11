@@ -38,7 +38,7 @@ describe("components/scan/ScanResultsHeader", () => {
     const rescanBtn = screen.queryByRole("button", { name: "🔄 Rescan" });
     const exportBtn = screen.queryByRole("button", { name: "📤 Export" });
     // Buttons render defensively; ensure they exist but clicks are safe
-    rescanBtn && fireEvent.click(rescanBtn);
-    exportBtn && fireEvent.click(exportBtn);
+    if (rescanBtn) fireEvent.click(rescanBtn);
+    if (exportBtn) fireEvent.click(exportBtn);
   });
 });

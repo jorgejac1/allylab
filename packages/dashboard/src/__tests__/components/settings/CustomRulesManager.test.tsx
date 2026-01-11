@@ -657,7 +657,7 @@ describe("settings/CustomRulesManager", () => {
       await importMock([{ id: "x" } as CustomRule]);
     }
     expect(importMock).toHaveBeenCalled();
-    expect(mockSuccess).toHaveBeenCalledWith("Successfully imported 1 rules");
+    expect(mockSuccess).toHaveBeenCalledWith("Imported 1 rules");
   });
 
   it("shows errors when import is declined or invalid", async () => {
@@ -715,7 +715,7 @@ describe("settings/CustomRulesManager", () => {
     });
     await waitFor(() => {
       expect(
-        mockError.mock.calls.some(call => call[0] === "Invalid file format. Please upload a valid JSON file.")
+        mockError.mock.calls.some(call => call[0] === "Invalid file format")
       ).toBe(true);
     });
 
@@ -731,7 +731,7 @@ describe("settings/CustomRulesManager", () => {
     await act(async () => {
       fireEvent.change(fileInput);
     });
-    await waitFor(() => expect(mockError).toHaveBeenCalledWith("Failed to parse file. Please ensure it is valid JSON."));
+    await waitFor(() => expect(mockError).toHaveBeenCalledWith("Failed to parse file"));
   });
 
   it("does not export when no data is returned", async () => {
@@ -1001,4 +1001,5 @@ describe("settings/CustomRulesManager", () => {
     expect(importRules).toHaveBeenCalled();
     expect(mockError).toHaveBeenCalledWith("Failed to import rules");
   });
+
 });

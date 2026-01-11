@@ -30,6 +30,7 @@ export interface Finding {
   wcagTags: string[];
   page?: string;
   source?: FindingSource;
+  screenshot?: string;  // base64 PNG of the element
 }
 
 export interface ScanResult {

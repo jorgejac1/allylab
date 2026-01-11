@@ -2,6 +2,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { getApiBase } from '../utils/api';
 import type { GitHubConnection, GitHubRepo, GitHubBranch, PRResult } from '../types/github';
 
+export interface CodeSearchResult {
+  path: string;
+  repository: string;
+  url: string;
+  htmlUrl: string;
+  matchedLines: Array<{ lineNumber: number; content: string }>;
+}
+
+export interface RepoFile {
+  path: string;
+  type: 'file' | 'dir';
+  size?: number;
+}
+
 export function useGitHub() {
   const [connection, setConnection] = useState<GitHubConnection>({ connected: false });
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +42,7 @@ export function useGitHub() {
     checkConnection();
   }, [checkConnection]);
 
-  const connect = async (token: string): Promise<boolean> => {
+  const connect = useCallback(async (token: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -56,9 +70,9 @@ export function useGitHub() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [checkConnection]);
 
-  const disconnect = async (): Promise<void> => {
+  const disconnect = useCallback(async (): Promise<void> => {
     try {
       setError(null);
       await fetch(`${getApiBase()}/github/disconnect`, { method: 'POST' });
@@ -68,9 +82,9 @@ export function useGitHub() {
       console.error('[useGitHub] Failed to disconnect:', message);
       setError('Failed to disconnect');
     }
-  };
+  }, []);
 
-  const getRepos = async (): Promise<GitHubRepo[]> => {
+  const getRepos = useCallback(async (): Promise<GitHubRepo[]> => {
     try {
       const response = await fetch(`${getApiBase()}/github/repos`);
       if (response.ok) {
@@ -83,9 +97,9 @@ export function useGitHub() {
       console.error('[useGitHub] Failed to fetch repos:', message);
       return [];
     }
-  };
+  }, []);
 
-  const getBranches = async (owner: string, repo: string): Promise<GitHubBranch[]> => {
+  const getBranches = useCallback(async (owner: string, repo: string): Promise<GitHubBranch[]> => {
     try {
       const response = await fetch(`${getApiBase()}/github/repos/${owner}/${repo}/branches`);
       if (response.ok) {
@@ -98,9 +112,58 @@ export function useGitHub() {
       console.error('[useGitHub] Failed to fetch branches:', message);
       return [];
     }
-  };
+  }, []);
 
-  const createPR = async (
+  const searchCode = useCallback(async (owner: string, repo: string, query: string): Promise<CodeSearchResult[]> => {
+    const response = await fetch(
+      `${getApiBase()}/github/repos/${owner}/${repo}/search?q=${encodeURIComponent(query)}`
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Search failed');
+    }
+
+    return response.json();
+  }, []);
+
+  const getRepoTree = useCallback(async (owner: string, repo: string, branch?: string): Promise<RepoFile[]> => {
+    const url = `${getApiBase()}/github/repos/${owner}/${repo}/tree${branch ? `?branch=${branch}` : ''}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch files');
+    }
+
+    return response.json();
+  }, []);
+
+  const getFileContent = useCallback(async (
+    owner: string,
+    repo: string,
+    path: string,
+    branch?: string
+  ): Promise<string | null> => {
+    try {
+      const url = `${getApiBase()}/github/repos/${owner}/${repo}/file?path=${encodeURIComponent(path)}${branch ? `&branch=${branch}` : ''}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        console.error('[useGitHub] Failed to fetch file:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      return data.content || null;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Network error';
+      console.error('[useGitHub] Failed to fetch file content:', message);
+      return null;
+    }
+  }, []);
+
+  const createPR = useCallback(async (
     owner: string,
     repo: string,
     baseBranch: string,
@@ -112,13 +175,22 @@ export function useGitHub() {
       ruleTitle: string;
     }[],
     title?: string,
-    description?: string
+    description?: string,
+    customBranchName?: string
   ): Promise<PRResult> => {
     try {
       const response = await fetch(`${getApiBase()}/github/pr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ owner, repo, baseBranch, fixes, title, description }),
+        body: JSON.stringify({ 
+          owner, 
+          repo, 
+          baseBranch, 
+          fixes, 
+          title, 
+          description,
+          branchName: customBranchName,
+        }),
       });
 
       const result = await response.json();
@@ -133,7 +205,7 @@ export function useGitHub() {
       console.error('[useGitHub] Failed to create PR:', message);
       return { success: false, error: 'Failed to create PR' };
     }
-  };
+  }, []);
 
   return {
     connection,
@@ -144,6 +216,9 @@ export function useGitHub() {
     checkConnection,
     getRepos,
     getBranches,
+    searchCode,
+    getRepoTree,
+    getFileContent,
     createPR,
   };
 }

@@ -81,7 +81,7 @@ export function FindingRow({ finding, onViewDetails, selected, onSelect }: Findi
             rel="noopener noreferrer"
             style={{ fontSize: 12, color: '#2563eb' }}
           >
-            {new URL(finding.page).pathname || '/'}
+            {new URL(finding.page).pathname}
           </a>
         </td>
       )}
