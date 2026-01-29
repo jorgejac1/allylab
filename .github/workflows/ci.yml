@@ -37,7 +37,7 @@ jobs:
         run: npm run build --workspace=@allylab/dashboard
 
       - name: Upload Dashboard build
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: dashboard-dist
           path: packages/dashboard/dist
