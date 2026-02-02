@@ -4,6 +4,11 @@ set -e
 echo "🔬 AllyLab Accessibility Scanner"
 echo "================================"
 
+# Set environment for action (no auth needed for local scans)
+export NODE_ENV=development
+export DISABLE_AUTH=true
+export DISABLE_RATE_LIMITING=true
+
 # Start the API server in the background
 cd /allylab
 node packages/api/dist/index.js &
