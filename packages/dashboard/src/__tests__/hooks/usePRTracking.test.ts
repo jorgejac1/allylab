@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { usePRTracking } from "../../hooks/usePRTracking";

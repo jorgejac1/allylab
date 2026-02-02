@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import type { SavedScan } from "../../types";
@@ -67,5 +67,115 @@ describe("hooks/useDashboardData", () => {
     // top issues sorted by count: r1 appears twice, r3 once
     expect(result.current.topIssues[0].ruleId).toBe("r1");
     expect(result.current.topIssues[1].ruleId).toBe("r3");
+  });
+
+  it("refresh function triggers recomputation", () => {
+    mockLoadAllScans.mockReturnValue([baseScan]);
+    const { result } = renderHook(() => useDashboardData());
+
+    expect(result.current.totalScans).toBe(1);
+
+    // Update mock to return different data
+    const newScan = { ...baseScan, id: "s2", score: 50 };
+    mockLoadAllScans.mockReturnValue([baseScan, newScan]);
+
+    // Call refresh
+    act(() => {
+      result.current.refresh();
+    });
+
+    expect(result.current.totalScans).toBe(2);
+  });
+
+  it("listens for storage events and refreshes on allylab-scans key", () => {
+    let storageHandler: ((e: StorageEvent) => void) | null = null;
+    const addEventListenerSpy = vi.spyOn(window, "addEventListener").mockImplementation(
+      (type: string, handler: EventListenerOrEventListenerObject) => {
+        if (type === "storage") {
+          storageHandler = handler as (e: StorageEvent) => void;
+        }
+      }
+    );
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+    mockLoadAllScans.mockReturnValue([baseScan]);
+    const { result, unmount } = renderHook(() => useDashboardData());
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith("storage", expect.any(Function));
+
+    // Update mock data
+    const newScan = { ...baseScan, id: "s2" };
+    mockLoadAllScans.mockReturnValue([baseScan, newScan]);
+
+    // Trigger storage event with allylab-scans key
+    act(() => {
+      storageHandler?.({ key: "allylab-scans" } as StorageEvent);
+    });
+
+    expect(result.current.totalScans).toBe(2);
+
+    // Unmount should remove listener
+    unmount();
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("storage", expect.any(Function));
+
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
+  });
+
+  it("listens for storage events and refreshes on null key", () => {
+    let storageHandler: ((e: StorageEvent) => void) | null = null;
+    const addEventListenerSpy = vi.spyOn(window, "addEventListener").mockImplementation(
+      (type: string, handler: EventListenerOrEventListenerObject) => {
+        if (type === "storage") {
+          storageHandler = handler as (e: StorageEvent) => void;
+        }
+      }
+    );
+
+    mockLoadAllScans.mockReturnValue([baseScan]);
+    const { result } = renderHook(() => useDashboardData());
+
+    // Update mock data
+    const newScan = { ...baseScan, id: "s2" };
+    mockLoadAllScans.mockReturnValue([baseScan, newScan]);
+
+    // Trigger storage event with null key (localStorage.clear())
+    act(() => {
+      storageHandler?.({ key: null } as StorageEvent);
+    });
+
+    expect(result.current.totalScans).toBe(2);
+
+    addEventListenerSpy.mockRestore();
+  });
+
+  it("ignores storage events for other keys", () => {
+    let storageHandler: ((e: StorageEvent) => void) | null = null;
+    const addEventListenerSpy = vi.spyOn(window, "addEventListener").mockImplementation(
+      (type: string, handler: EventListenerOrEventListenerObject) => {
+        if (type === "storage") {
+          storageHandler = handler as (e: StorageEvent) => void;
+        }
+      }
+    );
+
+    mockLoadAllScans.mockReturnValue([baseScan]);
+    const { result } = renderHook(() => useDashboardData());
+
+    const initialScans = result.current.totalScans;
+
+    // Update mock data but don't expect refresh
+    const newScan = { ...baseScan, id: "s2" };
+    mockLoadAllScans.mockReturnValue([baseScan, newScan]);
+
+    // Trigger storage event with different key
+    act(() => {
+      storageHandler?.({ key: "other-key" } as StorageEvent);
+    });
+
+    // Should not have refreshed
+    expect(result.current.totalScans).toBe(initialScans);
+
+    addEventListenerSpy.mockRestore();
   });
 });

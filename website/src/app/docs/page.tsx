@@ -82,10 +82,10 @@ const docSections = [
     description: "Generate code solutions",
   },
   {
-    id: "github-integration",
+    id: "git-integration",
     icon: GitBranch,
-    title: "GitHub Integration",
-    description: "Create PRs automatically",
+    title: "GitHub & GitLab",
+    description: "Create PRs/MRs automatically",
   },
   {
     id: "scheduled-scans",
@@ -545,7 +545,7 @@ export default function DocsPage() {
                 },
                 {
                   step: "Review & apply",
-                  description: "Copy the code or create a GitHub PR directly",
+                  description: "Copy the code or create a GitHub PR / GitLab MR directly",
                 },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-4">
@@ -634,29 +634,29 @@ export default function DocsPage() {
             </div>
           </div>
 
-          {/* GitHub Integration */}
+          {/* GitHub & GitLab Integration */}
           <div className="mb-20">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-primary/15 rounded-xl flex items-center justify-center">
                 <GitBranch size={20} className="text-primary" />
               </div>
-              <h2 id="github-integration" className="text-3xl font-bold">
-                GitHub Integration
+              <h2 id="git-integration" className="text-3xl font-bold">
+                GitHub & GitLab Integration
               </h2>
             </div>
             <p className="text-text-secondary text-lg mb-8">
-              Connect your GitHub account to create pull requests with
-              accessibility fixes directly from AllyLab.
+              Connect your GitHub or GitLab account to create pull requests (PRs) or
+              merge requests (MRs) with accessibility fixes directly from AllyLab.
             </p>
 
-            <h3 className="text-xl font-semibold mb-4">Connecting GitHub</h3>
+            <h3 className="text-xl font-semibold mb-4">Connecting Your Provider</h3>
             <ol className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-surface-tertiary rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
                   1
                 </div>
                 <span className="text-text-secondary">
-                  Go to <strong>Settings → GitHub</strong>
+                  Go to <strong>Settings → Git</strong>
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -664,7 +664,7 @@ export default function DocsPage() {
                   2
                 </div>
                 <span className="text-text-secondary">
-                  Click <strong>Connect GitHub</strong>
+                  Select <strong>GitHub</strong> or <strong>GitLab</strong>
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -672,7 +672,7 @@ export default function DocsPage() {
                   3
                 </div>
                 <span className="text-text-secondary">
-                  Authorize AllyLab to access your repositories
+                  Enter your Personal Access Token (PAT)
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -680,39 +680,39 @@ export default function DocsPage() {
                   4
                 </div>
                 <span className="text-text-secondary">
-                  Select which repositories to enable
+                  For self-hosted GitLab, enter your instance URL
                 </span>
               </li>
             </ol>
 
             <h3 className="text-xl font-semibold mb-4">
-              Creating Pull Requests
+              Creating Pull Requests / Merge Requests
             </h3>
             <div className="bg-surface border border-border rounded-xl p-6 mb-8">
-              <h4 className="font-semibold mb-4">Single Fix PR</h4>
+              <h4 className="font-semibold mb-4">Single Fix PR/MR</h4>
               <ol className="space-y-2 text-text-secondary text-sm mb-6">
                 <li>1. Generate an AI fix for an issue</li>
                 <li>
-                  2. Click <strong>Create PR</strong>
+                  2. Click <strong>Create PR</strong> (GitHub) or <strong>Create MR</strong> (GitLab)
                 </li>
-                <li>3. Select repository and base branch</li>
-                <li>4. Review the PR details and confirm</li>
+                <li>3. Select repository/project and base branch</li>
+                <li>4. Review the details and confirm</li>
               </ol>
 
-              <h4 className="font-semibold mb-4">Batch PR (Multiple Fixes)</h4>
+              <h4 className="font-semibold mb-4">Batch PR/MR (Multiple Fixes)</h4>
               <ol className="space-y-2 text-text-secondary text-sm">
                 <li>1. Select multiple issues using checkboxes</li>
                 <li>
-                  2. Click <strong>Create Batch PR</strong>
+                  2. Click <strong>Create Batch PR/MR</strong>
                 </li>
                 <li>3. Map file paths for each fix</li>
-                <li>4. All fixes are combined into a single PR</li>
+                <li>4. All fixes are combined into a single PR/MR</li>
               </ol>
             </div>
 
             <h3 className="text-xl font-semibold mb-4">Fix Verification</h3>
             <p className="text-text-secondary mb-4">
-              After merging a PR, AllyLab can verify the fixes were applied
+              After merging a PR/MR, AllyLab can verify the fixes were applied
               correctly:
             </p>
             <ul className="space-y-2 text-text-secondary mb-8">
@@ -722,7 +722,7 @@ export default function DocsPage() {
                   className="text-primary mt-0.5 flex-shrink-0"
                 />
                 <span>
-                  Click <strong>Verify Fixes</strong> on any merged PR
+                  Click <strong>Verify Fixes</strong> on any merged PR/MR
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -1363,13 +1363,13 @@ export default function DocsPage() {
                   ],
                 },
                 {
-                  title: "GitHub",
-                  description: "Connect repositories for PR creation",
+                  title: "Git",
+                  description: "Connect GitHub or GitLab for PR/MR creation",
                   settings: [
-                    "Connect Account",
+                    "Connect Provider",
                     "Select Repositories",
                     "Default Branch",
-                    "PR Templates",
+                    "PR/MR Templates",
                   ],
                 },
                 {

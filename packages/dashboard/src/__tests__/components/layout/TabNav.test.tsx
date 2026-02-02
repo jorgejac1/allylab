@@ -3,13 +3,14 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { TabNav } from "../../../components/layout/TabNav";
+import { Search, BarChart3, X } from "lucide-react";
 
 describe("layout/TabNav", () => {
   const tabs = [
-    { id: "scan", label: "Scan", icon: "🔍" },
-    { id: "history", label: "History", icon: "📊", badge: 5 },
+    { id: "scan", label: "Scan", icon: <Search size={16} data-testid="icon-scan" /> },
+    { id: "history", label: "History", icon: <BarChart3 size={16} data-testid="icon-history" />, badge: 5 },
     { id: "settings", label: "Settings" },
-    { id: "disabled", label: "Disabled", icon: "❌", disabled: true },
+    { id: "disabled", label: "Disabled", icon: <X size={16} data-testid="icon-disabled" />, disabled: true },
   ];
 
   it("renders all tabs with labels", () => {
@@ -24,9 +25,9 @@ describe("layout/TabNav", () => {
   it("renders tab icons when provided", () => {
     render(<TabNav tabs={tabs} activeTab="scan" onChange={vi.fn()} />);
 
-    expect(screen.getByText("🔍")).toBeInTheDocument();
-    expect(screen.getByText("📊")).toBeInTheDocument();
-    expect(screen.getByText("❌")).toBeInTheDocument();
+    expect(screen.getByTestId("icon-scan")).toBeInTheDocument();
+    expect(screen.getByTestId("icon-history")).toBeInTheDocument();
+    expect(screen.getByTestId("icon-disabled")).toBeInTheDocument();
   });
 
   it("does not render icon when not provided", () => {
@@ -144,8 +145,8 @@ describe("layout/TabNav", () => {
 
   it("renders multiple tabs with various combinations of props", () => {
     const complexTabs = [
-      { id: "tab1", label: "Tab 1", icon: "1️⃣", badge: 10 },
-      { id: "tab2", label: "Tab 2", icon: "2️⃣" },
+      { id: "tab1", label: "Tab 1", icon: <Search size={16} data-testid="icon-tab1" />, badge: 10 },
+      { id: "tab2", label: "Tab 2", icon: <BarChart3 size={16} data-testid="icon-tab2" /> },
       { id: "tab3", label: "Tab 3", badge: 99 },
       { id: "tab4", label: "Tab 4" },
     ];

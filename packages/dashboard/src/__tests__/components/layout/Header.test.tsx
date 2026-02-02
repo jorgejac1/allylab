@@ -6,10 +6,12 @@ import { Header } from "../../../components/layout/Header";
 
 describe("layout/Header", () => {
   it("renders title and logo", () => {
-    render(<Header title="Dashboard" apiStatus="connected" />);
+    const { container } = render(<Header title="Dashboard" apiStatus="connected" />);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("🔬")).toBeInTheDocument();
+    // Logo is now a lucide-react Microscope icon (SVG)
+    const svg = container.querySelector("svg.lucide-microscope");
+    expect(svg).toBeInTheDocument();
   });
 
   it("renders subtitle when provided", () => {
@@ -28,19 +30,26 @@ describe("layout/Header", () => {
   it("renders API status indicator with connected status", () => {
     render(<Header title="Dashboard" apiStatus="connected" />);
 
-    expect(screen.getByText(/API ✓/)).toBeInTheDocument();
+    expect(screen.getByText(/API/)).toBeInTheDocument();
+    // Check icon is rendered as SVG (lucide-react Check component)
+    const apiStatusSpan = screen.getByText(/API/).closest("span");
+    expect(apiStatusSpan?.querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders API status indicator with disconnected status", () => {
     render(<Header title="Dashboard" apiStatus="disconnected" />);
 
-    expect(screen.getByText(/API ✗/)).toBeInTheDocument();
+    expect(screen.getByText(/API/)).toBeInTheDocument();
+    // X icon is rendered as SVG (lucide-react X component)
+    const apiStatusSpan = screen.getByText(/API/).closest("span");
+    expect(apiStatusSpan?.querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders API status indicator with checking status", () => {
     render(<Header title="Dashboard" apiStatus="checking" />);
 
-    expect(screen.getByText(/API \.\.\./)).toBeInTheDocument();
+    expect(screen.getByText(/API/)).toBeInTheDocument();
+    expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
   });
 
   it("renders GitHub link with correct href", () => {
@@ -57,8 +66,9 @@ describe("layout/Header", () => {
 
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("width", "16");
-    expect(svg).toHaveAttribute("height", "16");
+    // GitHub icon is now 28x28 (changed in refactor)
+    expect(svg).toHaveAttribute("width", "28");
+    expect(svg).toHaveAttribute("height", "28");
   });
 
   it("applies correct styling to header elements", () => {

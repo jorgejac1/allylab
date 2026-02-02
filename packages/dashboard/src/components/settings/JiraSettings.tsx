@@ -4,6 +4,7 @@ import { useLocalStorage } from '../../hooks';
 import type { JiraConfig, JiraFieldMapping } from '../../types';
 import { DEFAULT_JIRA_CONFIG, DEFAULT_FIELD_MAPPING } from '../../types/jira';
 import { FieldMappingConfig } from './FieldMappingConfig';
+import { Link, Globe, Loader2, Plug, Check } from 'lucide-react';
 
 export function JiraSettings() {
   const [config, setConfig] = useLocalStorage<JiraConfig>('allylab_jira_config', DEFAULT_JIRA_CONFIG);
@@ -42,19 +43,19 @@ export function JiraSettings() {
         const data = await response.json();
         setTestResult({
           success: true,
-          message: `✓ Connected successfully! Test issue: ${data.key || 'Created'}`,
+          message: `Connected successfully! Test issue: ${data.key || 'Created'}`,
         });
       } else {
         const data = await response.json();
         setTestResult({
           success: false,
-          message: `✗ Error: ${data.errorMessages?.join(', ') || response.statusText}`,
+          message: `Error: ${data.errorMessages?.join(', ') || response.statusText}`,
         });
       }
     } catch (error) {
       setTestResult({
         success: false,
-        message: `✗ Network error: ${error instanceof Error ? error.message : 'Unknown'}`,
+        message: `Network error: ${error instanceof Error ? error.message : 'Unknown'}`,
       });
     } finally {
       setTesting(false);
@@ -87,8 +88,8 @@ export function JiraSettings() {
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
-              🔗 JIRA Integration
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Link size={18} /> JIRA Integration
             </h3>
             <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
               Export accessibility issues directly to your JIRA instance
@@ -112,8 +113,8 @@ export function JiraSettings() {
         <>
           {/* Endpoint Configuration */}
           <Card>
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-              🌐 Endpoint Configuration
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Globe size={18} /> Endpoint Configuration
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -181,8 +182,9 @@ export function JiraSettings() {
                   variant="secondary"
                   onClick={handleTestConnection}
                   disabled={testing || !config.endpoint}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
-                  {testing ? '⏳ Testing...' : '🔌 Test Connection'}
+                  {testing ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Testing...</> : <><Plug size={14} /> Test Connection</>}
                 </Button>
                 {testResult && (
                   <span
@@ -208,10 +210,10 @@ export function JiraSettings() {
             </Button>
             <Button
               onClick={handleSave}
-              style={saved ? { animation: 'savedSuccess 2s ease-out' } : undefined}
+              style={saved ? { animation: 'savedSuccess 2s ease-out', display: 'inline-flex', alignItems: 'center', gap: 6 } : { display: 'inline-flex', alignItems: 'center', gap: 6 }}
               onAnimationEnd={handleSaveAnimationEnd}
             >
-              {saved ? '✓ Saved!' : 'Save Settings'}
+              {saved ? <><Check size={14} /> Saved!</> : 'Save Settings'}
             </Button>
           </div>
         </>

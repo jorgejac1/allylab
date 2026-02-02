@@ -1,6 +1,7 @@
 import type { Page } from 'playwright';
 import type { CustomRule, RuleViolation } from '../types/rules';
 import { getEnabledRules } from '../routes/rules';
+import { ruleLogger } from '../utils/logger.js';
 
 interface EvaluateOptions {
   page: Page;
@@ -12,7 +13,7 @@ interface EvaluateOptions {
  */
 export async function evaluateCustomRules(options: EvaluateOptions): Promise<RuleViolation[]> {
   const { page, onViolation } = options;
-  const rules = getEnabledRules();
+  const rules = await getEnabledRules();
   const violations: RuleViolation[] = [];
 
   if (rules.length === 0) {
@@ -28,7 +29,7 @@ export async function evaluateCustomRules(options: EvaluateOptions): Promise<Rul
         onViolation?.(violation);
       }
     } catch (error) {
-      console.error(`[RuleEvaluator] Error evaluating rule ${rule.id}:`, error);
+      ruleLogger.error({ msg: 'Error evaluating rule', ruleId: rule.id, err: error });
     }
   }
 
@@ -254,6 +255,6 @@ function createViolation(
 /**
  * Get count of enabled custom rules
  */
-export function getEnabledRulesCount(): number {
-  return getEnabledRules().length;
+export async function getEnabledRulesCount(): Promise<number> {
+  return (await getEnabledRules()).length;
 }

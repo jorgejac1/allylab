@@ -5,7 +5,7 @@ import type { ScanRequest } from '../types/index.js';
 
 export async function scanJsonRoutes(server: FastifyInstance) {
   server.post('/scan/json', async (request: FastifyRequest<{ Body: ScanRequest }>, reply: FastifyReply) => {
-    const { url, standard = 'wcag21aa', includeWarnings = false } = request.body;
+    const { url, standard = 'wcag21aa', includeWarnings = false, viewport, auth } = request.body;
 
     if (!url) {
       return reply.status(400).send({ error: 'URL is required' });
@@ -15,7 +15,9 @@ export async function scanJsonRoutes(server: FastifyInstance) {
       const result = await runScan({
         url,
         standard,
+        viewport,
         includeWarnings,
+        auth,
       });
 
       // Trigger webhooks on scan completion

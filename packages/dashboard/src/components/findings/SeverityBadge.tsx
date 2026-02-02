@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Severity } from '../../types';
 
 const SEVERITY_CONFIG: Record<Severity, { color: string; background: string; label: string }> = {
@@ -7,7 +8,7 @@ const SEVERITY_CONFIG: Record<Severity, { color: string; background: string; lab
   minor: { color: '#fff', background: '#65a30d', label: 'Minor' },
 };
 
-export function SeverityBadge({ severity }: { severity: Severity }) {
+export const SeverityBadge = memo(function SeverityBadge({ severity }: { severity: Severity }) {
   const config = SEVERITY_CONFIG[severity];
 
   return (
@@ -25,4 +26,4 @@ export function SeverityBadge({ severity }: { severity: Severity }) {
       {config.label}
     </span>
   );
-}
+});

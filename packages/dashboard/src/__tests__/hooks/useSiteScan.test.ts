@@ -47,8 +47,7 @@ describe("hooks/useSiteScan", () => {
     expect(result.current.phase).toBe("complete");
   });
 
-  it("skips incomplete chunks and logs unknown events", async () => {
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  it("skips incomplete chunks and handles unknown events", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const events =
       "event:status\n\n" + // missing data should be skipped
@@ -58,7 +57,7 @@ describe("hooks/useSiteScan", () => {
       "event:crawl-complete\ndata:{}\n\n" + // missing fields should fallback to defaults
       "foo:bar\n" + // line that matches neither event nor data
       "data:{\"abc\":1}\n\n" +
-      "event:unknown\ndata:{\"foo\":1}\n\n" + // unknown but valid
+      "event:unknown\ndata:{\"foo\":1}\n\n" + // unknown but valid - silently ignored
       "event:unknown\ndata:{broken}\n\n"; // malformed JSON to hit parse error
     const reader = {
       read: vi
@@ -78,17 +77,14 @@ describe("hooks/useSiteScan", () => {
       await result.current.startScan("https://example.com");
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith("[useSiteScan] Skipping incomplete chunk:", "event:status");
-    expect(consoleSpy).toHaveBeenCalledWith("[useSiteScan] Skipping incomplete chunk:", 'data:{"orphan":true}');
+    // Verify fallback behavior for missing/incomplete data
     expect(result.current.discoveredUrls).toEqual([]); // fallback for missing urls
     expect(result.current.totalPages).toBe(0); // fallback for missing totalFound
     expect(result.current.currentPage).toBe(0); // fallback for missing index
-    expect(consoleSpy).toHaveBeenCalledWith("[useSiteScan] Unknown event type:", "unknown");
     expect(errorSpy).toHaveBeenCalled(); // malformed JSON hits parse error path
-    // unknown error event sets phase to error and assigns default message
+    // error event sets phase to error and assigns default message
     expect(result.current.phase).toBe("error");
     expect(result.current.error).toBe("Unknown error");
-    consoleSpy.mockRestore();
     errorSpy.mockRestore();
   });
 
@@ -150,7 +146,6 @@ describe("hooks/useSiteScan", () => {
   });
 
   it("skips data-only chunks without event type", async () => {
-    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const reader = {
       read: vi
         .fn()
@@ -169,8 +164,7 @@ describe("hooks/useSiteScan", () => {
       await result.current.startScan("https://example.com");
     });
 
-    expect(logSpy).toHaveBeenCalledWith("[useSiteScan] Skipping incomplete chunk:", 'data:{"only":true}');
+    // Data-only chunks are silently skipped, scan continues normally
     expect(result.current.phase).toBe("crawling");
-    logSpy.mockRestore();
   });
 });

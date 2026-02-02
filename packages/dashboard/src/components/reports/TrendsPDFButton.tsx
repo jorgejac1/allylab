@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../ui';
 import { generateTrendsPDF } from '../../utils/pdfExport';
 import type { SavedScan, PdfExportSettings } from '../../types';
+import { Loader2, FileText } from 'lucide-react';
 
 interface TrendsPDFButtonProps {
   scans: SavedScan[];
@@ -50,7 +51,7 @@ export function TrendsPDFButton({
         onClick={handleExport}
         disabled={disabled || isGenerating || scans.length === 0}
       >
-        {isGenerating ? '⏳ Generating...' : '📄 Export PDF'}
+        {isGenerating ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Generating...</> : <><FileText size={14} style={{ marginRight: 6 }} />Export PDF</>}
       </Button>
       {error && (
         <span style={{ fontSize: 11, color: '#dc2626' }}>{error}</span>

@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, Button, EmptyState } from '../ui';
 import { ScanCard, ScanHistoryToolbar } from './scan-history';
 import { getDateRangeBounds, formatDateRangeLabel } from '../../utils/dateRange';
 import type { SavedScan, DateRange, DateRangeOption, SortOption } from '../../types';
 import type { RegressionInfo } from '../../hooks/useScans';
+import { BarChart3, Search } from 'lucide-react';
 
 interface ScanHistoryProps {
   scans: SavedScan[];
@@ -98,35 +99,38 @@ export function ScanHistory({
       .map(s => s.score);
   };
 
-  // Compare handlers
-  const handleCompareToggle = (scan: SavedScan) => {
-    if (compareSelection.find(s => s.id === scan.id)) {
-      setCompareSelection(compareSelection.filter(s => s.id !== scan.id));
-    } else if (compareSelection.length < 2) {
-      setCompareSelection([...compareSelection, scan]);
-    }
-  };
+  // Compare handlers - memoized for stable references
+  const handleCompareToggle = useCallback((scan: SavedScan) => {
+    setCompareSelection(prev => {
+      if (prev.find(s => s.id === scan.id)) {
+        return prev.filter(s => s.id !== scan.id);
+      } else if (prev.length < 2) {
+        return [...prev, scan];
+      }
+      return prev;
+    });
+  }, []);
 
-  const handleCompareSubmit = () => {
+  const handleCompareSubmit = useCallback(() => {
     if (compareSelection.length === 2 && onCompare) {
       onCompare(compareSelection[0], compareSelection[1]);
       setCompareMode(false);
       setCompareSelection([]);
     }
-  };
+  }, [compareSelection, onCompare]);
 
-  const handleCompareCancel = () => {
+  const handleCompareCancel = useCallback(() => {
     setCompareMode(false);
     setCompareSelection([]);
-  };
+  }, []);
 
-  // Date range handlers
-  const handleDateRangeOptionChange = (option: DateRangeOption) => {
+  // Date range handlers - memoized for stable references
+  const handleDateRangeOptionChange = useCallback((option: DateRangeOption) => {
     setDateRangeOption(option);
     setShowCustomPicker(option === 'custom');
-  };
+  }, []);
 
-  const handleCustomDateChange = (field: 'start' | 'end', value: string) => {
+  const handleCustomDateChange = useCallback((field: 'start' | 'end', value: string) => {
     const date = value ? new Date(value) : null;
     if (field === 'start' && date) {
       date.setHours(0, 0, 0, 0);
@@ -138,20 +142,20 @@ export function ScanHistory({
       ...prev,
       [field]: date,
     }));
-  };
+  }, []);
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     setFilterUrl('all');
     setDateRangeOption('all');
     setShowCustomPicker(false);
     setCustomDateRange({ start: null, end: null });
-  };
+  }, []);
 
   // Empty state
   if (scans.length === 0) {
     return (
       <EmptyState
-        icon="📊"
+        icon={<BarChart3 size={32} />}
         title="No Scan History"
         description="Run your first accessibility scan to start tracking your progress."
       />
@@ -186,7 +190,7 @@ export function ScanHistory({
         {filteredScans.length === 0 ? (
           <Card>
             <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
+              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><Search size={32} /></div>
               <p style={{ margin: 0 }}>No scans match your filters</p>
               <Button
                 variant="secondary"
@@ -208,9 +212,9 @@ export function ScanHistory({
               compareMode={compareMode}
               scoreTrend={getScoreTrend(scan.url)}
               regression={hasRegression?.(scan.id)}
-              onSelect={() => onSelectScan(scan)}
-              onCompareToggle={() => handleCompareToggle(scan)}
-              onDelete={onDeleteScan ? () => onDeleteScan(scan.id) : undefined}
+              onSelect={onSelectScan}
+              onCompareToggle={handleCompareToggle}
+              onDelete={onDeleteScan}
             />
           ))
         )}

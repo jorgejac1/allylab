@@ -357,13 +357,13 @@ describe("routes/rules", () => {
     expect((replyEnabled.payload as { data: unknown[] }).data.length).toBe(1);
   });
 
-  it("getEnabledRules returns only enabled rules", () => {
+  it("getEnabledRules returns only enabled rules", async () => {
     // Add via route handlers to use the same rulesStore instance
     const createHandler = getRoute(fastify, "POST", "/rules");
-    createHandler({ body: { ...baseRule, enabled: true } }, createReply());
-    createHandler({ body: { ...baseRule, id: "disabled-1", enabled: false } }, createReply());
+    await createHandler({ body: { ...baseRule, enabled: true } }, createReply());
+    await createHandler({ body: { ...baseRule, id: "disabled-1", enabled: false } }, createReply());
 
-    const enabled = getEnabledRules();
+    const enabled = await getEnabledRules();
     expect(enabled.length).toBe(1);
     expect(enabled[0].enabled).toBe(true);
   });

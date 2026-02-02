@@ -3,6 +3,7 @@ import { Modal, Button, Tabs } from "../ui";
 import { useLocalStorage, useJiraExport } from "../../hooks";
 import type { Finding, JiraConfig, JiraFieldMapping } from "../../types";
 import { DEFAULT_JIRA_CONFIG, DEFAULT_FIELD_MAPPING } from "../../types/jira";
+import { Link2, Eye, BarChart3, Upload, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 interface JiraExportModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export function JiraExportModal({
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="JIRA Export">
         <div style={{ padding: 24, textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔗</div>
+          <div style={{ marginBottom: 16, display: "flex", justifyContent: "center", color: "#94a3b8" }}><Link2 size={48} /></div>
           <h3 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>
             JIRA Integration Not Configured
           </h3>
@@ -96,10 +97,10 @@ export function JiraExportModal({
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Tabs
           tabs={[
-            { id: "preview", label: "👁️ Select & Preview" },
+            { id: "preview", label: <span style={{ display: "flex", alignItems: "center", gap: 6 }}><Eye size={14} />Select & Preview</span> },
             {
               id: "result",
-              label: "📊 Results",
+              label: <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BarChart3 size={14} />Results</span>,
               count: bulkProgress?.completed,
             },
           ]}
@@ -227,12 +228,8 @@ export function JiraExportModal({
                 disabled={selectedFindings.size === 0 || isExporting}
               >
                 {isExporting
-                  ? `⏳ Exporting ${bulkProgress?.completed || 0}/${
-                      selectedFindings.size
-                    }...`
-                  : `📤 Export ${selectedFindings.size} Issue${
-                      selectedFindings.size !== 1 ? "s" : ""
-                    }`}
+                  ? <><Loader2 size={14} style={{ marginRight: 6, animation: "spin 1s linear infinite" }} />Exporting {bulkProgress?.completed || 0}/{selectedFindings.size}...</>
+                  : <><Upload size={14} style={{ marginRight: 6 }} />Export {selectedFindings.size} Issue{selectedFindings.size !== 1 ? "s" : ""}</>}
               </Button>
             </div>
           </>
@@ -310,7 +307,7 @@ function ExportResults({
               background: result.success ? "#f0fdf4" : "#fef2f2",
             }}
           >
-            <span>{result.success ? "✅" : "❌"}</span>
+            <span style={{ display: "flex", alignItems: "center", color: result.success ? "#10b981" : "#ef4444" }}>{result.success ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
             <span style={{ flex: 1, fontSize: 13 }}>
               {result.request.fields.summary.substring(0, 60)}...
             </span>

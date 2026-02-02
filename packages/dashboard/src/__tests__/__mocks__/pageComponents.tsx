@@ -1,4 +1,4 @@
-import type { ReactNode, ChangeEvent } from "react";
+import React, { type ReactNode, type ChangeEvent } from "react";
 
 type ContainerProps = { title?: ReactNode; subtitle?: ReactNode; children?: ReactNode };
 type BasicProps = { children?: ReactNode; [key: string]: unknown };
@@ -148,3 +148,12 @@ export const GitHubSettings = () => <Placeholder label="github-settings" />;
 export const AlertSettings = () => <Placeholder label="alert-settings" />;
 export const ReportSettings = () => <Placeholder label="report-settings" />;
 export const CustomRulesManager = () => <Placeholder label="custom-rules-manager" />;
+
+export const TabLoader = () => <div data-testid="tab-loader">Loading...</div>;
+
+export const SettingRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div data-testid="setting-row">
+    <span>{label}</span>
+    {children}
+  </div>
+);

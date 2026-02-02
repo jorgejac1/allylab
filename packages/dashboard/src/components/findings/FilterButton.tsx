@@ -1,10 +1,12 @@
+import { memo, type ReactNode } from 'react';
+
 interface FilterButtonProps {
   active: boolean;
   onClick: () => void;
-  label: string;
+  label: ReactNode;
 }
 
-export function FilterButton({ active, onClick, label }: FilterButtonProps) {
+export const FilterButton = memo(function FilterButton({ active, onClick, label }: FilterButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -23,20 +25,20 @@ export function FilterButton({ active, onClick, label }: FilterButtonProps) {
       {label}
     </button>
   );
-}
+});
 
 interface PillButtonProps {
   active: boolean;
   activeColor?: string;
   onClick: () => void;
-  label: string;
+  label: ReactNode;
 }
 
-export function PillButton({ 
-  active, 
-  activeColor = '#2563eb', 
-  onClick, 
-  label 
+export const PillButton = memo(function PillButton({
+  active,
+  activeColor = '#2563eb',
+  onClick,
+  label
 }: PillButtonProps) {
   return (
     <button
@@ -57,8 +59,8 @@ export function PillButton({
       {label}
     </button>
   );
-}
+});
 
-export function Divider() {
+export const Divider = memo(function Divider() {
   return <div style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 4px' }} />;
-}
+});

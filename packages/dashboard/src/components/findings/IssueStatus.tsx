@@ -1,4 +1,7 @@
+import { memo } from 'react';
 import type { IssueStatus as IssueStatusType } from '../../types';
+import type { ReactNode } from 'react';
+import { BadgePlus, RefreshCw, CheckCircle } from 'lucide-react';
 
 interface IssueStatusProps {
   status: IssueStatusType;
@@ -6,13 +9,13 @@ interface IssueStatusProps {
   showLabel?: boolean;
 }
 
-const STATUS_CONFIG: Record<IssueStatusType, { icon: string; color: string; bg: string; label: string }> = {
-  new: { icon: '🆕', color: '#1d4ed8', bg: '#dbeafe', label: 'New' },
-  recurring: { icon: '🔄', color: '#b45309', bg: '#fef3c7', label: 'Recurring' },
-  fixed: { icon: '✅', color: '#15803d', bg: '#dcfce7', label: 'Fixed' },
+const STATUS_CONFIG: Record<IssueStatusType, { icon: ReactNode; color: string; bg: string; label: string }> = {
+  new: { icon: <BadgePlus size={14} />, color: '#1d4ed8', bg: '#dbeafe', label: 'New' },
+  recurring: { icon: <RefreshCw size={14} />, color: '#b45309', bg: '#fef3c7', label: 'Recurring' },
+  fixed: { icon: <CheckCircle size={14} />, color: '#15803d', bg: '#dcfce7', label: 'Fixed' },
 };
 
-export function IssueStatus({ status, size = 'md', showLabel = true }: IssueStatusProps) {
+export const IssueStatus = memo(function IssueStatus({ status, size = 'md', showLabel = true }: IssueStatusProps) {
   const config = STATUS_CONFIG[status];
 
   const sizes = {
@@ -37,11 +40,11 @@ export function IssueStatus({ status, size = 'md', showLabel = true }: IssueStat
         fontWeight: 600,
       }}
     >
-      <span style={{ fontSize: sizeStyle.iconSize }}>{config.icon}</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{config.icon}</span>
       {showLabel && config.label}
     </span>
   );
-}
+});
 
 // Summary component for displaying all status counts
 interface IssueStatusSummaryProps {
@@ -50,7 +53,7 @@ interface IssueStatusSummaryProps {
   fixedCount: number;
 }
 
-export function IssueStatusSummary({ newCount, recurringCount, fixedCount }: IssueStatusSummaryProps) {
+export const IssueStatusSummary = memo(function IssueStatusSummary({ newCount, recurringCount, fixedCount }: IssueStatusSummaryProps) {
   const total = newCount + recurringCount + fixedCount;
 
   return (
@@ -74,14 +77,14 @@ export function IssueStatusSummary({ newCount, recurringCount, fixedCount }: Iss
       </div>
     </div>
   );
-}
+});
 
 function StatusItem({ status, count }: { status: IssueStatusType; count: number }) {
   const config = STATUS_CONFIG[status];
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ fontSize: 18 }}>{config.icon}</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{config.icon}</span>
       <span style={{ fontWeight: 700, color: config.color }}>{count}</span>
       <span style={{ fontSize: 13, color: '#64748b' }}>{config.label}</span>
     </div>

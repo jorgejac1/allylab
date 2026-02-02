@@ -1,6 +1,7 @@
 import type { Finding, TrackedFinding, IssueStatus, TrackingStats } from '../types';
 import { generateFingerprint } from './fingerprint';
 import { loadAllScans } from './storage';
+import { STORAGE_KEYS } from '../config';
 
 interface TrackedIssue {
   fingerprint: string;
@@ -10,11 +11,9 @@ interface TrackedIssue {
   occurrences: number;
 }
 
-const TRACKER_KEY = 'allylab_tracked_issues';
-
 function loadTrackedIssues(): Map<string, TrackedIssue> {
   try {
-    const data = localStorage.getItem(TRACKER_KEY);
+    const data = localStorage.getItem(STORAGE_KEYS.TRACKED_ISSUES);
     if (!data) return new Map();
     const arr: TrackedIssue[] = JSON.parse(data);
     return new Map(arr.map(i => [i.fingerprint, i]));
@@ -24,7 +23,7 @@ function loadTrackedIssues(): Map<string, TrackedIssue> {
 }
 
 function saveTrackedIssues(issues: Map<string, TrackedIssue>): void {
-  localStorage.setItem(TRACKER_KEY, JSON.stringify([...issues.values()]));
+  localStorage.setItem(STORAGE_KEYS.TRACKED_ISSUES, JSON.stringify([...issues.values()]));
 }
 
 export function trackFindings(findings: Finding[], scanTimestamp: string): TrackedFinding[] {

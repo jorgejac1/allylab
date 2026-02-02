@@ -1,9 +1,11 @@
+import { memo } from 'react';
+
 interface FilterTagProps {
   label: string;
   onRemove: () => void;
 }
 
-export function FilterTag({ label, onRemove }: FilterTagProps) {
+export const FilterTag = memo(function FilterTag({ label, onRemove }: FilterTagProps) {
   return (
     <span
       style={{
@@ -43,4 +45,4 @@ export function FilterTag({ label, onRemove }: FilterTagProps) {
       </button>
     </span>
   );
-}
+});

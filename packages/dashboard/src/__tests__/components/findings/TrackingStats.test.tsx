@@ -13,11 +13,11 @@ describe("findings/TrackingStats", () => {
   };
 
   it("renders all stat items", () => {
-    render(<TrackingStats stats={stats} />);
+    const { container } = render(<TrackingStats stats={stats} />);
 
-    expect(screen.getByText("🆕")).toBeInTheDocument();
-    expect(screen.getByText("🔄")).toBeInTheDocument();
-    expect(screen.getByText("✅")).toBeInTheDocument();
+    // Check for SVG icons instead of emojis
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBeGreaterThanOrEqual(3);
   });
 
   it("displays correct counts", () => {

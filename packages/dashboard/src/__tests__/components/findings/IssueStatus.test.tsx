@@ -9,21 +9,21 @@ describe("findings/IssueStatus", () => {
     it("renders new status badge", () => {
       render(<IssueStatus status="new" />);
 
-      expect(screen.getByText("🆕")).toBeInTheDocument();
+      expect(screen.getAllByRole("generic").find(el => el.querySelector('svg'))).toBeInTheDocument();
       expect(screen.getByText("New")).toBeInTheDocument();
     });
 
     it("renders recurring status badge", () => {
-      render(<IssueStatus status="recurring" />);
+      const { container } = render(<IssueStatus status="recurring" />);
 
-      expect(screen.getByText("🔄")).toBeInTheDocument();
+      expect(container.querySelector("svg")).toBeInTheDocument();
       expect(screen.getByText("Recurring")).toBeInTheDocument();
     });
 
     it("renders fixed status badge", () => {
-      render(<IssueStatus status="fixed" />);
+      const { container } = render(<IssueStatus status="fixed" />);
 
-      expect(screen.getByText("✅")).toBeInTheDocument();
+      expect(container.querySelector("svg")).toBeInTheDocument();
       expect(screen.getByText("Fixed")).toBeInTheDocument();
     });
 
@@ -60,7 +60,7 @@ describe("findings/IssueStatus", () => {
     it("hides label when showLabel is false", () => {
       render(<IssueStatus status="new" showLabel={false} />);
 
-      expect(screen.getByText("🆕")).toBeInTheDocument();
+      expect(screen.getAllByRole("generic").find(el => el.querySelector('svg'))).toBeInTheDocument();
       expect(screen.queryByText("New")).not.toBeInTheDocument();
     });
 
@@ -103,11 +103,11 @@ describe("findings/IssueStatus", () => {
 
   describe("IssueStatusSummary component", () => {
     it("renders all status counts", () => {
-      render(<IssueStatusSummary newCount={5} recurringCount={3} fixedCount={2} />);
+      const { container } = render(<IssueStatusSummary newCount={5} recurringCount={3} fixedCount={2} />);
 
-      expect(screen.getByText("🆕")).toBeInTheDocument();
-      expect(screen.getByText("🔄")).toBeInTheDocument();
-      expect(screen.getByText("✅")).toBeInTheDocument();
+      // Check for SVG icons (new, recurring, fixed status icons)
+      const svgs = container.querySelectorAll("svg");
+      expect(svgs.length).toBeGreaterThanOrEqual(3);
       expect(screen.getByText("5")).toBeInTheDocument();
       expect(screen.getByText("3")).toBeInTheDocument();
       expect(screen.getByText("2")).toBeInTheDocument();

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -14,11 +15,11 @@ export interface ToastProps {
   onClose: (id: string) => void;
 }
 
-const icons: Record<ToastType, string> = {
-  success: '✅',
-  error: '❌',
-  warning: '⚠️',
-  info: 'ℹ️',
+const icons: Record<ToastType, ReactNode> = {
+  success: <CheckCircle size={18} />,
+  error: <XCircle size={18} />,
+  warning: <AlertTriangle size={18} />,
+  info: <Info size={18} />,
 };
 
 const colors: Record<ToastType, { bg: string; border: string; text: string }> = {
@@ -77,7 +78,7 @@ function ToastItem({
       onAnimationEnd={handleAnimationEnd}
       role="alert"
     >
-      <span style={{ fontSize: 18 }}>{icons[type]}</span>
+      <span style={{ display: 'flex', alignItems: 'center', color: text }}>{icons[type]}</span>
       <p style={{ flex: 1, margin: 0, fontSize: 14, color: text, fontWeight: 500 }}>
         {message}
       </p>
@@ -90,12 +91,12 @@ function ToastItem({
           padding: 4,
           color: text,
           opacity: 0.6,
-          fontSize: 16,
-          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
         }}
         aria-label="Close"
       >
-        ✕
+        <X size={16} />
       </button>
     </div>
   );

@@ -4,7 +4,7 @@ import { ScanPage } from "../../pages/ScanPage";
 import { performRescan } from "../../utils/scan";
 import type { SavedScan } from "../../types";
 import { mockUseScanSSE, mockUseScans } from "../__mocks__/hooks";
-import { mockGetScansForUrl } from "../__mocks__/storage";
+import { mockGetScansForUrl, mockLoadAllScans } from "../__mocks__/storage";
 
 vi.mock("../../components/layout", () => import("../__mocks__/pageComponents"));
 vi.mock("../../components/scan", () => import("../__mocks__/pageComponents"));
@@ -143,6 +143,45 @@ describe("pages/ScanPage", () => {
     await waitFor(() => expect(onScanComplete).not.toHaveBeenCalled());
   });
 
+  it("loads scan containing issue for drilldown issue context", async () => {
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+    const scanWithIssue: SavedScan = { ...baseScan, id: "scan-with-issue" };
+    mockLoadAllScans.mockReturnValue([scanWithIssue]);
+
+    render(<ScanPage currentScan={null} onScanComplete={onScanComplete} drillDownContext={{ type: "issue", ruleId: "r1" }} />);
+
+    await waitFor(() => expect(onScanComplete).toHaveBeenCalledWith(scanWithIssue));
+  });
+
+  it("skips onScanComplete when no scans have the issue for issue drilldown", async () => {
+    mockUseScanSSE.mockReturnValue({
+      isScanning: false,
+      progress: { percent: 0, message: "", status: "idle" },
+      result: null,
+      error: null,
+      startScan: vi.fn(),
+      cancelScan: vi.fn(),
+      reset: vi.fn(),
+    });
+    mockUseScans.mockReturnValue({ addScan: vi.fn() });
+    const onScanComplete = vi.fn();
+    mockLoadAllScans.mockReturnValue([]);
+
+    render(<ScanPage currentScan={null} onScanComplete={onScanComplete} drillDownContext={{ type: "issue", ruleId: "nonexistent" }} />);
+
+    await waitFor(() => expect(onScanComplete).not.toHaveBeenCalled());
+  });
+
   it("shows progress and cancel button when scanning", () => {
     mockUseScanSSE.mockReturnValue({
       isScanning: true,
@@ -159,7 +198,7 @@ describe("pages/ScanPage", () => {
     render(<ScanPage currentScan={null} onScanComplete={onScanComplete} />);
 
     expect(screen.getByTestId("scan-progress")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("✕ Cancel Scan"));
+    fireEvent.click(screen.getByText(/Cancel Scan/));
   });
 
   it("renders success banner and empty state depending on result/error", () => {
@@ -236,7 +275,7 @@ describe("pages/ScanPage", () => {
     });
     const { container: secondContainer, rerender } = render(<ScanPage currentScan={baseScan} onScanComplete={onScanComplete} />);
     rerender(<ScanPage currentScan={baseScan} onScanComplete={onScanComplete} />);
-    fireEvent.click(within(secondContainer).getByText("✕ Cancel Scan"));
+    fireEvent.click(within(secondContainer).getByText(/Cancel Scan/));
     expect(cancelScan).toHaveBeenCalled();
 
     mockUseScanSSE.mockReturnValue({

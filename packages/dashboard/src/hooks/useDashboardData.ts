@@ -1,10 +1,37 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { loadAllScans } from '../utils/storage';
 import { getDomain } from '../utils/scoreUtils';
 import type { SavedScan, Severity, DashboardData, SiteStats, TopIssue } from '../types';
 
-export function useDashboardData(): DashboardData {
-  return useMemo(() => computeDashboardData(loadAllScans()), []);
+/**
+ * Hook to compute dashboard data from localStorage scans.
+ * Data is refreshed when:
+ * - Component mounts
+ * - refresh() is called
+ * - Storage event is triggered (cross-tab sync)
+ */
+export function useDashboardData(): DashboardData & { refresh: () => void } {
+  const [version, setVersion] = useState(0);
+
+  const refresh = useCallback(() => {
+    setVersion(v => v + 1);
+  }, []);
+
+  // Listen for storage events (cross-tab sync)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'allylab-scans' || e.key === null) {
+        refresh();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [refresh]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- version is intentionally used to trigger recomputation on refresh()
+  const data = useMemo(() => computeDashboardData(loadAllScans()), [version]);
+
+  return { ...data, refresh };
 }
 
 function computeDashboardData(allScans: SavedScan[]): DashboardData {
@@ -46,7 +73,7 @@ function computeDashboardData(allScans: SavedScan[]): DashboardData {
   for (const [url, scans] of scansByUrl) {
     const latest = scans[0];
     const previous = scans[1];
-    
+
     const trendScans = scans.slice(0, 7).reverse();
     const trend = trendScans.map(s => s.score);
     const scoreChange = previous ? latest.score - previous.score : 0;
@@ -61,9 +88,9 @@ function computeDashboardData(allScans: SavedScan[]): DashboardData {
     for (const finding of latest.findings) {
       const key = finding.ruleId;
       if (!issueCounter.has(key)) {
-        issueCounter.set(key, { 
-          title: finding.ruleTitle, 
-          count: 0, 
+        issueCounter.set(key, {
+          title: finding.ruleTitle,
+          count: 0,
           severity: finding.impact,
           sites: new Set()
         });

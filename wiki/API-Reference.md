@@ -17,20 +17,58 @@ Currently, the API does not require authentication. For production deployments, 
 
 | Category | Endpoints |
 |----------|-----------|
-| [Health](#health) | `GET /health` |
-| [Scanning](#scanning) | `POST /scan`, `POST /scan/json`, `POST /crawl/scan` |
+| [Health & Metrics](#health--metrics) | `GET /health`, `GET /metrics` |
+| [Scanning](#scanning) | `POST /scan`, `POST /scan/json`, `POST /scan/test-auth`, `POST /crawl/scan` |
 | [AI Fixes](#ai-fixes) | `POST /fixes/generate` |
 | [Custom Rules](#custom-rules) | `GET /rules`, `POST /rules`, `PUT /rules/:id`, `DELETE /rules/:id` |
 | [Historical Trends](#historical-trends) | `POST /trends`, `POST /trends/issues`, `POST /trends/compare`, `POST /trends/stats` |
 | [GitHub](#github) | `POST /github/connect`, `GET /github/repos`, `POST /github/pr` |
+| [GitLab](#gitlab) | `GET /gitlab/connection`, `POST /gitlab/connection`, `POST /gitlab/mr` |
 | [Webhooks](#webhooks) | `GET /webhooks`, `POST /webhooks`, `PUT /webhooks/:id`, `DELETE /webhooks/:id` |
 | [Schedules](#schedules) | `GET /schedules`, `POST /schedules`, `PATCH /schedules/:id`, `DELETE /schedules/:id` |
 | [JIRA](#jira) | `POST /jira/test`, `POST /jira/create`, `POST /jira/bulk` |
 | [Export](#export) | `POST /export/csv`, `POST /export/json` |
 
+## Common Features
+
+### Request ID Correlation
+
+Every request receives a unique ID for tracing:
+- Send `X-Request-ID` header to use your own ID
+- If not provided, one is auto-generated
+- Response includes `X-Request-ID` header
+- ID format: `{timestamp-base36}-{random-hex}`
+
+### Pagination
+
+List endpoints support pagination via query parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Items per page (max: 100) |
+| `offset` | number | 0 | Number of items to skip |
+| `page` | number | 1 | Page number (alternative to offset) |
+
+**Response format:**
+```json
+{
+  "items": [...],
+  "pagination": {
+    "total": 50,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "totalPages": 3,
+    "hasMore": true
+  }
+}
+```
+
+Paginated endpoints: `/rules`, `/webhooks`, `/schedules`
+
 ---
 
-## Health
+## Health & Metrics
 
 ### GET /health
 
@@ -47,6 +85,50 @@ Check if the API is running.
 **Example:**
 ```bash
 curl http://localhost:3001/health
+```
+
+---
+
+### GET /metrics
+
+Get Prometheus-format metrics.
+
+**Response:** `text/plain` (Prometheus format)
+```
+# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",status="200"} 150
+http_requests_total{method="POST",status="200"} 45
+
+# HELP http_request_duration_seconds HTTP request duration in seconds
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{le="0.1"} 180
+http_request_duration_seconds_bucket{le="0.5"} 195
+http_request_duration_seconds_bucket{le="1"} 195
+
+# HELP http_requests_in_progress Current number of requests being processed
+# TYPE http_requests_in_progress gauge
+http_requests_in_progress{method="POST"} 2
+
+# HELP scan_duration_seconds Duration of accessibility scans
+# TYPE scan_duration_seconds histogram
+scan_duration_seconds_bucket{le="5"} 30
+scan_duration_seconds_bucket{le="10"} 42
+
+# HELP scan_total Total number of scans
+# TYPE scan_total counter
+scan_total{status="success"} 42
+scan_total{status="error"} 3
+
+# HELP error_total Total errors by type
+# TYPE error_total counter
+error_total{type="ValidationError"} 5
+error_total{type="TimeoutError"} 2
+```
+
+**Example:**
+```bash
+curl http://localhost:3001/metrics
 ```
 
 ---
@@ -75,6 +157,30 @@ Start an accessibility scan with Server-Sent Events (SSE) streaming.
 | `standard` | string | No | `wcag21aa` | WCAG standard |
 | `viewport` | string | No | `desktop` | Viewport size |
 | `includeWarnings` | boolean | No | `false` | Include incomplete checks |
+| `auth` | object | No | - | Authentication options (see below) |
+
+**Authentication Options (`auth` object):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cookies` | array | Array of cookie objects to inject |
+| `headers` | object | HTTP headers to set (e.g., `{"Authorization": "Bearer xxx"}`) |
+| `storageState` | object | Playwright storage state (cookies + localStorage) |
+| `basicAuth` | object | Basic auth credentials (`{username, password}`) |
+| `loginFlow` | object | Login automation config (see [[Authenticated Scanning]]) |
+
+**Example with authentication:**
+```json
+{
+  "url": "https://dashboard.example.com",
+  "standard": "wcag21aa",
+  "auth": {
+    "cookies": [
+      {"name": "session", "value": "abc123", "domain": ".example.com"}
+    ]
+  }
+}
+```
 
 **WCAG Standards:**
 - `wcag2a` - WCAG 2.0 Level A
@@ -165,6 +271,72 @@ curl -X POST http://localhost:3001/scan/json \
     "url": "https://example.com",
     "standard": "wcag21aa",
     "viewport": "desktop"
+  }'
+```
+
+---
+
+### POST /scan/test-auth
+
+Test authentication credentials without running a full scan. Useful for validating that credentials work before creating auth profiles.
+
+**Request Body:**
+```json
+{
+  "url": "https://dashboard.example.com/protected",
+  "auth": {
+    "cookies": [
+      {"name": "session", "value": "abc123", "domain": ".example.com"}
+    ]
+  }
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Yes | Protected URL to test |
+| `auth` | object | Yes | Authentication options (same as `POST /scan`) |
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "Authentication successful! Page accessed with provided credentials.",
+  "statusCode": 200,
+  "authenticatedContent": true
+}
+```
+
+**Response (Redirected to login):**
+```json
+{
+  "success": false,
+  "message": "Page redirected to login. Credentials may be expired.",
+  "statusCode": 302,
+  "redirectUrl": "https://example.com/login"
+}
+```
+
+**Response (Unauthorized):**
+```json
+{
+  "success": false,
+  "message": "Server returned 401 Unauthorized. Check your credentials.",
+  "statusCode": 401
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:3001/scan/test-auth \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://dashboard.example.com",
+    "auth": {
+      "headers": {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIs..."}
+    }
   }'
 ```
 
@@ -337,7 +509,15 @@ curl -X POST http://localhost:3001/fixes/generate \
 
 ### GET /rules
 
-List all custom rules.
+List all custom rules with pagination.
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Items per page |
+| `offset` | number | 0 | Items to skip |
+| `page` | number | 1 | Page number |
 
 **Response:**
 ```json
@@ -362,7 +542,15 @@ List all custom rules.
       }
     ],
     "total": 1,
-    "enabled": 1
+    "enabled": 1,
+    "pagination": {
+      "total": 1,
+      "limit": 20,
+      "offset": 0,
+      "page": 1,
+      "totalPages": 1,
+      "hasMore": false
+    }
   }
 }
 ```
@@ -370,6 +558,7 @@ List all custom rules.
 **Example:**
 ```bash
 curl http://localhost:3001/rules
+curl "http://localhost:3001/rules?limit=10&page=2"
 ```
 
 ---
@@ -1294,11 +1483,266 @@ curl -X POST http://localhost:3001/github/verify \
 
 ---
 
+## GitLab
+
+### GET /gitlab/connection
+
+Check GitLab connection status.
+
+**Response (Connected):**
+```json
+{
+  "connected": true,
+  "provider": "gitlab",
+  "instanceUrl": "https://gitlab.com",
+  "user": {
+    "id": 12345,
+    "username": "johndoe",
+    "name": "John Doe",
+    "avatar_url": "https://secure.gravatar.com/avatar/...",
+    "web_url": "https://gitlab.com/johndoe"
+  },
+  "projects": [
+    {
+      "id": 1,
+      "name": "my-website",
+      "path_with_namespace": "johndoe/my-website",
+      "visibility": "public"
+    }
+  ]
+}
+```
+
+**Response (Not Connected):**
+```json
+{
+  "connected": false
+}
+```
+
+**Example:**
+```bash
+curl http://localhost:3001/gitlab/connection
+```
+
+---
+
+### POST /gitlab/connection
+
+Connect a GitLab account using a Personal Access Token.
+
+**Request Body:**
+```json
+{
+  "token": "glpat-xxxxxxxxxxxxxxxxxxxx",
+  "instanceUrl": "https://gitlab.com"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `token` | string | Yes | - | GitLab Personal Access Token |
+| `instanceUrl` | string | No | `https://gitlab.com` | GitLab instance URL |
+
+**Token Formats:**
+- Personal Access Tokens: `glpat-xxxx`
+- Legacy tokens: 20+ character alphanumeric
+
+**Response:**
+```json
+{
+  "connected": true,
+  "provider": "gitlab",
+  "instanceUrl": "https://gitlab.com",
+  "user": {
+    "id": 12345,
+    "username": "johndoe",
+    "name": "John Doe",
+    "avatar_url": "https://secure.gravatar.com/avatar/...",
+    "web_url": "https://gitlab.com/johndoe"
+  },
+  "projects": [...]
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:3001/gitlab/connection \
+  -H "Content-Type: application/json" \
+  -d '{"token": "glpat-xxxx"}'
+```
+
+**Self-hosted Example:**
+```bash
+curl -X POST http://localhost:3001/gitlab/connection \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "glpat-xxxx",
+    "instanceUrl": "https://gitlab.mycompany.com"
+  }'
+```
+
+---
+
+### DELETE /gitlab/connection
+
+Disconnect the GitLab account.
+
+**Response:**
+```json
+{
+  "connected": false
+}
+```
+
+**Example:**
+```bash
+curl -X DELETE http://localhost:3001/gitlab/connection
+```
+
+---
+
+### POST /gitlab/mr
+
+Create a merge request with accessibility fixes.
+
+**Request Body:**
+```json
+{
+  "project": "johndoe/my-website",
+  "title": "[AllyLab] Fix accessibility issues",
+  "description": "This MR contains automated accessibility fixes.",
+  "sourceBranch": "allylab/a11y-fixes-1705312200000",
+  "targetBranch": "main",
+  "files": [
+    {
+      "path": "src/components/Hero.tsx",
+      "content": "<img src=\"hero.jpg\" alt=\"Hero banner\" />"
+    }
+  ],
+  "instanceUrl": "https://gitlab.com"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `project` | string | Yes | - | Project path (e.g., `user/repo`) |
+| `title` | string | Yes | - | MR title |
+| `sourceBranch` | string | Yes | - | Source branch name |
+| `targetBranch` | string | No | `main` | Target branch |
+| `description` | string | No | - | MR description |
+| `files` | array | Yes | - | Files to include |
+| `files[].path` | string | Yes | - | File path in repository |
+| `files[].content` | string | Yes | - | New file content |
+| `instanceUrl` | string | No | `https://gitlab.com` | GitLab instance URL |
+
+**Response:**
+```json
+{
+  "id": "mr-1705312200000",
+  "iid": 42,
+  "project_id": 12345,
+  "title": "[AllyLab] Fix accessibility issues",
+  "description": "This MR contains automated accessibility fixes.",
+  "state": "opened",
+  "web_url": "https://gitlab.com/johndoe/my-website/-/merge_requests/42",
+  "source_branch": "allylab/a11y-fixes-1705312200000",
+  "target_branch": "main",
+  "author": {
+    "id": 12345,
+    "username": "johndoe",
+    "name": "John Doe"
+  },
+  "created_at": "2024-01-15T10:30:00.000Z",
+  "merge_status": "can_be_merged",
+  "has_conflicts": false,
+  "changes_count": "1"
+}
+```
+
+**Example:**
+```bash
+curl -X POST http://localhost:3001/gitlab/mr \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project": "johndoe/my-website",
+    "title": "[AllyLab] Fix accessibility issues",
+    "sourceBranch": "allylab/a11y-fixes",
+    "files": [{
+      "path": "src/Hero.tsx",
+      "content": "<img src=\"hero.jpg\" alt=\"Hero\" />"
+    }]
+  }'
+```
+
+---
+
+### GET /gitlab/mr
+
+Get merge request status.
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project` | string | Yes | Project path |
+| `iid` | string | Yes | MR internal ID |
+| `instanceUrl` | string | No | GitLab instance URL |
+
+**Response:**
+```json
+{
+  "iid": 42,
+  "project_id": 12345,
+  "web_url": "https://gitlab.com/johndoe/my-website/-/merge_requests/42",
+  "state": "opened",
+  "merged_at": null,
+  "merge_status": "can_be_merged",
+  "has_conflicts": false,
+  "pipeline": {
+    "id": 123456,
+    "status": "running",
+    "web_url": "https://gitlab.com/johndoe/my-website/-/pipelines/123456"
+  },
+  "approvals_required": 1,
+  "approvals_left": 1,
+  "created_at": "2024-01-15T10:30:00.000Z",
+  "updated_at": "2024-01-15T11:00:00.000Z"
+}
+```
+
+**Example:**
+```bash
+curl "http://localhost:3001/gitlab/mr?project=johndoe/my-website&iid=42"
+```
+
+---
+
 ## Webhooks
+
+### Webhook Delivery
+
+Webhooks are delivered with automatic retry on failure:
+- **Retry count:** 3 attempts
+- **Backoff:** Exponential with jitter (1s, 2s, 4s base)
+- **Timeout:** 10 seconds per attempt
+- **Headers:** `X-AllyLab-Event`, `X-AllyLab-Delivery`, `X-AllyLab-Signature`
 
 ### GET /webhooks
 
-List all configured webhooks.
+List all configured webhooks with pagination.
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Items per page |
+| `offset` | number | 0 | Items to skip |
+| `page` | number | 1 | Page number |
 
 **Response:**
 ```json
@@ -1313,13 +1757,22 @@ List all configured webhooks.
       "events": ["scan.complete"],
       "createdAt": "2024-01-15T10:30:00.000Z"
     }
-  ]
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "totalPages": 1,
+    "hasMore": false
+  }
 }
 ```
 
 **Example:**
 ```bash
 curl http://localhost:3001/webhooks
+curl "http://localhost:3001/webhooks?limit=10&page=2"
 ```
 
 ---
@@ -1446,7 +1899,15 @@ curl -X POST http://localhost:3001/webhooks/wh_123/test
 
 ### GET /schedules
 
-List all scheduled scans.
+List all scheduled scans with pagination.
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | number | 20 | Items per page |
+| `offset` | number | 0 | Items to skip |
+| `page` | number | 1 | Page number |
 
 **Response:**
 ```json
@@ -1463,13 +1924,22 @@ List all scheduled scans.
       "lastScore": 85,
       "lastIssues": 12
     }
-  ]
+  ],
+  "pagination": {
+    "total": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "totalPages": 1,
+    "hasMore": false
+  }
 }
 ```
 
 **Example:**
 ```bash
 curl http://localhost:3001/schedules
+curl "http://localhost:3001/schedules?limit=10&page=2"
 ```
 
 ---
@@ -1880,13 +2350,30 @@ curl -X POST http://localhost:3001/export/json \
 
 ### Error Response Format
 
-All endpoints return errors in this format:
+All endpoints return errors in a standardized format:
 ```json
 {
+  "success": false,
   "error": "Error message",
-  "details": "Additional details (optional)"
+  "code": "ERROR_CODE",
+  "details": { "field": "additional context" },
+  "requestId": "abc123-xyz789",
+  "timestamp": "2024-01-15T10:30:00.000Z"
 }
 ```
+
+### Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| `VALIDATION_ERROR` | 400 | Invalid request parameters |
+| `NOT_FOUND` | 404 | Resource not found |
+| `RATE_LIMITED` | 429 | Too many requests |
+| `INTERNAL_ERROR` | 500 | Server error |
+| `SCAN_ERROR` | 500 | Scan execution failed |
+| `TIMEOUT_ERROR` | 504 | Operation timed out |
+| `GITHUB_ERROR` | 502 | GitHub API error |
+| `JIRA_ERROR` | 502 | JIRA API error |
 
 ### HTTP Status Codes
 
@@ -1897,7 +2384,10 @@ All endpoints return errors in this format:
 | 400 | Bad Request - Invalid input |
 | 401 | Unauthorized - Authentication required |
 | 404 | Not Found - Resource doesn't exist |
+| 429 | Too Many Requests - Rate limited |
 | 500 | Server Error - Internal error |
+| 502 | Bad Gateway - External service error |
+| 504 | Gateway Timeout - External service timeout |
 
 ### Common Errors
 
@@ -1913,12 +2403,39 @@ All endpoints return errors in this format:
 
 ## Rate Limiting
 
-Currently no rate limiting is implemented. For production, consider:
+Rate limiting is configurable via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ENABLE_RATE_LIMITING` | `false` | Enable rate limiting |
+| `RATE_LIMIT_MAX` | `100` | Max requests per window |
+| `RATE_LIMIT_TIME_WINDOW` | `60000` | Window size in ms (1 minute) |
+
+**Rate limit headers:**
+- `X-RateLimit-Limit` - Maximum requests allowed
+- `X-RateLimit-Remaining` - Requests remaining in window
+- `X-RateLimit-Reset` - Window reset time (Unix timestamp)
+
+**Rate limit exceeded response:**
+```json
+{
+  "success": false,
+  "error": "Too many requests",
+  "code": "RATE_LIMITED",
+  "details": { "retryAfter": "60s" },
+  "requestId": "abc123-xyz789",
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Excluded endpoints:** `/health`, `/metrics`, `/docs/*`
+
+**Recommended production limits:**
 
 | Resource | Recommended Limit |
 |----------|-------------------|
-| Scans | 100 per hour |
-| API requests | 1000 per minute |
+| API requests | 100 per minute |
+| Scans | 10 per minute |
 | GitHub API | 5000 per hour (authenticated) |
 | JIRA API | 100 per minute |
 

@@ -14,7 +14,9 @@ const mockAnalyze = vi.fn();
 const mockWithTags = vi.fn();
 
 vi.mock("../../services/browser.js", () => ({
-  createPage: vi.fn(),
+  acquirePage: vi.fn(),
+  releasePage: vi.fn(),
+  destroyPage: vi.fn(),
 }));
 
 vi.mock("../../services/rule-evaluator.js", () => ({
@@ -45,7 +47,7 @@ vi.mock("@axe-core/playwright", () => {
 });
 
 import { runScan } from "../../services/scanner";
-import { createPage } from "../../services/browser";
+import { acquirePage, releasePage, destroyPage } from "../../services/browser";
 import {
   evaluateCustomRules,
   getEnabledRulesCount,
@@ -53,7 +55,9 @@ import {
 import { calculateScore } from "../../utils/scoring";
 import { getWcagTags } from "../../utils/wcag";
 
-const mockCreatePage = vi.mocked(createPage);
+const mockAcquirePage = vi.mocked(acquirePage);
+const mockReleasePage = vi.mocked(releasePage);
+const mockDestroyPage = vi.mocked(destroyPage);
 const mockEvaluateCustomRules = vi.mocked(evaluateCustomRules);
 const mockGetEnabledRulesCount = vi.mocked(getEnabledRulesCount);
 const mockCalculateScore = vi.mocked(calculateScore);
@@ -77,7 +81,9 @@ describe("services/scanner", () => {
       close: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockCreatePage.mockResolvedValue(mockPage as unknown as Page);
+    mockAcquirePage.mockResolvedValue(mockPage as unknown as Page);
+    mockReleasePage.mockResolvedValue(undefined);
+    mockDestroyPage.mockResolvedValue(undefined);
 
     mockAnalyze.mockResolvedValue({
       violations: [],
@@ -88,7 +94,7 @@ describe("services/scanner", () => {
 
     mockGetWcagTags.mockReturnValue(["wcag2a", "wcag2aa", "wcag21aa"]);
     mockCalculateScore.mockReturnValue(100);
-    mockGetEnabledRulesCount.mockReturnValue(0);
+    mockGetEnabledRulesCount.mockResolvedValue(0);
     mockEvaluateCustomRules.mockResolvedValue([]);
   });
 
@@ -119,13 +125,13 @@ describe("services/scanner", () => {
     it("creates page with specified viewport", async () => {
       await runScan({ url: "https://example.com", viewport: "mobile" });
 
-      expect(mockCreatePage).toHaveBeenCalledWith("mobile");
+      expect(mockAcquirePage).toHaveBeenCalledWith("mobile", expect.any(Number));
     });
 
     it("creates page with desktop viewport by default", async () => {
       await runScan({ url: "https://example.com" });
 
-      expect(mockCreatePage).toHaveBeenCalledWith("desktop");
+      expect(mockAcquirePage).toHaveBeenCalledWith("desktop", expect.any(Number));
     });
 
     it("navigates to URL with correct options", async () => {
@@ -133,7 +139,7 @@ describe("services/scanner", () => {
 
       expect(mockPage.goto).toHaveBeenCalledWith("https://example.com", {
         waitUntil: "domcontentloaded",
-        timeout: 60000,
+        timeout: expect.any(Number),
       });
     });
 
@@ -294,9 +300,9 @@ describe("services/scanner", () => {
     it("calls calculateScore with severity counts", async () => {
       vi.clearAllMocks();
 
-      mockCreatePage.mockResolvedValue(mockPage as unknown as Page);
+      mockAcquirePage.mockResolvedValue(mockPage as unknown as Page);
       mockGetWcagTags.mockReturnValue(["wcag2a", "wcag2aa", "wcag21aa"]);
-      mockGetEnabledRulesCount.mockReturnValue(0);
+      mockGetEnabledRulesCount.mockResolvedValue(0);
       mockEvaluateCustomRules.mockResolvedValue([]);
 
       mockAnalyze.mockResolvedValue({
@@ -473,20 +479,20 @@ describe("services/scanner", () => {
       expect(result.findings[0].wcagTags).toEqual(["wcag2a", "wcag111"]);
     });
 
-    it("closes page after scan completes", async () => {
+    it("releases page after scan completes", async () => {
       await runScan({ url: "https://example.com" });
 
-      expect(mockPage.close).toHaveBeenCalled();
+      expect(mockReleasePage).toHaveBeenCalledWith(mockPage);
     });
 
-    it("closes page even when scan fails", async () => {
+    it("destroys page when scan fails", async () => {
       mockAnalyze.mockRejectedValue(new Error("Analyze failed"));
 
       await expect(runScan({ url: "https://example.com" })).rejects.toThrow(
         "Analyze failed"
       );
 
-      expect(mockPage.close).toHaveBeenCalled();
+      expect(mockDestroyPage).toHaveBeenCalledWith(mockPage);
     });
 
     it("handles navigation timeout with fallback", async () => {
@@ -542,12 +548,8 @@ describe("services/scanner", () => {
           message: expect.stringContaining("accessibility scan"),
         })
       );
-      expect(onProgress).toHaveBeenCalledWith(
-        expect.objectContaining({
-          percent: 60,
-          message: expect.stringContaining("Processing"),
-        })
-      );
+      // Note: 55-70% progress calls only happen when processing violations
+      // Since mock returns empty violations, we skip to score calculation
       expect(onProgress).toHaveBeenCalledWith(
         expect.objectContaining({
           percent: 90,
@@ -638,7 +640,7 @@ describe("services/scanner", () => {
 
   describe("custom rules integration", () => {
     it("runs custom rules when enabled and rules exist", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(3);
+      mockGetEnabledRulesCount.mockResolvedValue(3);
       mockEvaluateCustomRules.mockResolvedValue([]);
 
       await runScan({ url: "https://example.com", includeCustomRules: true });
@@ -651,7 +653,7 @@ describe("services/scanner", () => {
     });
 
     it("skips custom rules when disabled", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(3);
+      mockGetEnabledRulesCount.mockResolvedValue(3);
 
       await runScan({ url: "https://example.com", includeCustomRules: false });
 
@@ -659,7 +661,7 @@ describe("services/scanner", () => {
     });
 
     it("skips custom rules when none are enabled", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(0);
+      mockGetEnabledRulesCount.mockResolvedValue(0);
 
       await runScan({ url: "https://example.com", includeCustomRules: true });
 
@@ -667,7 +669,7 @@ describe("services/scanner", () => {
     });
 
     it("includes customRulesCount in result", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(7);
+      mockGetEnabledRulesCount.mockResolvedValue(7);
 
       const result = await runScan({ url: "https://example.com" });
 
@@ -675,7 +677,7 @@ describe("services/scanner", () => {
     });
 
     it("sets customRulesCount to 0 when custom rules disabled", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(5);
+      mockGetEnabledRulesCount.mockResolvedValue(5);
 
       const result = await runScan({
         url: "https://example.com",
@@ -688,7 +690,7 @@ describe("services/scanner", () => {
 
   describe("custom rules integration extended", () => {
     it("includes custom rule violations in findings and counts severity", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(2);
+      mockGetEnabledRulesCount.mockResolvedValue(2);
 
       mockEvaluateCustomRules.mockImplementation(async (options) => {
         const violations = [
@@ -729,7 +731,7 @@ describe("services/scanner", () => {
     });
 
     it("reports custom rules violation count in progress", async () => {
-      mockGetEnabledRulesCount.mockReturnValue(3);
+      mockGetEnabledRulesCount.mockResolvedValue(3);
 
       mockEvaluateCustomRules.mockImplementation(async (options) => {
         const violations = [

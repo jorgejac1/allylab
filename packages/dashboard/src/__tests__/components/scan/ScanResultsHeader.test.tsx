@@ -27,16 +27,16 @@ describe("components/scan/ScanResultsHeader", () => {
     expect(screen.getByText("Accessibility Report")).toBeInTheDocument();
     expect(screen.getByText("https://allylab.com")).toHaveAttribute("href", "https://allylab.com");
     expect(screen.getByText("Critical")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "🔄 Rescan" }));
-    fireEvent.click(screen.getByRole("button", { name: "📤 Export" }));
+    fireEvent.click(screen.getByRole("button", { name: /Rescan/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Export/ }));
     expect(onRescan).toHaveBeenCalled();
     expect(onExport).toHaveBeenCalled();
   });
 
   it("hides actions when callbacks are not provided", () => {
     render(<ScanResultsHeader result={result} />);
-    const rescanBtn = screen.queryByRole("button", { name: "🔄 Rescan" });
-    const exportBtn = screen.queryByRole("button", { name: "📤 Export" });
+    const rescanBtn = screen.queryByRole("button", { name: /Rescan/ });
+    const exportBtn = screen.queryByRole("button", { name: /Export/ });
     // Buttons render defensively; ensure they exist but clicks are safe
     if (rescanBtn) fireEvent.click(rescanBtn);
     if (exportBtn) fireEvent.click(exportBtn);

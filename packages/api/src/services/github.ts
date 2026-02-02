@@ -1,11 +1,75 @@
 import { config } from '../config/env.js';
-import type { 
-  GitHubRepo, 
-  GitHubConnection, 
-  CreatePRRequest, 
+import { githubLogger } from '../utils/logger.js';
+import type {
+  GitHubRepo,
+  GitHubConnection,
+  CreatePRRequest,
   PRResult,
-  PRStatus 
+  PRStatus
 } from '../types/github.js';
+
+// ============================================
+// Cache Configuration
+// ============================================
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+class ApiCache<T> {
+  private cache = new Map<string, CacheEntry<T>>();
+  private ttl: number;
+
+  constructor(ttlMs: number = CACHE_TTL) {
+    this.ttl = ttlMs;
+  }
+
+  get(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+
+    // Check if expired
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      return undefined;
+    }
+
+    return entry.data;
+  }
+
+  set(key: string, data: T): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  invalidate(key: string): void {
+    this.cache.delete(key);
+  }
+
+  invalidatePattern(pattern: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  size(): number {
+    return this.cache.size;
+  }
+}
+
+// Caches for different data types
+const userCache = new ApiCache<{ login: string; avatar_url: string; name: string }>();
+const reposCache = new ApiCache<GitHubRepo[]>();
+const branchesCache = new ApiCache<{ name: string; sha: string }[]>();
+const treeCache = new ApiCache<RepoFile[]>();
 
 // In-memory storage for GitHub tokens (replace with DB later)
 const githubTokens = new Map<string, string>();
@@ -45,7 +109,10 @@ async function githubFetch<T>(
 
 export function setGitHubToken(userId: string, token: string): void {
   githubTokens.set(userId, token);
-  console.log(`[GitHub] Token stored for user: ${userId}`);
+  // Invalidate user-specific caches when token changes
+  userCache.invalidatePattern(userId);
+  reposCache.invalidatePattern(userId);
+  githubLogger.info({ msg: 'Token stored', userId });
 }
 
 export function getGitHubToken(userId: string): string | undefined {
@@ -54,7 +121,33 @@ export function getGitHubToken(userId: string): string | undefined {
 
 export function removeGitHubToken(userId: string): void {
   githubTokens.delete(userId);
-  console.log(`[GitHub] Token removed for user: ${userId}`);
+  // Clear caches for this user
+  userCache.invalidatePattern(userId);
+  reposCache.invalidatePattern(userId);
+  githubLogger.info({ msg: 'Token removed', userId });
+}
+
+/**
+ * Clear all GitHub API caches
+ */
+export function clearGitHubCache(): void {
+  userCache.clear();
+  reposCache.clear();
+  branchesCache.clear();
+  treeCache.clear();
+  githubLogger.info({ msg: 'GitHub cache cleared' });
+}
+
+/**
+ * Get GitHub cache stats
+ */
+export function getGitHubCacheStats(): Record<string, number> {
+  return {
+    users: userCache.size(),
+    repos: reposCache.size(),
+    branches: branchesCache.size(),
+    trees: treeCache.size(),
+  };
 }
 
 // ============================================
@@ -63,22 +156,35 @@ export function removeGitHubToken(userId: string): void {
 
 export async function getConnection(userId: string): Promise<GitHubConnection> {
   const token = githubTokens.get(userId);
-  
+
   if (!token) {
     return { connected: false };
   }
 
-  try {
-    const user = await githubFetch<{
-      login: string;
-      avatar_url: string;
-      name: string;
-    }>('/user', token);
+  const userCacheKey = `user:${userId}`;
+  const reposCacheKey = `repos:${userId}`;
 
-    const reposResponse = await githubFetch<GitHubRepo[]>(
-      '/user/repos?per_page=100&sort=updated',
-      token
-    );
+  try {
+    // Check cache for user data
+    let user = userCache.get(userCacheKey);
+    if (!user) {
+      user = await githubFetch<{
+        login: string;
+        avatar_url: string;
+        name: string;
+      }>('/user', token);
+      userCache.set(userCacheKey, user);
+    }
+
+    // Check cache for repos
+    let repos = reposCache.get(reposCacheKey);
+    if (!repos) {
+      repos = await githubFetch<GitHubRepo[]>(
+        '/user/repos?per_page=100&sort=updated',
+        token
+      );
+      reposCache.set(reposCacheKey, repos);
+    }
 
     return {
       connected: true,
@@ -87,11 +193,11 @@ export async function getConnection(userId: string): Promise<GitHubConnection> {
         avatar_url: user.avatar_url,
         name: user.name,
       },
-      repos: reposResponse,
+      repos,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[GitHub] Connection check failed:', message);
+    githubLogger.error({ msg: 'Connection check failed', userId, error: message });
     return { connected: false };
   }
 }
@@ -101,19 +207,33 @@ export async function getConnection(userId: string): Promise<GitHubConnection> {
 // ============================================
 
 export async function getRepos(token: string): Promise<GitHubRepo[]> {
+  // Note: Can't cache easily without userId context
   return githubFetch<GitHubRepo[]>('/user/repos?per_page=100&sort=updated', token);
 }
 
 export async function getRepoBranches(
-  token: string, 
-  owner: string, 
+  token: string,
+  owner: string,
   repo: string
 ): Promise<{ name: string; sha: string }[]> {
+  const cacheKey = `branches:${owner}/${repo}`;
+
+  // Check cache
+  const cached = branchesCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const branches = await githubFetch<{ name: string; commit: { sha: string } }[]>(
     `/repos/${owner}/${repo}/branches`,
     token
   );
-  return branches.map(b => ({ name: b.name, sha: b.commit.sha }));
+  const result = branches.map(b => ({ name: b.name, sha: b.commit.sha }));
+
+  // Cache the result
+  branchesCache.set(cacheKey, result);
+
+  return result;
 }
 
 export async function getFileContent(
@@ -135,7 +255,7 @@ export async function getFileContent(
     return { content, sha: file.sha };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[GitHub] Failed to get file content:', message);
+    githubLogger.error({ msg: 'Failed to get file content', owner, repo, path, error: message });
     return null;
   }
 }
@@ -176,7 +296,7 @@ export async function searchCode(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[GitHub] Code search failed:', response.status, errorText);
+    githubLogger.error({ msg: 'Code search failed', status: response.status, error: errorText });
     throw new Error(`GitHub code search failed: ${response.status}`);
   }
 
@@ -227,6 +347,14 @@ export async function getRepoTree(
   repo: string,
   branch: string = 'main'
 ): Promise<RepoFile[]> {
+  const cacheKey = `tree:${owner}/${repo}:${branch}`;
+
+  // Check cache
+  const cached = treeCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
     {
@@ -240,7 +368,7 @@ export async function getRepoTree(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[GitHub] Tree fetch failed:', response.status, errorText);
+    githubLogger.error({ msg: 'Tree fetch failed', owner, repo, branch, status: response.status, error: errorText });
     throw new Error(`GitHub tree fetch failed: ${response.status}`);
   }
 
@@ -258,9 +386,9 @@ export async function getRepoTree(
 
   const data = await response.json() as GitHubTreeResponse;
 
-  return data.tree
-    .filter(item => 
-      item.type === 'blob' && 
+  const result = data.tree
+    .filter(item =>
+      item.type === 'blob' &&
       item.path.match(/\.(tsx?|jsx?|vue|svelte)$/) &&
       !item.path.includes('node_modules') &&
       !item.path.includes('.test.') &&
@@ -273,6 +401,11 @@ export async function getRepoTree(
       type: 'file' as const,
       size: item.size,
     }));
+
+  // Cache the result
+  treeCache.set(cacheKey, result);
+
+  return result;
 }
 
 // ============================================
@@ -307,13 +440,13 @@ export async function createPullRequest(
       }
     );
 
-    console.log(`[GitHub] Created branch: ${branchName}`);
+    githubLogger.info({ msg: 'Created branch', owner, repo, branch: branchName });
 
     for (const fix of fixes) {
       const currentFile = await getFileContent(token, owner, repo, fix.filePath, branchName);
-      
+
       if (!currentFile) {
-        console.warn(`[GitHub] File not found: ${fix.filePath}, skipping...`);
+        githubLogger.warn({ msg: 'File not found, skipping', filePath: fix.filePath });
         continue;
       }
 
@@ -331,7 +464,7 @@ export async function createPullRequest(
         }
       );
 
-      console.log(`[GitHub] Updated file: ${fix.filePath}`);
+      githubLogger.info({ msg: 'Updated file', filePath: fix.filePath });
     }
 
     const prTitle = title || `[AllyLab] Accessibility fixes (${fixes.length} issue${fixes.length > 1 ? 's' : ''})`;
@@ -351,7 +484,11 @@ export async function createPullRequest(
       }
     );
 
-    console.log(`[GitHub] Created PR #${pr.number}: ${pr.html_url}`);
+    // Invalidate caches for this repo since we made changes
+    branchesCache.invalidatePattern(`${owner}/${repo}`);
+    treeCache.invalidatePattern(`${owner}/${repo}`);
+
+    githubLogger.info({ msg: 'Created PR', owner, repo, prNumber: pr.number, prUrl: pr.html_url });
 
     return {
       success: true,
@@ -361,7 +498,7 @@ export async function createPullRequest(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[GitHub] PR creation failed:', message);
+    githubLogger.error({ msg: 'PR creation failed', owner, repo, error: message });
     return {
       success: false,
       error: message,
@@ -450,7 +587,7 @@ export async function getPRStatus(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[GitHub] Failed to get PR status:', message);
+    githubLogger.error({ msg: 'Failed to get PR status', owner, repo, prNumber, error: message });
     return null;
   }
 }

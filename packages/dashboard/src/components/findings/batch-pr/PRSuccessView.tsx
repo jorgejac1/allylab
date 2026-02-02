@@ -1,5 +1,6 @@
 import { Button } from '../../ui';
 import type { BatchPRResult } from '../../../types/batch-pr';
+import { PartyPopper } from 'lucide-react';
 
 interface PRSuccessViewProps {
   result: BatchPRResult;
@@ -10,7 +11,7 @@ interface PRSuccessViewProps {
 export function PRSuccessView({ result, fixCount, onClose }: PRSuccessViewProps) {
   return (
     <div style={{ textAlign: 'center', padding: 20 }}>
-      <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><PartyPopper size={64} style={{ color: '#16a34a' }} /></div>
       <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>Pull Request Created!</h3>
       <p style={{ color: '#64748b', fontSize: 14, marginBottom: 24 }}>
         PR #{result.prNumber} with {fixCount} accessibility fixes has been created.

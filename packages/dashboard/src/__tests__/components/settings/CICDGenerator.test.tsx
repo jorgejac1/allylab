@@ -85,7 +85,7 @@ describe("settings/CICDGenerator", () => {
     render(<CICDGenerator />);
 
     // Click download button
-    const downloadButtons = screen.getAllByRole("button", { name: "⬇️ Download" });
+    const downloadButtons = screen.getAllByRole("button", { name: /Download/i });
     fireEvent.click(downloadButtons[0]);
 
     // Verify download link was created
@@ -106,7 +106,7 @@ describe("settings/CICDGenerator", () => {
     const platformSelect = screen.getAllByRole("combobox")[0] as HTMLSelectElement;
     fireEvent.change(platformSelect, { target: { value: "" } });
 
-    const downloadBtn = screen.getAllByRole("button", { name: "⬇️ Download" })[0];
+    const downloadBtn = screen.getAllByRole("button", { name: /Download/i })[0];
     fireEvent.click(downloadBtn);
 
     expect(anchor).not.toBeNull();
@@ -287,7 +287,7 @@ describe("settings/CICDGenerator", () => {
     render(<CICDGenerator />);
 
     // Click copy button
-    const copyButtons = screen.getAllByText("📋 Copy");
+    const copyButtons = screen.getAllByRole("button", { name: /Copy/i });
     await act(async () => {
       fireEvent.click(copyButtons[0]);
       // Flush promises to allow async clipboard operation to complete

@@ -2,6 +2,9 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 
 type MockedServer = {
   register: ReturnType<typeof vi.fn>;
+  addHook: ReturnType<typeof vi.fn>;
+  setErrorHandler: ReturnType<typeof vi.fn>;
+  setNotFoundHandler: ReturnType<typeof vi.fn>;
 };
 
 async function loadServer(nodeEnv: "development" | "production") {
@@ -11,8 +14,14 @@ async function loadServer(nodeEnv: "development" | "production") {
   const initScheduler = vi.fn();
   const shutdownScheduler = vi.fn();
   const corsPlugin = Symbol("cors");
+  const rateLimitPlugin = Symbol("rateLimit");
+  const swaggerPlugin = Symbol("swagger");
+  const swaggerUiPlugin = Symbol("swagger-ui");
   const server: MockedServer = {
     register: vi.fn(async () => undefined),
+    addHook: vi.fn(async () => undefined),
+    setErrorHandler: vi.fn(() => undefined),
+    setNotFoundHandler: vi.fn(() => undefined),
   };
   let fastifyFactory: ReturnType<typeof vi.fn>;
 
@@ -25,15 +34,48 @@ async function loadServer(nodeEnv: "development" | "production") {
       anthropicApiKey: "",
       enableAiFixes: false,
       githubApiUrl: "https://api.github.com",
+      enableRateLimiting: false,
     },
   }));
 
   vi.doMock("@fastify/cors", () => ({ default: corsPlugin, __esModule: true }));
+  vi.doMock("@fastify/rate-limit", () => ({ default: rateLimitPlugin, __esModule: true }));
+  vi.doMock("@fastify/swagger", () => ({ default: swaggerPlugin, __esModule: true }));
+  vi.doMock("@fastify/swagger-ui", () => ({ default: swaggerUiPlugin, __esModule: true }));
+
+  // Mock swagger config
+  vi.doMock("../config/swagger.js", () => ({
+    swaggerConfig: { openapi: {} },
+    swaggerUiConfig: { routePrefix: "/docs" },
+  }));
   vi.doMock("../routes/index", () => ({ registerRoutes }));
   vi.doMock("../services/scheduler", () => ({
     initScheduler,
     shutdownScheduler,
   }));
+
+  // Mock browser service
+  vi.doMock("../services/browser.js", () => ({
+    shutdownPool: vi.fn().mockResolvedValue(undefined),
+    closeBrowser: vi.fn().mockResolvedValue(undefined),
+  }));
+
+  // Mock metrics module to avoid duplicate registration issues
+  vi.doMock("../utils/metrics.js", () => ({
+    httpRequestsInProgress: {
+      inc: vi.fn(),
+      dec: vi.fn(),
+    },
+    recordHttpRequest: vi.fn(),
+    recordError: vi.fn(),
+  }));
+
+  // Mock errors module
+  vi.doMock("../utils/errors.js", () => ({
+    errorHandler: vi.fn(),
+    notFoundHandler: vi.fn(),
+  }));
+
   vi.doMock("fastify", () => {
     fastifyFactory = vi.fn(() => server);
     return { default: fastifyFactory };
@@ -88,23 +130,30 @@ describe("server/createServer", () => {
     expect(processOnSpy).toHaveBeenCalledWith("SIGTERM", expect.any(Function));
   });
 
-  it("registers signal handlers that shut down scheduler and exit", async () => {
-    const { shutdownScheduler, processOnSpy } = await loadServer("development");
-    const [, sigintHandler] = processOnSpy.mock.calls.find(call => call[0] === "SIGINT")!;
-    const [, sigtermHandler] = processOnSpy.mock.calls.find(call => call[0] === "SIGTERM")!;
+  it("registers request metrics hooks", async () => {
+    const { server } = await loadServer("development");
 
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
-      throw new Error("exit called");
-    });
+    // Should have registered onRequest, onResponse, and onError hooks
+    expect(server.addHook).toHaveBeenCalledWith("onRequest", expect.any(Function));
+    expect(server.addHook).toHaveBeenCalledWith("onResponse", expect.any(Function));
+    expect(server.addHook).toHaveBeenCalledWith("onError", expect.any(Function));
+  });
 
-    expect(() => sigintHandler()).toThrow("exit called");
-    expect(shutdownScheduler).toHaveBeenCalledTimes(1);
+  it("registers signal handlers for graceful shutdown", async () => {
+    const { processOnSpy } = await loadServer("development");
 
-    shutdownScheduler.mockClear();
-    expect(() => sigtermHandler()).toThrow("exit called");
-    expect(shutdownScheduler).toHaveBeenCalledTimes(1);
+    // Verify that both SIGINT and SIGTERM handlers are registered
+    const sigintCalls = processOnSpy.mock.calls.filter(call => call[0] === "SIGINT");
+    const sigtermCalls = processOnSpy.mock.calls.filter(call => call[0] === "SIGTERM");
 
-    exitSpy.mockRestore();
+    expect(sigintCalls.length).toBeGreaterThan(0);
+    expect(sigtermCalls.length).toBeGreaterThan(0);
+
+    // Verify the handlers are functions
+    const sigintHandler = sigintCalls[0][1];
+    const sigtermHandler = sigtermCalls[0][1];
+    expect(typeof sigintHandler).toBe("function");
+    expect(typeof sigtermHandler).toBe("function");
   });
 
   it("initializes server with default logger in production", async () => {

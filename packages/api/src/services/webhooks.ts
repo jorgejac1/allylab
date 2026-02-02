@@ -1,17 +1,70 @@
 import crypto from 'crypto';
-import type { 
-  Webhook, 
-  WebhookEvent, 
-  WebhookPayload, 
-  WebhookCreateRequest, 
+import type {
+  Webhook,
+  WebhookEvent,
+  WebhookPayload,
+  WebhookCreateRequest,
   WebhookUpdateRequest,
   WebhookType,
   SlackPayload,
   TeamsPayload,
 } from '../types/webhook';
+import { webhookLogger } from '../utils/logger.js';
 
 // In-memory storage (replace with DB later)
 const webhooks = new Map<string, Webhook>();
+
+// ============================================
+// Retry Configuration
+// ============================================
+
+interface RetryConfig {
+  maxRetries: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  backoffMultiplier: number;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  maxRetries: 5,
+  baseDelayMs: 1000,      // 1 second
+  maxDelayMs: 60000,      // 1 minute max
+  backoffMultiplier: 2,   // Double delay each retry
+};
+
+/**
+ * Calculate delay for exponential backoff with jitter
+ */
+function calculateBackoffDelay(attempt: number, config: RetryConfig): number {
+  const exponentialDelay = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt);
+  const cappedDelay = Math.min(exponentialDelay, config.maxDelayMs);
+  // Add jitter (±10%) to prevent thundering herd
+  const jitter = cappedDelay * 0.1 * (Math.random() * 2 - 1);
+  return Math.floor(cappedDelay + jitter);
+}
+
+/**
+ * Sleep for a given number of milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Determine if an error is retryable
+ */
+function isRetryableError(statusCode: number): boolean {
+  // Retry on server errors (5xx) and rate limiting (429)
+  // Don't retry on client errors (4xx except 429) as they won't succeed
+  return statusCode >= 500 || statusCode === 429;
+}
+
+interface WebhookDeliveryResult {
+  success: boolean;
+  statusCode?: number;
+  attempts: number;
+  error?: string;
+}
 
 function generateId(): string {
   return `wh_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -331,7 +384,7 @@ export function createWebhook(data: WebhookCreateRequest): Webhook {
   };
 
   webhooks.set(webhook.id, webhook);
-  console.log(`[Webhooks] Created ${type} webhook: ${webhook.name} (${webhook.id})`);
+  webhookLogger.info({ msg: 'Webhook created', type, name: webhook.name, id: webhook.id });
   return webhook;
 }
 
@@ -365,6 +418,130 @@ export function deleteWebhook(id: string): boolean {
 }
 
 // ============================================
+// Webhook Delivery with Retry
+// ============================================
+
+/**
+ * Deliver a webhook with retry logic
+ */
+async function deliverWebhook(
+  webhook: Webhook,
+  payload: WebhookPayload,
+  config: RetryConfig = DEFAULT_RETRY_CONFIG
+): Promise<WebhookDeliveryResult> {
+  const { body, contentType } = formatPayloadForPlatform(webhook.type, payload);
+
+  const headers: Record<string, string> = {
+    'Content-Type': contentType,
+    'User-Agent': 'AllyLab-Webhook/1.0',
+  };
+
+  // Only add custom headers for generic webhooks (Slack/Teams don't need them)
+  if (webhook.type === 'generic') {
+    headers['X-AllyLab-Event'] = payload.event;
+    headers['X-AllyLab-Delivery'] = `${Date.now()}`;
+
+    if (webhook.secret) {
+      headers['X-AllyLab-Signature'] = `sha256=${generateSignature(body, webhook.secret)}`;
+    }
+  }
+
+  let lastError: string | undefined;
+  let lastStatusCode: number | undefined;
+
+  for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
+    try {
+      // Wait before retry (skip for first attempt)
+      if (attempt > 0) {
+        const delay = calculateBackoffDelay(attempt - 1, config);
+        webhookLogger.debug({
+          msg: 'Retrying webhook delivery',
+          webhookId: webhook.id,
+          attempt,
+          delayMs: delay,
+        });
+        await sleep(delay);
+      }
+
+      const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers,
+        body,
+      });
+
+      lastStatusCode = response.status;
+
+      if (response.ok) {
+        if (attempt > 0) {
+          webhookLogger.info({
+            msg: 'Webhook delivered after retry',
+            webhookId: webhook.id,
+            name: webhook.name,
+            attempts: attempt + 1,
+            statusCode: response.status,
+          });
+        }
+        return {
+          success: true,
+          statusCode: response.status,
+          attempts: attempt + 1,
+        };
+      }
+
+      // Check if we should retry
+      if (!isRetryableError(response.status)) {
+        webhookLogger.warn({
+          msg: 'Webhook delivery failed with non-retryable error',
+          webhookId: webhook.id,
+          name: webhook.name,
+          statusCode: response.status,
+        });
+        return {
+          success: false,
+          statusCode: response.status,
+          attempts: attempt + 1,
+          error: `HTTP ${response.status}`,
+        };
+      }
+
+      lastError = `HTTP ${response.status}`;
+      webhookLogger.warn({
+        msg: 'Webhook delivery failed, will retry',
+        webhookId: webhook.id,
+        attempt: attempt + 1,
+        maxRetries: config.maxRetries,
+        statusCode: response.status,
+      });
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : 'Network error';
+      webhookLogger.warn({
+        msg: 'Webhook delivery error, will retry',
+        webhookId: webhook.id,
+        attempt: attempt + 1,
+        maxRetries: config.maxRetries,
+        error: lastError,
+      });
+    }
+  }
+
+  // All retries exhausted
+  webhookLogger.error({
+    msg: 'Webhook delivery failed after all retries',
+    webhookId: webhook.id,
+    name: webhook.name,
+    attempts: config.maxRetries + 1,
+    lastError,
+  });
+
+  return {
+    success: false,
+    statusCode: lastStatusCode,
+    attempts: config.maxRetries + 1,
+    error: lastError,
+  };
+}
+
+// ============================================
 // Trigger Webhooks
 // ============================================
 
@@ -379,55 +556,45 @@ export async function triggerWebhooks(event: WebhookEvent, data: WebhookPayload[
     wh => wh.enabled && wh.events.includes(event)
   );
 
-  console.log(`[Webhooks] Triggering ${relevantWebhooks.length} webhooks for event: ${event}`);
+  webhookLogger.info({
+    msg: 'Triggering webhooks',
+    event,
+    webhookCount: relevantWebhooks.length,
+  });
 
-  for (const webhook of relevantWebhooks) {
-    try {
-      const { body, contentType } = formatPayloadForPlatform(webhook.type, payload);
-      
-      const headers: Record<string, string> = {
-        'Content-Type': contentType,
-        'User-Agent': 'AllyLab-Webhook/1.0',
-      };
+  // Deliver all webhooks concurrently
+  const deliveryPromises = relevantWebhooks.map(async (webhook) => {
+    const result = await deliverWebhook(webhook, payload);
 
-      // Only add custom headers for generic webhooks (Slack/Teams don't need them)
-      if (webhook.type === 'generic') {
-        headers['X-AllyLab-Event'] = event;
-        headers['X-AllyLab-Delivery'] = `${Date.now()}`;
-        
-        if (webhook.secret) {
-          headers['X-AllyLab-Signature'] = `sha256=${generateSignature(body, webhook.secret)}`;
-        }
-      }
+    // Update webhook status
+    webhook.lastTriggered = new Date().toISOString();
+    webhook.lastStatus = result.success ? 'success' : 'failed';
+    webhooks.set(webhook.id, webhook);
 
-      const response = await fetch(webhook.url, {
-        method: 'POST',
-        headers,
-        body,
-      });
+    webhookLogger.info({
+      msg: 'Webhook delivery completed',
+      webhookId: webhook.id,
+      name: webhook.name,
+      type: webhook.type,
+      success: result.success,
+      attempts: result.attempts,
+      statusCode: result.statusCode,
+    });
 
-      webhook.lastTriggered = new Date().toISOString();
-      webhook.lastStatus = response.ok ? 'success' : 'failed';
-      webhooks.set(webhook.id, webhook);
+    return { webhook, result };
+  });
 
-      console.log(`[Webhooks] ${webhook.name} (${webhook.type}): ${response.ok ? 'SUCCESS' : 'FAILED'} (${response.status})`);
-    } catch (error) {
-      webhook.lastTriggered = new Date().toISOString();
-      webhook.lastStatus = 'failed';
-      webhooks.set(webhook.id, webhook);
-      
-      console.error(`[Webhooks] ${webhook.name}: ERROR`, error);
-    }
-  }
+  await Promise.all(deliveryPromises);
 }
 
-// Test a webhook
+// Test a webhook (no retries for testing)
 export async function testWebhook(id: string): Promise<{ success: boolean; statusCode?: number; error?: string }> {
   const webhook = webhooks.get(id);
   if (!webhook) return { success: false, error: 'Webhook not found' };
 
+  // Use 'test' as the event type for testing
   const testPayload: WebhookPayload = {
-    event: 'scan.completed',
+    event: 'test' as WebhookEvent,
     timestamp: new Date().toISOString(),
     data: {
       scanUrl: 'https://example.com',
@@ -441,37 +608,22 @@ export async function testWebhook(id: string): Promise<{ success: boolean; statu
     },
   };
 
-  try {
-    const { body, contentType } = formatPayloadForPlatform(webhook.type, testPayload);
-    
-    const headers: Record<string, string> = {
-      'Content-Type': contentType,
-      'User-Agent': 'AllyLab-Webhook/1.0',
-    };
+  webhookLogger.info({ msg: 'Testing webhook', webhookId: id, name: webhook.name });
 
-    if (webhook.type === 'generic') {
-      headers['X-AllyLab-Event'] = 'test';
-      headers['X-AllyLab-Delivery'] = `${Date.now()}`;
-      
-      if (webhook.secret) {
-        headers['X-AllyLab-Signature'] = `sha256=${generateSignature(body, webhook.secret)}`;
-      }
-    }
+  // Use delivery function with no retries for testing
+  const result = await deliverWebhook(webhook, testPayload, {
+    maxRetries: 0,
+    baseDelayMs: 0,
+    maxDelayMs: 0,
+    backoffMultiplier: 1,
+  });
 
-    const response = await fetch(webhook.url, {
-      method: 'POST',
-      headers,
-      body,
-    });
-
-    return { 
-      success: response.ok, 
-      statusCode: response.status 
-    };
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Network error' 
-    };
-  }
+  return {
+    success: result.success,
+    statusCode: result.statusCode,
+    error: result.error,
+  };
 }
+
+// Export retry config for testing
+export { DEFAULT_RETRY_CONFIG, calculateBackoffDelay, isRetryableError };

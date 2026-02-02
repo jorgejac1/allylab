@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { Button } from './Button';
+import { Inbox } from 'lucide-react';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   description?: string;
   action?: {
@@ -10,7 +12,9 @@ interface EmptyStateProps {
   };
 }
 
-export function EmptyState({ icon = '📭', title, description, action }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+  const defaultIcon = <Inbox size={64} />;
+
   return (
     <div
       style={{
@@ -21,7 +25,7 @@ export function EmptyState({ icon = '📭', title, description, action }: EmptyS
         border: '2px dashed #e2e8f0',
       }}
     >
-      <div style={{ fontSize: 64, marginBottom: 16 }}>{icon}</div>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: '#94a3b8' }}>{icon || defaultIcon}</div>
       <h3 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px', color: '#0f172a' }}>
         {title}
       </h3>

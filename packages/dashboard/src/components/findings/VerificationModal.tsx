@@ -1,5 +1,6 @@
 import { Button, Modal } from '../ui';
 import type { VerificationResult } from '../../types/github';
+import { Search, XCircle, PartyPopper, AlertTriangle, X, Check } from 'lucide-react';
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export function VerificationModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Fix Verification" size="md">
       {isLoading && (
         <div style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ fontSize: 32, marginBottom: 16 }}>🔍</div>
+          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Search size={32} /></div>
           <p style={{ color: '#64748b', fontSize: 14 }}>
             Re-scanning page to verify fixes...
           </p>
@@ -29,7 +30,7 @@ export function VerificationModal({
 
       {error && (
         <div style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
+          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><XCircle size={48} style={{ color: '#dc2626' }} /></div>
           <h3 style={{ margin: '0 0 8px', fontSize: 16, color: '#dc2626' }}>
             Verification Failed
           </h3>
@@ -44,7 +45,7 @@ export function VerificationModal({
         <div style={{ padding: 20 }}>
           {result.allFixed ? (
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><PartyPopper size={64} style={{ color: '#16a34a' }} /></div>
               <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#16a34a' }}>
                 All Fixes Verified!
               </h3>
@@ -54,7 +55,7 @@ export function VerificationModal({
             </div>
           ) : (
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={48} style={{ color: '#f59e0b' }} /></div>
               <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#f59e0b' }}>
                 Some Issues Still Present
               </h3>
@@ -87,12 +88,12 @@ export function VerificationModal({
                     </td>
                     <td style={tdStyle}>
                       {finding.stillPresent ? (
-                        <span style={{ color: '#dc2626', fontWeight: 500 }}>
-                          ✗ Still Present
+                        <span style={{ color: '#dc2626', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <X size={12} /> Still Present
                         </span>
                       ) : (
-                        <span style={{ color: '#16a34a', fontWeight: 500 }}>
-                          ✓ Fixed
+                        <span style={{ color: '#16a34a', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <Check size={12} /> Fixed
                         </span>
                       )}
                     </td>

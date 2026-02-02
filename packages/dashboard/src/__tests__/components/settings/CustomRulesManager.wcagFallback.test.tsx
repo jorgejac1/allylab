@@ -100,7 +100,7 @@ describe("settings/CustomRulesManager wcagTags fallback", () => {
 
   it("renders WCAG tag buttons as unselected when wcagTags is undefined (covers ?? false branch)", () => {
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     // All WCAG tag buttons should render as unselected (isSelected=false due to ?? false fallback)
     const wcagButtons = screen.getAllByRole("button").filter((btn) =>

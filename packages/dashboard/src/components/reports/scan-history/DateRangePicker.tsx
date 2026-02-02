@@ -1,6 +1,7 @@
 import { Button } from '../../ui';
 import { formatDateForInput } from '../../../utils/dateRange';
 import type { DateRange } from '../../../types';
+import { X } from 'lucide-react';
 
 interface DateRangePickerProps {
   dateRange: DateRange;
@@ -54,9 +55,9 @@ export function DateRangePicker({ dateRange, onDateChange, onClear }: DateRangeP
           variant="ghost"
           size="sm"
           onClick={onClear}
-          style={{ color: '#64748b' }}
+          style={{ color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 4 }}
         >
-          ✕ Clear
+          <X size={12} /> Clear
         </Button>
       )}
     </div>

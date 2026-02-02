@@ -22,6 +22,33 @@ export interface Finding {
   helpUrl: string;
 }
 
+// Authentication types for scanning protected pages
+export interface AuthCookie {
+  name: string;
+  value: string;
+  domain: string;
+  path?: string;
+  expires?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+}
+
+export interface StorageState {
+  cookies: AuthCookie[];
+  origins?: Array<{
+    origin: string;
+    localStorage: Array<{ name: string; value: string }>;
+  }>;
+}
+
+export interface ScanAuthOptions {
+  cookies?: AuthCookie[];
+  headers?: Record<string, string>;
+  storageState?: StorageState;
+  basicAuth?: { username: string; password: string };
+}
+
 export interface SiteScanResult {
   pagesScanned: number;
   averageScore: number;
@@ -53,20 +80,40 @@ export async function fetchScan(
   apiUrl: string,
   url: string,
   standard: string,
-  viewport: string
+  viewport: string,
+  timeout: number = 60000,
+  auth?: ScanAuthOptions
 ): Promise<ScanResult> {
-  const response = await fetch(`${apiUrl}/scan/json`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, standard, viewport }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+  try {
+    const body: Record<string, unknown> = { url, standard, viewport };
+    if (auth) {
+      body.auth = auth;
+    }
+
+    const response = await fetch(`${apiUrl}/scan/json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeout}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json();
 }
 
 export async function fetchSiteScan(

@@ -188,4 +188,132 @@ describe("hooks/useGitHub", () => {
     });
     expect(result.current.error).toBe("Failed to disconnect");
   });
+
+  it("searches code in repo", async () => {
+    const { result } = renderHook(() => useGitHub());
+
+    // successful search
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: vi.fn().mockResolvedValue([{ path: "src/test.ts" }]),
+    })) as unknown as typeof fetch;
+    const searchResults = await result.current.searchCode("owner", "repo", "query");
+    expect(searchResults).toEqual([{ path: "src/test.ts" }]);
+
+    // search failure
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      json: vi.fn().mockResolvedValue({ error: "Search failed" }),
+    })) as unknown as typeof fetch;
+    await expect(result.current.searchCode("owner", "repo", "query")).rejects.toThrow("Search failed");
+
+    // search failure without error message
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      json: vi.fn().mockResolvedValue({}),
+    })) as unknown as typeof fetch;
+    await expect(result.current.searchCode("owner", "repo", "query")).rejects.toThrow("Search failed");
+  });
+
+  it("gets repo tree", async () => {
+    const { result } = renderHook(() => useGitHub());
+
+    // successful get tree
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: vi.fn().mockResolvedValue([{ path: "src", type: "dir" }]),
+    })) as unknown as typeof fetch;
+    const tree = await result.current.getRepoTree("owner", "repo");
+    expect(tree).toEqual([{ path: "src", type: "dir" }]);
+
+    // get tree with branch
+    await result.current.getRepoTree("owner", "repo", "main");
+    expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("?branch=main"));
+
+    // get tree failure
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      json: vi.fn().mockResolvedValue({ error: "Tree error" }),
+    })) as unknown as typeof fetch;
+    await expect(result.current.getRepoTree("owner", "repo")).rejects.toThrow("Tree error");
+
+    // get tree failure without error message
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      json: vi.fn().mockResolvedValue({}),
+    })) as unknown as typeof fetch;
+    await expect(result.current.getRepoTree("owner", "repo")).rejects.toThrow("Failed to fetch files");
+  });
+
+  it("gets file content", async () => {
+    const { result } = renderHook(() => useGitHub());
+
+    // successful get file content
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ content: "file content" }),
+    })) as unknown as typeof fetch;
+    const content = await result.current.getFileContent("owner", "repo", "path/to/file.ts");
+    expect(content).toBe("file content");
+
+    // get file content with branch
+    await result.current.getFileContent("owner", "repo", "path/to/file.ts", "develop");
+    expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining("&branch=develop"));
+
+    // get file content - no content field
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      json: vi.fn().mockResolvedValue({}),
+    })) as unknown as typeof fetch;
+    const noContent = await result.current.getFileContent("owner", "repo", "path");
+    expect(noContent).toBeNull();
+
+    // get file content failure - non-ok response
+    globalThis.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 404,
+    })) as unknown as typeof fetch;
+    const notFound = await result.current.getFileContent("owner", "repo", "missing.ts");
+    expect(notFound).toBeNull();
+
+    // get file content network error
+    globalThis.fetch = vi.fn(async () => {
+      throw new Error("Network error");
+    }) as unknown as typeof fetch;
+    const netError = await result.current.getFileContent("owner", "repo", "file.ts");
+    expect(netError).toBeNull();
+
+    // get file content non-Error throw
+    globalThis.fetch = vi.fn(async () => {
+      throw "string error";
+    }) as unknown as typeof fetch;
+    const strError = await result.current.getFileContent("owner", "repo", "file.ts");
+    expect(strError).toBeNull();
+  });
+
+  it("creates PR with custom branch name", async () => {
+    const { result } = renderHook(() => useGitHub());
+
+    globalThis.fetch = vi.fn(async () => ({
+      json: vi.fn().mockResolvedValue({ success: true, url: "https://github.com/pr/1" }),
+    })) as unknown as typeof fetch;
+
+    const pr = await result.current.createPR(
+      "owner",
+      "repo",
+      "main",
+      [{ filePath: "test.ts", originalContent: "old", fixedContent: "new", findingId: "1", ruleTitle: "Test" }],
+      "My PR Title",
+      "PR Description",
+      "custom-branch-name"
+    );
+
+    expect(pr.success).toBe(true);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        body: expect.stringContaining("custom-branch-name"),
+      })
+    );
+  });
 });

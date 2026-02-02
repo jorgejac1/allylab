@@ -11,6 +11,9 @@ const mockGetRepos = vi.fn();
 const mockGetBranches = vi.fn();
 const mockCreatePR = vi.fn();
 const mockTrackPR = vi.fn();
+const mockSearchCode = vi.fn();
+const mockGetRepoTree = vi.fn();
+const mockGetFileContent = vi.fn();
 
 vi.mock("../../../hooks/useGitHub", () => ({
   useGitHub: vi.fn(() => ({
@@ -23,6 +26,9 @@ vi.mock("../../../hooks/useGitHub", () => ({
     getRepos: mockGetRepos,
     getBranches: mockGetBranches,
     createPR: mockCreatePR,
+    searchCode: mockSearchCode,
+    getRepoTree: mockGetRepoTree,
+    getFileContent: mockGetFileContent,
   })),
 }));
 
@@ -139,6 +145,9 @@ describe("components/findings/CreatePRModal", () => {
       getRepos: mockGetRepos,
       getBranches: mockGetBranches,
       createPR: mockCreatePR,
+      searchCode: mockSearchCode,
+      getRepoTree: mockGetRepoTree,
+      getFileContent: mockGetFileContent,
     });
 
     mockGetRepos.mockResolvedValue(mockRepos);
@@ -171,11 +180,13 @@ describe("components/findings/CreatePRModal", () => {
       getRepos: mockGetRepos,
       getBranches: mockGetBranches,
       createPR: mockCreatePR,
+      searchCode: mockSearchCode,
+      getRepoTree: mockGetRepoTree,
+      getFileContent: mockGetFileContent,
     });
 
     render(<CreatePRModal {...defaultProps} />);
 
-    expect(screen.getByText("🔗")).toBeInTheDocument();
     expect(screen.getByText("GitHub Not Connected")).toBeInTheDocument();
     expect(screen.getByText(/Connect your GitHub account/)).toBeInTheDocument();
   });
@@ -320,12 +331,12 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       expect(fileInput).toBeInTheDocument();
     });
   });
 
-  it("displays selector in file path hint", async () => {
+  it("displays original code in file path hint", async () => {
     render(<CreatePRModal {...defaultProps} />);
 
     await waitFor(() => {
@@ -338,7 +349,9 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      expect(screen.queryAllByText("button.submit").length).toBeGreaterThan(0);
+      // Should display the original code from the fix
+      expect(screen.getByText("Element to fix:")).toBeInTheDocument();
+      expect(screen.getByText("<button>Click</button>")).toBeInTheDocument();
     });
   });
 
@@ -355,7 +368,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
       expect(fileInput).toHaveValue("src/components/Button.tsx");
     });
@@ -431,7 +444,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -470,7 +483,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -510,10 +523,10 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("src/components/Hero.tsx")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("src/components/Header.tsx")).toBeInTheDocument();
     });
 
-    const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+    const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
     fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
 
     await waitFor(() => {
@@ -527,7 +540,6 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(createBtn!);
 
     await waitFor(() => {
-      expect(screen.queryAllByText("🎉").length).toBeGreaterThan(0);
       expect(screen.queryAllByText("Pull Request Created!").length).toBeGreaterThan(0);
       expect(screen.queryAllByText(/PR #1 has been created successfully/).length).toBeGreaterThan(0);
     }, { timeout: 3000 });
@@ -551,7 +563,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -579,7 +591,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -640,7 +652,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -733,11 +745,11 @@ describe("components/findings/CreatePRModal", () => {
 
     // Wait for file step to render
     await waitFor(() => {
-      expect(screen.getByPlaceholderText("src/components/Hero.tsx")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("src/components/Header.tsx")).toBeInTheDocument();
     });
 
     // Fill in file path so button is enabled
-    const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+    const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
     fireEvent.change(fileInput, { target: { value: "src/file.tsx" } });
 
     // Wait for branches to finish loading (isLoading becomes false)
@@ -775,7 +787,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -957,7 +969,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -996,7 +1008,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
@@ -1032,7 +1044,7 @@ describe("components/findings/CreatePRModal", () => {
     fireEvent.click(testRepoBtn!);
 
     await waitFor(() => {
-      const fileInput = screen.getByPlaceholderText("src/components/Hero.tsx");
+      const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 

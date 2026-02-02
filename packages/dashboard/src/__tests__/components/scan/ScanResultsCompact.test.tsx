@@ -33,6 +33,6 @@ describe("components/scan/ScanResultsCompact", () => {
 
   it("shows no-issues badge when totalIssues is zero", () => {
     render(<ScanResultsCompact scan={makeScan({ totalIssues: 0, critical: 0, serious: 0, moderate: 0, minor: 0 })} />);
-    expect(screen.getByText("✅ No issues")).toBeInTheDocument();
+    expect(screen.getByText(/No issues/)).toBeInTheDocument();
   });
 });

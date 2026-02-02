@@ -48,27 +48,32 @@ describe("findings/JiraCell", () => {
   });
 
   it("renders save button when linking", () => {
-    render(<JiraCell {...defaultProps} isLinking={true} />);
-    expect(screen.getByText("✓")).toBeInTheDocument();
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
+    const buttons = container.querySelectorAll("button");
+    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    expect(buttons[0].querySelector("svg")).toBeInTheDocument(); // Check icon (save button)
   });
 
   it("calls onSaveLink when save button is clicked", () => {
     const onSaveLink = vi.fn();
-    render(<JiraCell {...defaultProps} isLinking={true} onSaveLink={onSaveLink} />);
-    fireEvent.click(screen.getByText("✓"));
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} onSaveLink={onSaveLink} />);
+    const buttons = container.querySelectorAll("button");
+    fireEvent.click(buttons[0]); // First button is save
     expect(onSaveLink).toHaveBeenCalledTimes(1);
   });
 
   it("renders cancel button when linking", () => {
-    render(<JiraCell {...defaultProps} isLinking={true} />);
-    expect(screen.getByText("✕")).toBeInTheDocument();
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
+    const buttons = container.querySelectorAll("button");
+    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    expect(buttons[1].querySelector("svg")).toBeInTheDocument(); // Check icon (cancel button)
   });
 
   it("calls onCancelLink when cancel button is clicked", () => {
     const onCancelLink = vi.fn();
-    render(<JiraCell {...defaultProps} isLinking={true} onCancelLink={onCancelLink} />);
-    const cancelButtons = screen.getAllByText("✕");
-    fireEvent.click(cancelButtons[0]);
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} onCancelLink={onCancelLink} />);
+    const buttons = container.querySelectorAll("button");
+    fireEvent.click(buttons[1]); // Second button is cancel
     expect(onCancelLink).toHaveBeenCalledTimes(1);
   });
 
@@ -93,22 +98,20 @@ describe("findings/JiraCell", () => {
     expect(screen.getByText(/PROJ-123/)).toBeInTheDocument();
   });
 
-  it("renders link with emoji when issue key exists", () => {
+  it("renders link when issue key exists", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    expect(screen.getByText("🔗 PROJ-123")).toBeInTheDocument();
+    expect(screen.getByText(/PROJ-123/)).toBeInTheDocument();
   });
 
   it("renders remove button when issue key exists", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const removeButtons = screen.getAllByText("✕");
-    expect(removeButtons.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("button", { name: /remove/i })).toBeInTheDocument();
   });
 
   it("calls onRemoveLink when remove button is clicked", () => {
     const onRemoveLink = vi.fn();
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" onRemoveLink={onRemoveLink} />);
-    const removeButton = screen.getByText("✕");
-    fireEvent.click(removeButton);
+    fireEvent.click(screen.getByRole("button", { name: /remove/i }));
     expect(onRemoveLink).toHaveBeenCalledTimes(1);
   });
 
@@ -122,8 +125,8 @@ describe("findings/JiraCell", () => {
   });
 
   it("applies correct styling to save button", () => {
-    render(<JiraCell {...defaultProps} isLinking={true} />);
-    const saveButton = screen.getByText("✓");
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
+    const saveButton = container.querySelectorAll("button")[0];
     expect(saveButton).toHaveStyle({
       background: "rgb(16, 185, 129)",
       color: "rgb(255, 255, 255)",
@@ -132,7 +135,7 @@ describe("findings/JiraCell", () => {
 
   it("applies correct styling to issue key link", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText("🔗 PROJ-123");
+    const link = screen.getByText(/PROJ-123/);
     expect(link).toHaveStyle({
       background: "rgb(219, 234, 254)",
       color: "rgb(29, 78, 216)",
@@ -140,8 +143,8 @@ describe("findings/JiraCell", () => {
   });
 
   it("changes save button style on hover", () => {
-    render(<JiraCell {...defaultProps} isLinking={true} />);
-    const saveButton = screen.getByText("✓");
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
+    const saveButton = container.querySelectorAll("button")[0];
 
     fireEvent.mouseOver(saveButton);
     expect(saveButton).toHaveStyle({ background: "#059669" });
@@ -151,8 +154,8 @@ describe("findings/JiraCell", () => {
   });
 
   it("changes cancel button style on hover", () => {
-    render(<JiraCell {...defaultProps} isLinking={true} />);
-    const cancelButton = screen.getAllByText("✕")[0];
+    const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
+    const cancelButton = container.querySelectorAll("button")[1];
 
     fireEvent.mouseOver(cancelButton);
     expect(cancelButton).toHaveStyle({ background: "#e2e8f0" });
@@ -163,7 +166,7 @@ describe("findings/JiraCell", () => {
 
   it("prevents default action on issue key link click", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText("🔗 PROJ-123");
+    const link = screen.getByText(/PROJ-123/);
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
     Object.defineProperty(event, "preventDefault", {
       value: vi.fn(),
@@ -175,7 +178,7 @@ describe("findings/JiraCell", () => {
 
   it("changes issue key link style on hover", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText("🔗 PROJ-123");
+    const link = screen.getByText(/PROJ-123/);
 
     fireEvent.mouseOver(link);
     expect(link).toHaveStyle({ background: "#bfdbfe" });
@@ -188,7 +191,7 @@ describe("findings/JiraCell", () => {
 
   it("changes remove button style on hover", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const removeButton = screen.getByText("✕");
+    const removeButton = screen.getByRole("button", { name: /remove/i });
 
     fireEvent.mouseOver(removeButton);
     expect(removeButton).toHaveStyle({ color: "#ef4444", background: "#fef2f2" });

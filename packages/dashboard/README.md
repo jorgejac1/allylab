@@ -10,8 +10,8 @@ React-based web dashboard for AllyLab accessibility scanning. Built with React 1
 - 🏆 **Competitor Benchmarking** - Compare accessibility across sites
 - 📈 **Reports & History** - Track scans over time with trend analysis
 - 🤖 **AI-Powered Fixes** - View and apply fix suggestions
-- 🔗 **GitHub Integration** - Create PRs directly from findings
-- 🔗 **Batch PR Creation** - Select multiple issues and create a single PR with all fixes
+- 🔗 **GitHub/GitLab Integration** - Create PRs/MRs directly from findings
+- 🔗 **Batch PR/MR Creation** - Select multiple issues and create a single PR/MR with all fixes
 - 🔍 **Fix Verification** - Re-scan after PR merge to confirm fixes worked
 - 📅 **Scheduled Scans** - Set up recurring scans
 - 🔔 **Webhooks** - Configure Slack/Teams notifications
@@ -91,7 +91,7 @@ Configuration tabs:
 - **General** - Default WCAG standard, storage settings
 - **Rules** - Create and manage custom accessibility rules
 - **Scheduled Scans** - Create/manage recurring scans
-- **GitHub** - Connect GitHub account for PR creation
+- **Git** - Connect GitHub or GitLab for PR/MR creation
 - **Notifications** - Slack/Teams webhook setup
 - **JIRA** - JIRA connection and field mapping
 - **CI/CD** - Pipeline config generator
@@ -197,6 +197,7 @@ src/
 │   ├── useCustomRules.ts  # Custom rules management
 │   ├── useDashboardData.ts # Executive dashboard data
 │   ├── useGitHub.ts       # GitHub integration
+│   ├── useGitLab.ts       # GitLab integration
 │   ├── useJiraExport.ts   # JIRA export
 │   ├── useLocalStorage.ts # Persistent storage
 │   ├── useScan.ts         # Single page scan
@@ -220,6 +221,7 @@ src/
 │   ├── executive.ts
 │   ├── fixes.ts
 │   ├── github.ts
+│   ├── gitlab.ts
 │   ├── index.ts
 │   ├── jira.ts
 │   ├── rules.ts
@@ -268,13 +270,29 @@ await startScan('https://example.com', 10, 2, 'wcag21aa');
 ### `useGitHub`
 GitHub integration for PR creation.
 ```tsx
-const { 
-  isConnected, 
-  connect, 
-  disconnect, 
-  repositories, 
-  createPR 
+const {
+  isConnected,
+  connect,
+  disconnect,
+  repositories,
+  createPR
 } = useGitHub();
+```
+
+### `useGitLab`
+GitLab integration for MR creation. Supports GitLab.com and self-hosted instances.
+```tsx
+const {
+  connection,
+  isLoading,
+  connect,
+  disconnect,
+  getProjects,
+  createMR
+} = useGitLab();
+
+// Connect with self-hosted instance
+await connect('glpat-token', 'https://gitlab.mycompany.com');
 ```
 
 ### `useScans`

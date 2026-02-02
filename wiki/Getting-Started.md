@@ -34,6 +34,38 @@ npm run dev
 This starts:
 - **API** on http://localhost:3001
 - **Dashboard** on http://localhost:5173
+- **Website** on http://localhost:3000 (if started)
+
+## Authentication
+
+### Development Mode (Default)
+
+AllyLab uses mock authentication in development, allowing you to test without setting up Clerk or Stripe.
+
+#### Via Website Login
+1. Start the website: `npm run dev:website`
+2. Go to http://localhost:3000/sign-in
+3. Use a demo account or create a new one
+4. Click "Go to Dashboard" - you'll be automatically authenticated
+
+#### Via Dashboard Direct Access
+1. Open http://localhost:5173 directly
+2. Use the user switcher dropdown to switch between roles
+3. Test different permission levels (Admin, Manager, Developer, Viewer, Compliance)
+
+### Demo Accounts
+
+| Email | Password | Role |
+|-------|----------|------|
+| admin@acme.com | admin123 | Admin |
+| manager@acme.com | manager123 | Manager |
+| dev@acme.com | dev123 | Developer |
+| viewer@acme.com | viewer123 | Viewer |
+| compliance@acme.com | compliance123 | Compliance |
+
+### Production Mode
+
+For production authentication, see [[Auth-Setup]].
 
 ## Your First Scan
 
@@ -75,7 +107,7 @@ Each finding shows:
 - [[Features]] - Explore all features
 - [[Configuration]] - Configure settings
 - [[Custom Rules]] - Create custom checks
-- [[Integrations]] - Connect GitHub, JIRA, Slack
+- [[Integrations]] - Connect GitHub, GitLab, JIRA, Slack
 
 ## Quick Commands
 ```bash
@@ -96,6 +128,24 @@ npm run lint
 
 # Type check
 npm run typecheck
+```
+
+## Running Tests
+```bash
+# Run unit tests
+npm run test
+
+# Run unit tests with coverage
+npm run test:coverage
+
+# Run E2E tests (requires dev server)
+npx playwright test --project=chromium
+
+# Run specific E2E test file
+npx playwright test e2e/scan-workflow.spec.ts
+
+# View E2E test report
+npx playwright show-report
 ```
 
 ## CLI Usage

@@ -21,9 +21,10 @@ describe("batch-pr/PRSuccessView", () => {
     onClose: vi.fn(),
   };
 
-  it("renders celebration emoji", () => {
+  it("renders celebration icon", () => {
     render(<PRSuccessView {...defaultProps} />);
-    expect(screen.getByText("🎉")).toBeInTheDocument();
+    // PartyPopper icon from lucide-react renders as an SVG
+    expect(screen.getByText("Pull Request Created!")).toBeInTheDocument();
   });
 
   it("displays success title", () => {

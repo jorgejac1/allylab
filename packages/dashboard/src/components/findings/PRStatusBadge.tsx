@@ -1,4 +1,6 @@
+import { memo } from 'react';
 import type { PRTrackingInfo } from '../../types/github';
+import { Check, X, GitMerge } from 'lucide-react';
 
 interface PRStatusBadgeProps {
   pr: PRTrackingInfo;
@@ -6,7 +8,7 @@ interface PRStatusBadgeProps {
   isVerifying?: boolean;
 }
 
-export function PRStatusBadge({ pr, onVerify, isVerifying }: PRStatusBadgeProps) {
+export const PRStatusBadge = memo(function PRStatusBadge({ pr, onVerify, isVerifying }: PRStatusBadgeProps) {
   const getStatusStyle = () => {
     if (pr.verificationStatus === 'verified') {
       return { background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0' };
@@ -25,9 +27,9 @@ export function PRStatusBadge({ pr, onVerify, isVerifying }: PRStatusBadgeProps)
   };
 
   const getStatusText = () => {
-    if (pr.verificationStatus === 'verified') return '✓ Verified';
-    if (pr.verificationStatus === 'failed') return '✗ Still Present';
-    if (pr.status === 'merged') return '🔀 Merged';
+    if (pr.verificationStatus === 'verified') return <><Check size={12} style={{ marginRight: 4 }} /> Verified</>;
+    if (pr.verificationStatus === 'failed') return <><X size={12} style={{ marginRight: 4 }} /> Still Present</>;
+    if (pr.status === 'merged') return <><GitMerge size={12} style={{ marginRight: 4 }} /> Merged</>;
     if (pr.status === 'closed') return 'Closed';
     return 'Open';
   };
@@ -76,4 +78,4 @@ export function PRStatusBadge({ pr, onVerify, isVerifying }: PRStatusBadgeProps)
       )}
     </div>
   );
-}
+});

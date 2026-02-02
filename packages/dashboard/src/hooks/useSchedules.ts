@@ -6,8 +6,8 @@ interface UseSchedulesReturn {
   schedules: Schedule[];
   isLoading: boolean;
   error: string | null;
-  createSchedule: (url: string, frequency: ScheduleFrequency) => Promise<Schedule | null>;
-  updateSchedule: (id: string, updates: { frequency?: ScheduleFrequency; enabled?: boolean }) => Promise<Schedule | null>;
+  createSchedule: (url: string, frequency: ScheduleFrequency, authProfileId?: string) => Promise<Schedule | null>;
+  updateSchedule: (id: string, updates: { frequency?: ScheduleFrequency; enabled?: boolean; authProfileId?: string | null }) => Promise<Schedule | null>;
   deleteSchedule: (id: string) => Promise<boolean>;
   runNow: (id: string) => Promise<ScheduleRunResult | null>;
   getHistory: (id: string) => Promise<ScheduleRunResult[]>;
@@ -44,12 +44,12 @@ export function useSchedules(): UseSchedulesReturn {
     fetchSchedules();
   }, [fetchSchedules]);
 
-  const createSchedule = useCallback(async (url: string, frequency: ScheduleFrequency): Promise<Schedule | null> => {
+  const createSchedule = useCallback(async (url: string, frequency: ScheduleFrequency, authProfileId?: string): Promise<Schedule | null> => {
     try {
       const response = await fetch(`${getApiBase()}/schedules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, frequency }),
+        body: JSON.stringify({ url, frequency, authProfileId }),
       });
 
       if (!response.ok) {
@@ -67,8 +67,8 @@ export function useSchedules(): UseSchedulesReturn {
   }, []);
 
   const updateSchedule = useCallback(async (
-    id: string, 
-    updates: { frequency?: ScheduleFrequency; enabled?: boolean }
+    id: string,
+    updates: { frequency?: ScheduleFrequency; enabled?: boolean; authProfileId?: string | null }
   ): Promise<Schedule | null> => {
     try {
       const response = await fetch(`${getApiBase()}/schedules/${id}`, {

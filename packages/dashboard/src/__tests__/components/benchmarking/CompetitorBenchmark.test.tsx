@@ -92,7 +92,7 @@ vi.mock("../../../components/ui", () => ({
     title,
     description,
   }: {
-    icon: string;
+    icon: React.ReactNode;
     title: string;
     description: string;
   }) => (
@@ -144,7 +144,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
 
   it("renders the add competitor section", () => {
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("➕ Add Competitor")).toBeInTheDocument();
+    // Plus icon is now used instead of emoji
+    expect(screen.getByText("Add Competitor")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("https://competitor.com")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Name (optional)")).toBeInTheDocument();
     expect(screen.getByText("+ Add")).toBeInTheDocument();
@@ -152,7 +153,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
 
   it("renders competitor comparison section", () => {
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("🏆 Competitor Comparison (0)")).toBeInTheDocument();
+    // Trophy icon is now used instead of emoji
+    expect(screen.getByText("Competitor Comparison (0)")).toBeInTheDocument();
   });
 
   it("renders empty state when no competitors", () => {
@@ -322,7 +324,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     ];
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("🏆 Competitor Comparison (1)")).toBeInTheDocument();
+    // Trophy icon is now used instead of emoji
+    expect(screen.getByText("Competitor Comparison (1)")).toBeInTheDocument();
     expect(screen.getByText("Competitor A")).toBeInTheDocument();
     expect(screen.getByText("competitor-a.com")).toBeInTheDocument();
     expect(screen.getByText("85")).toBeInTheDocument();
@@ -334,7 +337,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     ];
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("🔄 Scan All")).toBeInTheDocument();
+    // RefreshCw icon is now used instead of emoji, button text is just "Scan All"
+    expect(screen.getByText("Scan All")).toBeInTheDocument();
   });
 
   it("shows scanning state in Scan All button", () => {
@@ -344,8 +348,9 @@ describe("benchmarking/CompetitorBenchmark", () => {
     mockIsScanning = true;
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("⏳ Scanning...")).toBeInTheDocument();
-    expect(screen.getByText("⏳ Scanning...")).toBeDisabled();
+    // Loader2 icon is now used instead of emoji
+    expect(screen.getByText("Scanning...")).toBeInTheDocument();
+    expect(screen.getByText("Scanning...")).toBeDisabled();
   });
 
   it("calls scanAll when Scan All button is clicked", async () => {
@@ -355,7 +360,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     mockScanAll.mockResolvedValue(undefined);
 
     render(<CompetitorBenchmark />);
-    fireEvent.click(screen.getByText("🔄 Scan All"));
+    // RefreshCw icon is now used instead of emoji
+    fireEvent.click(screen.getByText("Scan All"));
 
     await waitFor(() => {
       expect(mockScanAll).toHaveBeenCalled();
@@ -370,7 +376,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     mockScanAll.mockRejectedValue(new Error("Scan failed"));
 
     render(<CompetitorBenchmark />);
-    fireEvent.click(screen.getByText("🔄 Scan All"));
+    // RefreshCw icon is now used instead of emoji
+    fireEvent.click(screen.getByText("Scan All"));
 
     await waitFor(() => {
       expect(mockError).toHaveBeenCalledWith("Failed to scan some competitors");
@@ -415,8 +422,11 @@ describe("benchmarking/CompetitorBenchmark", () => {
     ];
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("🔄")).toBeInTheDocument();
-    expect(screen.getByText("🗑️")).toBeInTheDocument();
+    // RefreshCw and Trash2 icons are now used instead of emojis
+    // Check for button existence by role since icons don't have text content
+    const buttons = screen.getAllByRole("button");
+    // Should have "+ Add", "Scan All", scan button, and delete button
+    expect(buttons.length).toBeGreaterThanOrEqual(4);
   });
 
   it("calls scanCompetitor when scan button is clicked", () => {
@@ -425,7 +435,11 @@ describe("benchmarking/CompetitorBenchmark", () => {
     ];
 
     render(<CompetitorBenchmark />);
-    fireEvent.click(screen.getByText("🔄"));
+    // RefreshCw icon is now used - get buttons and find the scan button (second to last before delete)
+    const buttons = screen.getAllByRole("button");
+    // Find the scan button for the competitor (it's a secondary variant button with RefreshCw icon)
+    const scanButton = buttons.find(btn => btn.getAttribute("data-variant") === "secondary" && btn.getAttribute("data-size") === "sm");
+    if (scanButton) fireEvent.click(scanButton);
 
     expect(mockScanCompetitor).toHaveBeenCalledWith(mockCompetitors[0]);
   });
@@ -436,7 +450,10 @@ describe("benchmarking/CompetitorBenchmark", () => {
     ];
 
     render(<CompetitorBenchmark />);
-    fireEvent.click(screen.getByText("🗑️"));
+    // Trash2 icon is now used - get buttons and find the delete button (ghost variant)
+    const buttons = screen.getAllByRole("button");
+    const deleteButton = buttons.find(btn => btn.getAttribute("data-variant") === "ghost");
+    if (deleteButton) fireEvent.click(deleteButton);
 
     expect(mockRemoveCompetitor).toHaveBeenCalledWith("1");
     expect(mockSuccess).toHaveBeenCalledWith("Removed competitor: Competitor A");
@@ -449,7 +466,11 @@ describe("benchmarking/CompetitorBenchmark", () => {
     mockScanningId = "1";
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("⏳")).toBeInTheDocument();
+    // Loader2 icon is now used instead of emoji - check that scanning state is handled
+    // The scan button should be disabled when scanning
+    const buttons = screen.getAllByRole("button");
+    const scanButton = buttons.find(btn => btn.getAttribute("data-variant") === "secondary" && btn.getAttribute("data-size") === "sm");
+    expect(scanButton).toBeDisabled();
   });
 
   it("shows Not scanned when competitor has no score", () => {
@@ -537,7 +558,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     });
 
     render(<CompetitorBenchmark />);
-    expect(screen.getByText("📊 Score Comparison")).toBeInTheDocument();
+    // BarChart3 icon is now used instead of emoji
+    expect(screen.getByText("Score Comparison")).toBeInTheDocument();
   });
 
   it("does not render score bar chart when benchmark data has no competitors", () => {
@@ -554,7 +576,8 @@ describe("benchmarking/CompetitorBenchmark", () => {
     });
 
     render(<CompetitorBenchmark />);
-    expect(screen.queryByText("📊 Score Comparison")).not.toBeInTheDocument();
+    // BarChart3 icon is now used instead of emoji
+    expect(screen.queryByText("Score Comparison")).not.toBeInTheDocument();
   });
 
   it("renders toast container", () => {

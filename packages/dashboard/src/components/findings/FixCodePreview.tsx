@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CodeFix } from '../../types/fixes';
+import { Zap, Circle, Lightbulb, CheckCircle, BarChart3, FileText, Clipboard, Check } from 'lucide-react';
 
 type Framework = 'html' | 'react' | 'vue';
 
@@ -36,10 +37,10 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
   };
 
   const effortLabels = {
-    trivial: '⚡ Trivial',
-    easy: '🟢 Easy',
-    medium: '🟡 Medium',
-    complex: '🔴 Complex',
+    trivial: <><Zap size={12} style={{ marginRight: 4 }} /> Trivial</>,
+    easy: <><Circle size={12} style={{ marginRight: 4, color: '#22c55e' }} /> Easy</>,
+    medium: <><Circle size={12} style={{ marginRight: 4, color: '#eab308' }} /> Medium</>,
+    complex: <><Circle size={12} style={{ marginRight: 4, color: '#ef4444' }} /> Complex</>,
   };
 
   return (
@@ -77,7 +78,7 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
         fontSize: 13,
         color: '#166534',
       }}>
-        💡 {fix.explanation}
+        <Lightbulb size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{fix.explanation}
       </div>
 
       {/* Framework Tabs */}
@@ -122,7 +123,7 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
               cursor: 'pointer',
             }}
           >
-            {mode === 'fixed' ? '✅ Fixed' : mode === 'diff' ? '📊 Diff' : '📄 Original'}
+            {mode === 'fixed' ? <><CheckCircle size={10} style={{ marginRight: 4 }} />Fixed</> : mode === 'diff' ? <><BarChart3 size={10} style={{ marginRight: 4 }} />Diff</> : <><FileText size={10} style={{ marginRight: 4 }} />Original</>}
           </button>
         ))}
       </div>
@@ -163,7 +164,7 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
             cursor: 'pointer',
           }}
         >
-          {copied ? '✓ Copied!' : '📋 Copy'}
+          {copied ? <><Check size={10} style={{ marginRight: 4 }} />Copied!</> : <><Clipboard size={10} style={{ marginRight: 4 }} />Copy</>}
         </button>
       </div>
 

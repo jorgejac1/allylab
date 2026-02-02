@@ -7,12 +7,15 @@ Backend API for AllyLab accessibility scanning. Built with Fastify, Playwright, 
 - 🔍 **Accessibility Scanning** - WCAG 2.0, 2.1, 2.2 compliance testing
 - 🌐 **Multi-page Crawling** - Scan entire websites with configurable depth
 - 🤖 **AI-Powered Fixes** - Generate fix suggestions using Claude AI
-- 🔗 **GitHub Integration** - Create PRs with accessibility fixes
+- 🔗 **GitHub/GitLab Integration** - Create PRs/MRs with accessibility fixes
 - 📅 **Scheduled Scans** - Automated recurring scans
 - 🔔 **Webhooks** - Slack, Teams, and custom notifications
 - 📊 **JIRA Integration** - Export issues to JIRA
 - 📏 **Custom Rules** - Create and manage custom accessibility rules
 - 📈 **Historical Trends** - Track score and issue trends over time
+- 📊 **Prometheus Metrics** - Built-in observability with `/metrics` endpoint
+- 🔄 **Graceful Shutdown** - Clean resource cleanup on SIGINT/SIGTERM
+- ⚡ **Rate Limiting** - Configurable request throttling
 
 ## Quick Start
 
@@ -42,11 +45,17 @@ curl http://localhost:3001/health
 
 ## API Endpoints
 
-### Scanning
+### Health & Metrics
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Health check |
+| `GET` | `/metrics` | Prometheus metrics |
+
+### Scanning
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | `POST` | `/scan` | Single page scan (SSE streaming) |
 | `POST` | `/scan/json` | Single page scan (JSON response) |
 | `POST` | `/crawl/scan` | Multi-page site scan (SSE streaming) |
@@ -90,6 +99,18 @@ curl http://localhost:3001/health
 | `GET` | `/github/repos/:owner/:repo/branches` | List repository branches |
 | `GET` | `/github/repos/:owner/:repo/file` | Get file content |
 | `POST` | `/github/pr` | Create pull request with fixes |
+
+### GitLab
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/gitlab/connection` | Check GitLab connection status |
+| `POST` | `/gitlab/connection` | Connect GitLab account with token |
+| `DELETE` | `/gitlab/connection` | Disconnect GitLab account |
+| `POST` | `/gitlab/mr` | Create merge request with fixes |
+| `GET` | `/gitlab/mr` | Get merge request status |
+
+> **Note:** GitLab integration supports both GitLab.com and self-hosted GitLab instances via the `instanceUrl` parameter.
 
 ### Schedules
 
@@ -239,8 +260,14 @@ Create a `.env` file:
 PORT=3001
 NODE_ENV=development
 
+# Rate Limiting (optional)
+ENABLE_RATE_LIMITING=false
+RATE_LIMIT_MAX=100
+RATE_LIMIT_TIME_WINDOW=60000
+
 # AI Fixes (optional)
 ANTHROPIC_API_KEY=your-api-key
+ENABLE_AI_FIXES=true
 
 # GitHub (optional)
 GITHUB_API_URL=https://api.github.com
@@ -252,33 +279,43 @@ JIRA_API_TOKEN=your-api-token
 JIRA_MOCK_MODE=true
 ```
 
+### Observability
+
+- **Metrics:** `GET /metrics` returns Prometheus-format metrics
+- **Health:** `GET /health` returns server status
+- **Logging:** Structured JSON logs with request ID correlation
+- **Request ID:** Automatic `X-Request-ID` header for tracing
+
 ## Project Structure
 ```
 src/
 ├── config/
-│   └── env.ts           # Environment configuration
+│   ├── env.ts           # Environment configuration with validation
+│   └── swagger.ts       # OpenAPI documentation config
+├── interfaces/
+│   └── storage.ts       # IStorage interface for database abstraction
 ├── routes/
 │   ├── crawl.ts         # Multi-page scan routes
 │   ├── export.ts        # Export routes
 │   ├── fixes.ts         # AI fix routes
 │   ├── github.ts        # GitHub integration routes
-│   ├── health.ts        # Health check
+│   ├── health.ts        # Health check & metrics
 │   ├── index.ts         # Route registration
 │   ├── jira.ts          # JIRA integration routes
-│   ├── rules.ts         # Custom rules routes
+│   ├── rules.ts         # Custom rules routes (with pagination)
 │   ├── scan-json.ts     # JSON scan route
 │   ├── scan.ts          # SSE scan route
-│   ├── schedules.ts     # Schedule routes
+│   ├── schedules.ts     # Schedule routes (with pagination)
 │   ├── trends.ts        # Historical trends routes
-│   └── webhooks.ts      # Webhook routes
+│   └── webhooks.ts      # Webhook routes (with pagination)
 ├── services/
 │   ├── ai-fixes.ts      # Claude AI integration
-│   ├── browser.ts       # Playwright browser management
-│   ├── crawler.ts       # Site crawler
+│   ├── browser.ts       # Playwright browser pool management
+│   ├── crawler.ts       # Site crawler with depth control
 │   ├── github.ts        # GitHub API client
 │   ├── scanner.ts       # axe-core scanner
-│   ├── scheduler.ts     # Schedule manager
-│   └── webhooks.ts      # Webhook delivery
+│   ├── scheduler.ts     # Cron-based schedule manager
+│   └── webhooks.ts      # Webhook delivery with retries
 ├── types/
 │   ├── fixes.ts         # AI fix types
 │   ├── github.ts        # GitHub types
@@ -288,11 +325,16 @@ src/
 │   ├── schedule.ts      # Schedule types
 │   └── webhook.ts       # Webhook types
 ├── utils/
-│   ├── scoring.ts       # Accessibility scoring
+│   ├── errors.ts        # Standardized error handling
+│   ├── logger.ts        # Pino structured logging
+│   ├── metrics.ts       # Prometheus metrics
+│   ├── pagination.ts    # List pagination helpers
+│   ├── scoring.ts       # Accessibility score calculation
 │   ├── sse.ts           # Server-Sent Events helpers
+│   ├── storage.ts       # JSON file storage (implements IStorage)
 │   └── wcag.ts          # WCAG standards mapping
 ├── index.ts             # Entry point
-└── server.ts            # Fastify server setup
+└── server.ts            # Fastify server with graceful shutdown
 ```
 
 ## Docker

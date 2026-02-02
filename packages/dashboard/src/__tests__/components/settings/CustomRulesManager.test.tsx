@@ -99,7 +99,7 @@ describe("settings/CustomRulesManager", () => {
       error: "boom" as string | null,
     });
     rerender(<CustomRulesManager />);
-    expect(screen.getByText("⚠️ boom")).toBeInTheDocument();
+    expect(screen.getByText("boom")).toBeInTheDocument();
   });
 
   it("creates, edits, toggles, deletes, tests, imports and exports rules", async () => {
@@ -127,7 +127,7 @@ describe("settings/CustomRulesManager", () => {
     await waitFor(() => expect(hookReturn.deleteRule).toHaveBeenCalledWith("r1"));
 
     // New rule path validation then create
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.click(screen.getByRole("button", { name: "Create Rule" }));
     expect(mockWarning).toHaveBeenCalledWith("Name and selector are required");
 
@@ -137,17 +137,17 @@ describe("settings/CustomRulesManager", () => {
     await waitFor(() => expect(hookReturn.createRule).toHaveBeenCalled());
 
     // Test rule with html content
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Test" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "div" } });
     fireEvent.change(screen.getByPlaceholderText("Paste HTML to test the rule against..."), {
       target: { value: "<div>hi</div>" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "▶️ Run Test" }));
+    fireEvent.click(screen.getByRole("button", { name: /Run Test/i }));
     await waitFor(() => expect(hookReturn.testRule).toHaveBeenCalled());
 
     // Export rules
-    fireEvent.click(screen.getAllByRole("button", { name: "📤 Export" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Export/i })[0]);
     await waitFor(() => expect(hookReturn.exportRules).toHaveBeenCalled());
     expect(revokeSpy).toHaveBeenCalledWith("blob:rules");
   }, 15000);
@@ -159,7 +159,7 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open new rule form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     // Find and click WCAG tag buttons
     const wcagButtons = screen.getAllByRole("button").filter((btn) =>
@@ -181,7 +181,7 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open new rule form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     expect(screen.getByPlaceholderText("e.g., Skip Navigation Link")).toBeInTheDocument();
 
     // Click cancel
@@ -204,7 +204,7 @@ describe("settings/CustomRulesManager", () => {
     expect(mockError).toHaveBeenCalledWith("Failed to update rule");
 
     // Test create failure
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Test" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "div" } });
     fireEvent.click(screen.getByRole("button", { name: "Create Rule" }));
@@ -254,17 +254,17 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     // Try to test without HTML
-    fireEvent.click(screen.getByRole("button", { name: "▶️ Run Test" }));
+    fireEvent.click(screen.getByRole("button", { name: /Run Test/i }));
     expect(mockWarning).toHaveBeenCalledWith("Please enter HTML to test");
 
     // Test with HTML and passing result
     fireEvent.change(screen.getByPlaceholderText("Paste HTML to test the rule against..."), {
       target: { value: "<div>test</div>" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "▶️ Run Test" }));
+    fireEvent.click(screen.getByRole("button", { name: /Run Test/i }));
     await waitFor(() => expect(testRule).toHaveBeenCalled());
     expect(mockSuccess).toHaveBeenCalledWith("Rule test passed!");
   });
@@ -277,11 +277,11 @@ describe("settings/CustomRulesManager", () => {
     mockWarning.mockClear();
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("Paste HTML to test the rule against..."), {
       target: { value: "<p>html</p>" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "▶️ Run Test" }));
+    fireEvent.click(screen.getByRole("button", { name: /Run Test/i }));
     await waitFor(() => expect(testRule).toHaveBeenCalled());
     expect(mockSuccess).not.toHaveBeenCalled();
     expect(mockWarning).not.toHaveBeenCalled();
@@ -306,7 +306,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "New rule" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     const tagBtn = screen.getAllByText("wcag21aa")[0];
@@ -339,7 +339,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "New rule" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     const tagBtn = screen.getAllByText("wcag21aa")[0];
@@ -371,7 +371,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Null tags" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     const tagButton = screen.getAllByText("wcag21aa")[0];
@@ -409,7 +409,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Missing tags" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     fireEvent.click(screen.getAllByText("wcag21aa")[0]);
@@ -426,7 +426,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Empty tags" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     const tagButton = screen.getAllByText("wcag21aa")[0];
@@ -443,7 +443,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     fireEvent.change(screen.getByPlaceholderText("e.g., Skip Navigation Link"), { target: { value: "Toggle off" } });
     fireEvent.change(screen.getByPlaceholderText("e.g., body > a[href^='#']:first-child"), { target: { value: "main a" } });
     const tagButton = screen.getAllByText("wcag21aa")[0];
@@ -474,7 +474,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     act(() => {
       capturedSetter?.((prev: unknown) => ({ ...(prev as Record<string, unknown>), wcagTags: undefined }));
     });
@@ -502,7 +502,7 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open new rule form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     // Update description
     const descriptionInput = screen.getByPlaceholderText("Explain what this rule checks for");
@@ -558,7 +558,7 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     // Click a WCAG tag - this should trigger handleWcagTagToggle with undefined wcagTags
     const wcagButton = screen.getAllByText("wcag21aa")[0];
@@ -577,7 +577,7 @@ describe("settings/CustomRulesManager", () => {
     render(<CustomRulesManager />);
 
     // Open new rule form
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
 
     const selects = screen.getAllByRole("combobox");
 
@@ -611,7 +611,7 @@ describe("settings/CustomRulesManager", () => {
     const clickSpy = vi.spyOn(fileInput, "click");
 
     // Click import button
-    fireEvent.click(screen.getAllByRole("button", { name: "📥 Import" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Import/i })[0]);
 
     expect(clickSpy).toHaveBeenCalled();
   });
@@ -626,7 +626,7 @@ describe("settings/CustomRulesManager", () => {
 
     render(<CustomRulesManager />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.click(screen.getAllByRole("button", { name: "📥 Import" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Import/i })[0]);
     const file = new File(["dummy"], "rules.json", { type: "application/json" });
     Object.defineProperty(file, "text", {
       value: vi.fn().mockResolvedValue(JSON.stringify({ rules: [makeRule({ id: "x" })] })),
@@ -668,7 +668,7 @@ describe("settings/CustomRulesManager", () => {
 
     render(<CustomRulesManager />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.click(screen.getAllByRole("button", { name: "📥 Import" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Import/i })[0]);
 
     // Declined confirm
     mockConfirm.mockResolvedValueOnce(false);
@@ -741,7 +741,7 @@ describe("settings/CustomRulesManager", () => {
     mockSuccess.mockClear();
 
     const { container } = render(<CustomRulesManager />);
-    fireEvent.click(within(container).getAllByRole("button", { name: "📤 Export" })[0]);
+    fireEvent.click(within(container).getAllByRole("button", { name: /Export/i })[0]);
     await waitFor(() => expect(exportRules).toHaveBeenCalled());
     expect(mockSuccess).not.toHaveBeenCalled();
   });
@@ -902,7 +902,7 @@ describe("settings/CustomRulesManager", () => {
     mockUseCustomRules.mockReturnValue(hookReturn);
 
     render(<CustomRulesManager />);
-    fireEvent.click(screen.getAllByRole("button", { name: "➕ New Rule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /New Rule/i })[0]);
     expect(screen.getByRole("button", { name: "Saving..." })).toBeInTheDocument();
   });
 

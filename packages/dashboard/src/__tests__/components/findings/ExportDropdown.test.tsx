@@ -100,18 +100,19 @@ describe("findings/ExportDropdown", () => {
 
   it("renders export button", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    expect(screen.getByText("📥 Export")).toBeInTheDocument();
+    expect(screen.getByText("Export")).toBeInTheDocument();
   });
 
   it("disables button when no findings", () => {
     render(<ExportDropdown findings={[]} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    const button = screen.getByText("📥 Export");
+    // The button contains a span with icon and text, so find by role
+    const button = screen.getByRole("button");
     expect(button).toBeDisabled();
   });
 
   it("opens dropdown when button clicked", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     expect(screen.getByText("Export as CSV")).toBeInTheDocument();
     expect(screen.getByText("Export as Excel")).toBeInTheDocument();
     expect(screen.getByText("Export as JSON")).toBeInTheDocument();
@@ -119,7 +120,7 @@ describe("findings/ExportDropdown", () => {
 
   it("closes dropdown when backdrop clicked", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     expect(screen.getByText("Export as CSV")).toBeInTheDocument();
 
     const backdrop = document.querySelector('[style*="position: fixed"]');
@@ -129,11 +130,14 @@ describe("findings/ExportDropdown", () => {
 
   it("shows dropdown items with icons", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
 
-    expect(screen.getByText(/📄/)).toBeInTheDocument();
-    expect(screen.getByText(/📊/)).toBeInTheDocument();
-    expect(screen.getByText(/{ }/)).toBeInTheDocument();
+    // Icons are now SVG elements from lucide-react (FileText, BarChart3, Braces)
+    const svgIcons = document.querySelectorAll("svg");
+    expect(svgIcons.length).toBeGreaterThan(0);
+    expect(screen.getByText("Export as CSV")).toBeInTheDocument();
+    expect(screen.getByText("Export as Excel")).toBeInTheDocument();
+    expect(screen.getByText("Export as JSON")).toBeInTheDocument();
   });
 
   it("changes button text when exporting", async () => {
@@ -143,7 +147,7 @@ describe("findings/ExportDropdown", () => {
     } as Response);
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as CSV"));
 
     await waitFor(() => {
@@ -158,7 +162,7 @@ describe("findings/ExportDropdown", () => {
     } as Response);
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as CSV"));
 
     expect(screen.queryByText("Export as CSV")).not.toBeInTheDocument();
@@ -172,7 +176,7 @@ describe("findings/ExportDropdown", () => {
   // Test for line 24: exportToExcel call
   it("exports to Excel format", async () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {
@@ -188,7 +192,7 @@ describe("findings/ExportDropdown", () => {
     } as Response);
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as CSV"));
 
     await waitFor(() => {
@@ -202,7 +206,7 @@ describe("findings/ExportDropdown", () => {
     vi.mocked(global.fetch).mockRejectedValueOnce(new Error("Network error"));
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as JSON"));
 
     await waitFor(() => {
@@ -221,7 +225,7 @@ describe("findings/ExportDropdown", () => {
     } as Response);
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as JSON"));
 
     await waitFor(() => {
@@ -238,7 +242,7 @@ describe("findings/ExportDropdown", () => {
   // Test for lines 152-153: DropdownItem onMouseEnter/onMouseLeave (hover state)
   it("changes background on hover for dropdown items", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
 
     const csvButton = screen.getByText("Export as CSV").closest("button")!;
 
@@ -257,7 +261,7 @@ describe("findings/ExportDropdown", () => {
   // Test for exportToExcel function (lines 177-260)
   it("exports to Excel with proper workbook structure", async () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {
@@ -277,7 +281,7 @@ describe("findings/ExportDropdown", () => {
     ];
 
     render(<ExportDropdown findings={findingsWithDifferentSeverities} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {
@@ -292,7 +296,7 @@ describe("findings/ExportDropdown", () => {
     ];
 
     render(<ExportDropdown findings={findingWithoutStatus} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {
@@ -307,7 +311,7 @@ describe("findings/ExportDropdown", () => {
     ];
 
     render(<ExportDropdown findings={fpFinding} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {
@@ -318,7 +322,7 @@ describe("findings/ExportDropdown", () => {
   // Test for DropdownItem isLast prop (no border on last item)
   it("renders last dropdown item without bottom border", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
 
     const jsonButton = screen.getByText("Export as JSON").closest("button")!;
     const csvButton = screen.getByText("Export as CSV").closest("button")!;
@@ -342,7 +346,7 @@ describe("findings/ExportDropdown", () => {
     } as Response);
 
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as CSV"));
 
     await waitFor(() => {
@@ -357,7 +361,7 @@ describe("findings/ExportDropdown", () => {
     ];
 
     render(<ExportDropdown findings={findingWithUnknownSeverity} scanUrl="https://test.com" scanDate="2024-01-01" />);
-    fireEvent.click(screen.getByText("📥 Export"));
+    fireEvent.click(screen.getByText("Export"));
     fireEvent.click(screen.getByText("Export as Excel"));
 
     await waitFor(() => {

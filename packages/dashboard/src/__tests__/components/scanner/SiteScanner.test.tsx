@@ -49,13 +49,13 @@ describe("components/scanner/SiteScanner", () => {
     fireEvent.change(selects[1], { target: { value: "3" } });
     fireEvent.change(selects[2], { target: { value: "wcag22aa" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "🚀 Start Site Scan" }));
+    fireEvent.click(screen.getByRole("button", { name: /Start Site Scan/ }));
     expect(startScan).toHaveBeenCalledWith("https://ally.com", 25, 3, "wcag22aa");
 
     // blank submission ignored
     startScan.mockClear();
     fireEvent.change(urlInput, { target: { value: "   " } });
-    fireEvent.click(screen.getByRole("button", { name: "🚀 Start Site Scan" }));
+    fireEvent.click(screen.getByRole("button", { name: /Start Site Scan/ }));
     expect(startScan).not.toHaveBeenCalled();
 
     // in-progress submission ignored
@@ -155,7 +155,7 @@ describe("components/scanner/SiteScanner", () => {
     });
 
     render(<SiteScanner />);
-    expect(screen.getByText("❌ Boom")).toBeInTheDocument();
+    expect(screen.getByText("Boom")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(reset).toHaveBeenCalled();
   });

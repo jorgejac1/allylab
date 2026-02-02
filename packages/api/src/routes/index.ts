@@ -11,8 +11,11 @@ import { githubRoutes } from './github.js';
 import { fixesRoutes } from './fixes.js';
 import { trendsRoutes } from './trends.js';
 import { rulesRoutes } from './rules.js';
+import { userRoutes } from './users.js';
+import { authRoutes } from './auth.js';
 
 export async function registerRoutes(fastify: FastifyInstance) {
+  await fastify.register(authRoutes);
   await fastify.register(healthRoutes);
   await fastify.register(scanRoutes);
   await fastify.register(scanJsonRoutes);
@@ -25,4 +28,5 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(fixesRoutes);
   await fastify.register(trendsRoutes);
   await fastify.register(rulesRoutes);
+  await fastify.register(userRoutes);
 }

@@ -1,10 +1,12 @@
+import { memo } from 'react';
 import type { FindingSource } from '../../types';
+import { ClipboardList, Search } from 'lucide-react';
 
 interface SourceBadgeProps {
   source?: FindingSource;
 }
 
-export function SourceBadge({ source }: SourceBadgeProps) {
+export const SourceBadge = memo(function SourceBadge({ source }: SourceBadgeProps) {
   const isCustom = source === 'custom-rule';
   
   return (
@@ -22,8 +24,8 @@ export function SourceBadge({ source }: SourceBadgeProps) {
         border: `1px solid ${isCustom ? '#bae6fd' : '#e2e8f0'}`,
       }}
     >
-      {isCustom ? '📋' : '🔍'}
+      {isCustom ? <ClipboardList size={10} /> : <Search size={10} />}
       <span>{isCustom ? 'Custom' : 'axe-core'}</span>
     </span>
   );
-}
+});

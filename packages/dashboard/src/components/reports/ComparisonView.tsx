@@ -3,6 +3,8 @@ import { ScoreCircle, SeverityBar } from '../charts';
 import type { SavedScan } from '../../types';
 import type { RegressionInfo } from '../../hooks/useScans';
 import { SEVERITY_COLORS } from '../../utils/constants';
+import { BarChart3, X, AlertTriangle, TrendingUp, TrendingDown, Minus, CheckCircle, PartyPopper } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface ComparisonViewProps {
   olderScan: SavedScan;
@@ -53,11 +55,11 @@ export function ComparisonView({
           marginBottom: 24,
         }}
       >
-        <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>
-          📊 Scan Comparison
+        <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BarChart3 size={20} />Scan Comparison
         </h3>
         <Button variant="secondary" size="sm" onClick={onClose}>
-          ✕ Close
+          <X size={14} style={{ marginRight: 4 }} />Close
         </Button>
       </div>
 
@@ -75,7 +77,7 @@ export function ComparisonView({
             border: '1px solid #f59e0b',
           }}
         >
-          <span style={{ fontSize: 20 }}>⚠️</span>
+          <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center' }}><AlertTriangle size={20} /></span>
           <div style={{ flex: 1 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: '#92400e' }}>
               {newerRegression 
@@ -118,12 +120,12 @@ export function ComparisonView({
           <DiffRow
             label="Score"
             diff={formatScoreDiff(scoreDiff)}
-            icon={scoreDiff > 0 ? '📈' : scoreDiff < 0 ? '📉' : '➖'}
+            icon={scoreDiff > 0 ? <TrendingUp size={14} /> : scoreDiff < 0 ? <TrendingDown size={14} /> : <Minus size={14} />}
           />
           <DiffRow
             label="Issues"
             diff={formatDiff(issuesDiff)}
-            icon={issuesDiff < 0 ? '✅' : issuesDiff > 0 ? '⚠️' : '➖'}
+            icon={issuesDiff < 0 ? <CheckCircle size={14} /> : issuesDiff > 0 ? <AlertTriangle size={14} /> : <Minus size={14} />}
           />
           <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
           <DiffRow
@@ -176,7 +178,7 @@ export function ComparisonView({
             color: scoreDiff >= 0 ? '#166534' : '#991b1b',
           }}
         >
-          <span style={{ fontSize: 24 }}>{scoreDiff >= 0 ? '🎉' : '⚠️'}</span>
+          <span style={{ display: 'flex', alignItems: 'center' }}>{scoreDiff >= 0 ? <PartyPopper size={24} /> : <AlertTriangle size={24} />}</span>
           <span>
             {scoreDiff > 0
               ? `Score improved by ${scoreDiff} points! ${issuesDiff < 0 ? `Fixed ${Math.abs(issuesDiff)} issues.` : ''}`
@@ -234,7 +236,7 @@ function ScanCard({
               fontWeight: 600,
             }}
           >
-            🔻 -{regression.scoreDrop} from previous
+            <TrendingDown size={12} />-{regression.scoreDrop} from previous
           </span>
         )}
       </div>
@@ -273,7 +275,7 @@ function DiffRow({
 }: {
   label: string;
   diff: { text: string; color: string };
-  icon?: string;
+  icon?: ReactNode;
   color?: string;
 }) {
   return (
@@ -289,7 +291,7 @@ function DiffRow({
           color: diff.color,
         }}
       >
-        {icon && <span>{icon}</span>}
+        {icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
         {diff.text}
       </span>
     </div>

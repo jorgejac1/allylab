@@ -278,11 +278,22 @@ allylab/
 │   │
 │   ├── dashboard/           # React frontend
 │   │   ├── src/
-│   │   │   ├── components/  # UI components
-│   │   │   ├── hooks/       # Custom React hooks
+│   │   │   ├── components/  # UI components (100+)
+│   │   │   │   ├── alerts/      # Alert components
+│   │   │   │   ├── charts/      # Chart components
+│   │   │   │   ├── findings/    # Findings management
+│   │   │   │   ├── reports/     # Reports & comparisons
+│   │   │   │   ├── settings/    # Settings components
+│   │   │   │   └── ui/          # Reusable UI primitives
+│   │   │   ├── config/      # Centralized configuration
+│   │   │   ├── context/     # React context (AppContext)
+│   │   │   ├── hooks/       # Custom React hooks (25+)
 │   │   │   ├── pages/       # Page components
 │   │   │   ├── types/       # TypeScript types
-│   │   │   └── utils/       # Helpers, storage
+│   │   │   ├── utils/       # Helpers, storage
+│   │   │   │   └── pdf/         # PDF generation utilities
+│   │   │   └── __tests__/   # Unit tests (1900+ tests)
+│   │   ├── e2e/             # E2E tests (60 tests)
 │   │   └── Dockerfile
 │   │
 │   └── cli/                 # Command-line interface
@@ -292,6 +303,7 @@ allylab/
 │       └── package.json
 │
 ├── docs/                    # Documentation
+├── wiki/                    # Wiki articles
 └── package.json             # Monorepo root
 ```
 
@@ -526,6 +538,60 @@ docker-compose down -v
 ---
 
 ## 🧪 Testing
+
+AllyLab has comprehensive test coverage with both unit tests and end-to-end tests.
+
+### Test Coverage
+- **Unit Tests**: ~95% statement coverage, ~92% branch coverage (1900+ tests)
+- **E2E Tests**: 60 Playwright tests covering all major workflows
+
+### Running Tests
+```bash
+# Run all unit tests
+npm run test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run E2E tests (requires dev server running)
+npm run test:e2e
+
+# Run E2E tests on specific browser
+npx playwright test --project=chromium
+```
+
+### Unit Tests
+```bash
+# Run dashboard unit tests
+npm run test --workspace=@allylab/dashboard
+
+# Watch mode
+npm run test -- --watch
+```
+
+### E2E Tests
+The E2E test suite covers:
+- **Scan Workflow**: URL input, scan options, scan execution
+- **Findings Workflow**: Scan history, filtering, selection, details drawer
+- **Executive Dashboard**: KPI cards, trends, drill-down navigation
+- **Benchmark Page**: Competitor management, comparison views
+- **Settings Page**: All 10 settings tabs, form interactions
+
+```bash
+# Run all E2E tests
+npx playwright test
+
+# Run specific test file
+npx playwright test e2e/scan-workflow.spec.ts
+
+# Run with UI mode
+npx playwright test --ui
+
+# View test report
+npx playwright show-report
+```
+
+### Linting & Type Checking
 ```bash
 # Lint
 npm run lint

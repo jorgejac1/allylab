@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Input, Select } from '../ui';
 import { getScannedUrls } from '../../utils/storage';
+import { Settings, FileText, Clipboard, Check, Download } from 'lucide-react';
 
 type Platform = 'github' | 'gitlab' | 'harness';
 type Schedule = 'push' | 'daily' | 'weekly' | 'manual';
@@ -281,8 +282,8 @@ export function CICDGenerator() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Configuration */}
       <Card style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 20px 0' }}>
-          🔧 CI/CD Configuration
+        <h3 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Settings size={20} />CI/CD Configuration
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
@@ -420,8 +421,8 @@ export function CICDGenerator() {
       <Card style={{ padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>
-              📄 Generated Configuration
+            <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FileText size={20} />Generated Configuration
             </h3>
             <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
               Save as <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
@@ -431,10 +432,10 @@ export function CICDGenerator() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <Button variant="secondary" onClick={handleCopy}>
-              {copied ? '✓ Copied!' : '📋 Copy'}
+              {copied ? <><Check size={14} style={{ marginRight: 6 }} />Copied!</> : <><Clipboard size={14} style={{ marginRight: 6 }} />Copy</>}
             </Button>
             <Button onClick={handleDownload}>
-              ⬇️ Download
+              <Download size={14} style={{ marginRight: 6 }} />Download
             </Button>
           </div>
         </div>

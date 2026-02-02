@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Card, Button, Input, Select, EmptyState } from '../ui';
 import { useSchedules } from '../../hooks';
 import type { Schedule, ScheduleFrequency, ScheduleRunResult } from '../../types';
+import type { AuthProfile } from '../../types/auth';
+import { Plus, Loader2, Calendar, Play, BarChart3, Trash2, X, CheckCircle, XCircle, Lock } from 'lucide-react';
+import { getScoreColor, formatFutureTime } from '../../utils/scoreUtils';
+import { getAuthProfiles, getAuthProfile } from '../../utils/authProfiles';
 
 const FREQUENCY_OPTIONS = [
   { value: 'hourly', label: 'Every Hour' },
@@ -24,19 +28,24 @@ export function ScheduleManager() {
 
   const [newUrl, setNewUrl] = useState('');
   const [newFrequency, setNewFrequency] = useState<ScheduleFrequency>('daily');
+  const [newAuthProfileId, setNewAuthProfileId] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [historyModal, setHistoryModal] = useState<{ schedule: Schedule; history: ScheduleRunResult[] } | null>(null);
+
+  // Use lazy initialization to load auth profiles
+  const [authProfiles] = useState<AuthProfile[]>(() => getAuthProfiles().filter(p => p.enabled));
 
   const handleCreate = async () => {
     if (!newUrl.trim()) return;
 
     setIsCreating(true);
-    const result = await createSchedule(newUrl.trim(), newFrequency);
+    const result = await createSchedule(newUrl.trim(), newFrequency, newAuthProfileId || undefined);
     setIsCreating(false);
 
     if (result) {
       setNewUrl('');
+      setNewAuthProfileId('');
     }
   };
 
@@ -89,8 +98,8 @@ export function ScheduleManager() {
 
       {/* Create New Schedule */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          ➕ Add Scheduled Scan
+        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Plus size={18} /> Add Scheduled Scan
         </h3>
         
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -109,21 +118,33 @@ export function ScheduleManager() {
               options={FREQUENCY_OPTIONS}
             />
           </div>
-          <Button onClick={handleCreate} disabled={isCreating || !newUrl.trim()}>
-            {isCreating ? '⏳ Creating...' : '+ Add Schedule'}
+          {authProfiles.length > 0 && (
+            <div style={{ width: 180 }}>
+              <Select
+                value={newAuthProfileId}
+                onChange={e => setNewAuthProfileId(e.target.value)}
+                options={[
+                  { value: '', label: 'No Auth' },
+                  ...authProfiles.map(p => ({ value: p.id, label: `🔐 ${p.name}` })),
+                ]}
+              />
+            </div>
+          )}
+          <Button onClick={handleCreate} disabled={isCreating || !newUrl.trim()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            {isCreating ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : <><Plus size={14} /> Add Schedule</>}
           </Button>
         </div>
       </Card>
 
       {/* Schedules List */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          📅 Scheduled Scans ({schedules.length})
+        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Calendar size={18} /> Scheduled Scans ({schedules.length})
         </h3>
 
         {schedules.length === 0 ? (
           <EmptyState
-            icon="📅"
+            icon={<Calendar size={32} />}
             title="No Scheduled Scans"
             description="Add a URL above to start monitoring automatically"
           />
@@ -134,11 +155,13 @@ export function ScheduleManager() {
                 key={schedule.id}
                 schedule={schedule}
                 isRunning={runningId === schedule.id}
+                authProfiles={authProfiles}
                 onToggle={() => handleToggleEnabled(schedule)}
                 onDelete={() => handleDelete(schedule.id)}
                 onRunNow={() => handleRunNow(schedule.id)}
                 onViewHistory={() => handleViewHistory(schedule)}
                 onUpdateFrequency={(frequency) => updateSchedule(schedule.id, { frequency })}
+                onUpdateAuthProfile={(authProfileId) => updateSchedule(schedule.id, { authProfileId })}
               />
             ))}
           </div>
@@ -164,23 +187,28 @@ export function ScheduleManager() {
 interface ScheduleRowProps {
   schedule: Schedule;
   isRunning: boolean;
+  authProfiles: AuthProfile[];
   onToggle: () => void;
   onDelete: () => void;
   onRunNow: () => void;
   onViewHistory: () => void;
   onUpdateFrequency: (frequency: ScheduleFrequency) => void;
+  onUpdateAuthProfile: (authProfileId: string | null) => void;
 }
 
 function ScheduleRow({
   schedule,
   isRunning,
+  authProfiles,
   onToggle,
   onDelete,
   onRunNow,
   onViewHistory,
   onUpdateFrequency,
+  onUpdateAuthProfile,
 }: ScheduleRowProps) {
   const domain = new URL(schedule.url).hostname;
+  const authProfile = schedule.authProfileId ? getAuthProfile(schedule.authProfileId) : null;
 
   return (
     <div
@@ -207,7 +235,25 @@ function ScheduleRow({
 
       {/* Site Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>{domain}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <span style={{ fontWeight: 600 }}>{domain}</span>
+          {authProfile && (
+            <span style={{
+              padding: '2px 6px',
+              borderRadius: 4,
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontSize: 10,
+              fontWeight: 500,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+            }}>
+              <Lock size={10} />
+              {authProfile.name}
+            </span>
+          )}
+        </div>
         <div style={{ fontSize: 12, color: '#64748b', wordBreak: 'break-all' }}>
           {schedule.url}
         </div>
@@ -233,13 +279,28 @@ function ScheduleRow({
         />
       </div>
 
+      {/* Auth Profile Selector */}
+      {authProfiles.length > 0 && (
+        <div style={{ width: 130 }}>
+          <Select
+            value={schedule.authProfileId || ''}
+            onChange={e => onUpdateAuthProfile(e.target.value || null)}
+            options={[
+              { value: '', label: 'No Auth' },
+              ...authProfiles.map(p => ({ value: p.id, label: p.name })),
+            ]}
+            disabled={!schedule.enabled}
+          />
+        </div>
+      )}
+
       {/* Next Run */}
       <div style={{ width: 120, textAlign: 'center' }}>
         {schedule.nextRun && schedule.enabled ? (
           <div>
             <div style={{ fontSize: 11, color: '#64748b' }}>Next run</div>
             <div style={{ fontSize: 12, fontWeight: 500 }}>
-              {formatNextRun(schedule.nextRun)}
+              {formatFutureTime(schedule.nextRun)}
             </div>
           </div>
         ) : (
@@ -254,25 +315,28 @@ function ScheduleRow({
           size="sm"
           onClick={onRunNow}
           disabled={isRunning}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
         >
-          {isRunning ? '⏳' : '▶️'} Run
+          {isRunning ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={14} />} Run
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onViewHistory}
           title="View history"
+          aria-label="View scan history"
         >
-          📊
+          <BarChart3 size={16} aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onDelete}
           title="Delete schedule"
+          aria-label="Delete schedule"
           style={{ color: '#ef4444' }}
         >
-          🗑️
+          <Trash2 size={16} aria-hidden="true" />
         </Button>
       </div>
     </div>
@@ -316,20 +380,21 @@ function HistoryModal({ schedule, history, onClose }: HistoryModalProps) {
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>
-            📊 Scan History
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <BarChart3 size={20} /> Scan History
           </h3>
           <button
             onClick={onClose}
             style={{
               background: 'none',
               border: 'none',
-              fontSize: 20,
               cursor: 'pointer',
               color: '#64748b',
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -355,7 +420,7 @@ function HistoryModal({ schedule, history, onClose }: HistoryModalProps) {
                   borderRadius: 8,
                 }}
               >
-                <span>{run.success ? '✅' : '❌'}</span>
+                <span>{run.success ? <CheckCircle size={18} style={{ color: '#10b981' }} /> : <XCircle size={18} style={{ color: '#ef4444' }} />}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13 }}>
                     {new Date(run.timestamp).toLocaleString()}
@@ -387,28 +452,4 @@ function HistoryModal({ schedule, history, onClose }: HistoryModalProps) {
       </div>
     </div>
   );
-}
-
-// ============================================
-// Helper Functions
-// ============================================
-
-function getScoreColor(score: number): string {
-  if (score >= 90) return '#10b981';
-  if (score >= 70) return '#f59e0b';
-  if (score >= 50) return '#ea580c';
-  return '#dc2626';
-}
-
-function formatNextRun(nextRun: string): string {
-  const date = new Date(nextRun);
-  const now = new Date();
-  const diffMs = date.getTime() - now.getTime();
-  const diffMins = Math.round(diffMs / 60000);
-  const diffHours = Math.round(diffMs / 3600000);
-  const diffDays = Math.round(diffMs / 86400000);
-
-  if (diffMins < 60) return `${diffMins}m`;
-  if (diffHours < 24) return `${diffHours}h`;
-  return `${diffDays}d`;
 }

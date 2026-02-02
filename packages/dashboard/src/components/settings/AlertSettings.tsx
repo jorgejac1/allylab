@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Input } from '../ui';
 import { useAlertSettings } from '../../hooks';
+import { AlertTriangle } from 'lucide-react';
 
 export function AlertSettings() {
   const { settings, updateSettings, resetToDefaults, defaults } = useAlertSettings();
@@ -121,7 +122,7 @@ export function AlertSettings() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span>⚠️</span>
+              <AlertTriangle size={16} style={{ color: '#92400e' }} />
               <span style={{ fontWeight: 500, fontSize: 13, color: '#92400e' }}>Preview</span>
             </div>
             <div style={{ fontSize: 12, color: '#78350f' }}>

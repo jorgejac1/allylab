@@ -95,10 +95,11 @@ describe("routes/webhooks", () => {
     mockGetAll.mockReturnValueOnce([{ id: "1", secret: "abc" }, { id: "2", secret: "" }]);
     const handler = route(fastify, "GET", "/webhooks");
     const reply = createReply();
-    await handler({} as never, reply);
-    const payload = reply.payload as Array<{ secret?: string }>;
-    expect(payload[0]?.secret).toBe("••••••••");
-    expect(payload[1]?.secret).toBeUndefined();
+    await handler({ query: {} } as never, reply);
+    const payload = reply.payload as { webhooks: Array<{ secret?: string }>; pagination: unknown };
+    expect(payload.webhooks[0]?.secret).toBe("••••••••");
+    expect(payload.webhooks[1]?.secret).toBeUndefined();
+    expect(payload.pagination).toBeDefined();
   });
 
   it("returns 404 when webhook missing", async () => {

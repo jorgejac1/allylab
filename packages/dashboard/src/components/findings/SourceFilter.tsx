@@ -1,4 +1,5 @@
 import type { FindingSource } from '../../types';
+import { Search, ClipboardList } from 'lucide-react';
 
 export type SourceFilterValue = 'all' | FindingSource;
 
@@ -36,13 +37,13 @@ export function SourceFilter({ value, onChange, counts }: SourceFilterProps) {
       <SourceButton
         active={value === 'axe-core'}
         onClick={() => onChange('axe-core')}
-        label={`🔍 axe-core (${counts.axeCore})`}
+        label={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Search size={10} /> axe-core ({counts.axeCore})</span>}
         color="#6366f1"
       />
       <SourceButton
         active={value === 'custom-rule'}
         onClick={() => onChange('custom-rule')}
-        label={`📋 Custom (${counts.customRule})`}
+        label={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><ClipboardList size={10} /> Custom ({counts.customRule})</span>}
         color="#0891b2"
       />
     </div>
@@ -57,7 +58,7 @@ function SourceButton({
 }: {
   active: boolean;
   onClick: () => void;
-  label: string;
+  label: React.ReactNode;
   color?: string;
 }) {
   return (

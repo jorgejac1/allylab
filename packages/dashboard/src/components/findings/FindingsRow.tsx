@@ -1,8 +1,10 @@
+import { memo } from 'react';
 import { Button } from '../ui';
 import { SeverityBadge } from './SeverityBadge';
 import { IssueStatus as StatusBadge } from './IssueStatus';
 import { SourceBadge } from './SourceBadge';
 import { JiraCell } from './JiraCell';
+import { Undo, X } from 'lucide-react';
 import type { TrackedFinding } from '../../types';
 
 interface FindingsRowProps {
@@ -11,18 +13,18 @@ interface FindingsRowProps {
   jiraIssueKey?: string;
   isLinkingJira: boolean;
   jiraLinkInput: string;
-  onToggleSelect: () => void;
-  onToggleFalsePositive: () => void;
-  onViewDetails: () => void;
+  onToggleSelect: (findingId: string) => void;
+  onToggleFalsePositive: (finding: TrackedFinding) => void;
+  onViewDetails: (finding: TrackedFinding) => void;
   onJiraLinkInputChange: (value: string) => void;
-  onStartJiraLink: () => void;
-  onSaveJiraLink: () => void;
+  onStartJiraLink: (findingId: string) => void;
+  onSaveJiraLink: (findingId: string) => void;
   onCancelJiraLink: () => void;
-  onRemoveJiraLink: () => void;
-  renderPRStatus?: () => React.ReactNode;
+  onRemoveJiraLink: (findingId: string) => void;
+  renderPRStatus: (findingId: string) => React.ReactNode;
 }
 
-export function FindingsRow({
+export const FindingsRow = memo(function FindingsRow({
   finding,
   isSelected,
   jiraIssueKey,
@@ -57,7 +59,7 @@ export function FindingsRow({
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={onToggleSelect}
+          onChange={() => onToggleSelect(finding.id)}
           style={{ cursor: 'pointer', width: 16, height: 16 }}
         />
       </td>
@@ -152,24 +154,25 @@ export function FindingsRow({
           isLinking={isLinkingJira}
           linkInput={jiraLinkInput}
           onLinkInputChange={onJiraLinkInputChange}
-          onStartLink={onStartJiraLink}
-          onSaveLink={onSaveJiraLink}
+          onStartLink={() => onStartJiraLink(finding.id)}
+          onSaveLink={() => onSaveJiraLink(finding.id)}
           onCancelLink={onCancelJiraLink}
-          onRemoveLink={onRemoveJiraLink}
+          onRemoveLink={() => onRemoveJiraLink(finding.id)}
         />
       </td>
 
       {/* PR Status Column */}
       <td style={tdStyle}>
-        {renderPRStatus ? renderPRStatus() : <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>}
+        {renderPRStatus(finding.id)}
       </td>
 
       {/* Actions */}
       <td style={tdStyle}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button
-            onClick={onToggleFalsePositive}
+            onClick={() => onToggleFalsePositive(finding)}
             title={isFalsePositive ? 'Restore finding' : 'Mark as false positive'}
+            aria-label={isFalsePositive ? 'Restore finding' : 'Mark as false positive'}
             style={{
               background: 'none',
               border: 'none',
@@ -189,16 +192,16 @@ export function FindingsRow({
               e.currentTarget.style.color = isFalsePositive ? '#15803d' : '#94a3b8';
             }}
           >
-            {isFalsePositive ? '↩ Restore' : '✕ Ignore'}
+            {isFalsePositive ? <><Undo size={12} aria-hidden="true" style={{ marginRight: 4 }} />Restore</> : <><X size={12} aria-hidden="true" style={{ marginRight: 4 }} />Ignore</>}
           </button>
-          <Button variant="secondary" size="sm" onClick={onViewDetails}>
+          <Button variant="secondary" size="sm" onClick={() => onViewDetails(finding)}>
             Details
           </Button>
         </div>
       </td>
     </tr>
   );
-}
+});
 
 const tdStyle: React.CSSProperties = {
   padding: '14px 12px',

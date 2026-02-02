@@ -1,9 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/lib/constants";
+import { OrganizationJsonLd, SoftwareApplicationJsonLd, WebsiteJsonLd } from "@/components/seo/JsonLd";
+import { I18nProvider } from "@/lib/i18n/context";
+import { MockAuthProvider } from "@/lib/auth/MockAuthContext";
 import "./globals.css";
+
+// Use mock auth in development
+const useMockAuth = process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -98,10 +105,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${instrumentSans.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <OrganizationJsonLd />
+        <SoftwareApplicationJsonLd />
+        <WebsiteJsonLd />
+      </head>
       <body className="font-sans antialiased bg-background text-text-primary">
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        {useMockAuth ? (
+          <MockAuthProvider>
+            <I18nProvider>
+              <Navbar />
+              <main className="min-h-screen">{children}</main>
+              <Footer />
+            </I18nProvider>
+          </MockAuthProvider>
+        ) : (
+          <ClerkProvider>
+            <I18nProvider>
+              <Navbar />
+              <main className="min-h-screen">{children}</main>
+              <Footer />
+            </I18nProvider>
+          </ClerkProvider>
+        )}
       </body>
     </html>
   );

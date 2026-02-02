@@ -50,7 +50,7 @@ describe("findings/FixCodePreview", () => {
 
   it("renders effort badge", () => {
     render(<FixCodePreview fix={baseFix} />);
-    expect(screen.getByText("⚡ Trivial")).toBeInTheDocument();
+    expect(screen.getByText(/Trivial/)).toBeInTheDocument();
   });
 
   it("renders all confidence levels correctly", () => {
@@ -66,16 +66,16 @@ describe("findings/FixCodePreview", () => {
 
   it("renders all effort levels correctly", () => {
     const { rerender } = render(<FixCodePreview fix={{ ...baseFix, effort: 'trivial' }} />);
-    expect(screen.getByText("⚡ Trivial")).toBeInTheDocument();
+    expect(screen.getByText(/Trivial/)).toBeInTheDocument();
 
     rerender(<FixCodePreview fix={{ ...baseFix, effort: 'easy' }} />);
-    expect(screen.getByText("🟢 Easy")).toBeInTheDocument();
+    expect(screen.getByText(/Easy/)).toBeInTheDocument();
 
     rerender(<FixCodePreview fix={{ ...baseFix, effort: 'medium' }} />);
-    expect(screen.getByText("🟡 Medium")).toBeInTheDocument();
+    expect(screen.getByText(/Medium/)).toBeInTheDocument();
 
     rerender(<FixCodePreview fix={{ ...baseFix, effort: 'complex' }} />);
-    expect(screen.getByText("🔴 Complex")).toBeInTheDocument();
+    expect(screen.getByText(/Complex/)).toBeInTheDocument();
   });
 
   it("renders explanation", () => {
@@ -112,31 +112,36 @@ describe("findings/FixCodePreview", () => {
 
   it("renders view mode toggle buttons", () => {
     render(<FixCodePreview fix={baseFix} />);
-    expect(screen.getByText("✅ Fixed")).toBeInTheDocument();
-    expect(screen.getByText("📊 Diff")).toBeInTheDocument();
-    expect(screen.getByText("📄 Original")).toBeInTheDocument();
+    const buttons = screen.getAllByRole("button");
+    // Find buttons containing the view mode text
+    const fixedButton = buttons.find(btn => btn.textContent?.includes("Fixed") && !btn.textContent?.includes("code"));
+    const diffButton = buttons.find(btn => btn.textContent?.includes("Diff"));
+    const originalButton = buttons.find(btn => btn.textContent?.includes("Original"));
+    expect(fixedButton).toBeInTheDocument();
+    expect(diffButton).toBeInTheDocument();
+    expect(originalButton).toBeInTheDocument();
   });
 
   it("switches to original view when original button is clicked", () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📄 Original"));
+    fireEvent.click(screen.getByText(/Original/));
     expect(screen.getByText(/Original code/)).toBeInTheDocument();
   });
 
   it("switches to diff view when diff button is clicked", () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
     expect(screen.getByText(/- <div>Original code<\/div>/)).toBeInTheDocument();
   });
 
   it("renders copy button", () => {
     render(<FixCodePreview fix={baseFix} />);
-    expect(screen.getByText("📋 Copy")).toBeInTheDocument();
+    expect(screen.getByText(/Copy/)).toBeInTheDocument();
   });
 
   it("copies code to clipboard when copy button is clicked", async () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📋 Copy"));
+    fireEvent.click(screen.getByText(/Copy/));
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith('<div role="button">Fixed code</div>');
@@ -145,17 +150,17 @@ describe("findings/FixCodePreview", () => {
 
   it("shows copied state after copying", async () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📋 Copy"));
+    fireEvent.click(screen.getByText(/Copy/));
 
     await waitFor(() => {
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText(/Copied!/)).toBeInTheDocument();
     });
   });
 
   it("calls onCopy callback when provided", async () => {
     const onCopy = vi.fn();
     render(<FixCodePreview fix={baseFix} onCopy={onCopy} />);
-    fireEvent.click(screen.getByText("📋 Copy"));
+    fireEvent.click(screen.getByText(/Copy/));
 
     await waitFor(() => {
       expect(onCopy).toHaveBeenCalledWith('<div role="button">Fixed code</div>');
@@ -213,7 +218,7 @@ describe("findings/FixCodePreview", () => {
 
   it("renders diff view with colored lines", () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     const diffContainer = screen.getByText(/- <div>Original code<\/div>/);
     expect(diffContainer).toBeInTheDocument();
@@ -226,8 +231,8 @@ describe("findings/FixCodePreview", () => {
 
   it("copies original code when in original view", async () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📄 Original"));
-    fireEvent.click(screen.getByText("📋 Copy"));
+    fireEvent.click(screen.getByText(/Original/));
+    fireEvent.click(screen.getByText(/Copy/));
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith('<div>Original code</div>');
@@ -236,8 +241,8 @@ describe("findings/FixCodePreview", () => {
 
   it("copies diff when in diff view", async () => {
     render(<FixCodePreview fix={baseFix} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
-    fireEvent.click(screen.getByText("📋 Copy"));
+    fireEvent.click(screen.getByText(/Diff/));
+    fireEvent.click(screen.getByText(/Copy/));
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(baseFix.diff);
@@ -323,7 +328,7 @@ describe("findings/FixCodePreview", () => {
     };
 
     render(<FixCodePreview fix={diffWithRemovals} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     const removedLine = screen.getByText(/- <div>Removed line<\/div>/);
     expect(removedLine).toBeInTheDocument();
@@ -338,7 +343,7 @@ describe("findings/FixCodePreview", () => {
     };
 
     render(<FixCodePreview fix={diffWithAdditions} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     const addedLine = screen.getByText(/\+ <div role="button">New<\/div>/);
     expect(addedLine).toBeInTheDocument();
@@ -353,7 +358,7 @@ describe("findings/FixCodePreview", () => {
     };
 
     render(<FixCodePreview fix={diffWithContext} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     // Context line (doesn't start with + or -) should have default color
     const contextLine = screen.getByText(/Context line/);
@@ -368,7 +373,7 @@ describe("findings/FixCodePreview", () => {
     };
 
     render(<FixCodePreview fix={diffWithEmptyLine} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     // The empty line should be rendered (as a non-breaking space for layout)
     // We can verify by checking the diff view has 3 child divs (one for each line)
@@ -389,7 +394,7 @@ describe("findings/FixCodePreview", () => {
     };
 
     render(<FixCodePreview fix={diffWithMultipleEmptyLines} />);
-    fireEvent.click(screen.getByText("📊 Diff"));
+    fireEvent.click(screen.getByText(/Diff/));
 
     // Find the code element containing the diff
     const addedLine = screen.getByText(/\+ Added/);

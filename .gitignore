@@ -39,3 +39,7 @@ test-results/
 # Misc
 *.local
 .cache/
+
+# Claude
+.claude/
+FEATURES.md

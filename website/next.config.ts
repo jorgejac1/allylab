@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
   // Environment variables exposed to the browser
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "https://allylab.io",
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://api.allylab.io",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.vercel.app",
     NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io",
   },
 
@@ -96,7 +96,9 @@ const nextConfig: NextConfig = {
 
   // Redirects
   async redirects() {
-    return [
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const baseRedirects = [
       {
         source: "/home",
         destination: "/",
@@ -112,6 +114,10 @@ const nextConfig: NextConfig = {
         destination: "/docs",
         permanent: true,
       },
+    ];
+
+    // Only redirect to external app in production
+    const productionRedirects = isProduction ? [
       {
         source: "/signup",
         destination: "https://app.allylab.io/signup",
@@ -137,7 +143,9 @@ const nextConfig: NextConfig = {
         destination: "https://app.allylab.io",
         permanent: false,
       },
-    ];
+    ] : [];
+
+    return [...baseRedirects, ...productionRedirects];
   },
 
   // Rewrites for API proxy (optional, for local development)
@@ -145,7 +153,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/v1/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "https://api.allylab.io"}/v1/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.vercel.app"}/v1/:path*`,
       },
     ];
   },

@@ -3,15 +3,16 @@ export const siteConfig = {
   name: "AllyLab",
   description: "Enterprise-grade web accessibility scanner with AI-powered fix suggestions",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://allylab.io",
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || "https://api.allylab.io",
-  dashboardUrl: process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io",
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+  dashboardUrl: process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173",
   github: "https://github.com/jorgejac1/allylab",
   twitter: "@allylab",
-  
+
   links: {
-    signup: `${process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io"}/signup`,
-    login: `${process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io"}/login`,
-    dashboard: process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io",
+    // Use relative paths for now until production deployment
+    signup: "/contact", // Redirect to contact until auth is ready
+    login: "/contact", // Redirect to contact until auth is ready
+    dashboard: process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173",
     docs: "/docs",
     pricing: "/pricing",
     blog: "/blog",
@@ -25,7 +26,7 @@ export const siteConfig = {
   seo: {
     title: "AllyLab - AI-Powered Accessibility Scanner",
     titleTemplate: "%s | AllyLab",
-    description: "Enterprise-grade web accessibility scanner with AI-powered fix suggestions. Scan for WCAG compliance, get code fixes, and create GitHub PRs automatically.",
+    description: "Enterprise-grade web accessibility scanner with AI-powered fix suggestions. Scan for WCAG compliance, get code fixes, and create GitHub PRs or GitLab MRs automatically.",
     keywords: [
       "accessibility",
       "a11y",

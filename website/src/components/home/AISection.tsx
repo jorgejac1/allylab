@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 const features = [
   "Framework-specific code (HTML, React, Vue)",
   "Confidence scores and effort estimates",
-  "One-click PR creation to GitHub",
+  "One-click PR/MR creation (GitHub & GitLab)",
   "Automatic fix verification after merge",
-  "Batch multiple fixes in single PR",
+  "Batch multiple fixes in single PR/MR",
 ];
 
 const tabs = ["before", "after", "diff"] as const;

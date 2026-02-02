@@ -63,7 +63,7 @@ describe("settings/JiraSettings", () => {
 
     const saveBtn = screen.getByRole("button", { name: "Save Settings" });
     fireEvent.click(saveBtn);
-    expect(screen.getByText("✓ Saved!")).toBeInTheDocument();
+    expect(screen.getByText("Saved!")).toBeInTheDocument();
 
     // Manually trigger animationend event since fake timers don't run CSS animations
     fireEvent.animationEnd(saveBtn);
@@ -85,7 +85,7 @@ describe("settings/JiraSettings", () => {
 
     render(<JiraSettings />);
 
-    const testBtn = screen.getAllByRole("button", { name: "🔌 Test Connection" })[0];
+    const testBtn = screen.getAllByRole("button", { name: "Test Connection" })[0];
     fireEvent.click(testBtn);
     await waitFor(() => expect(screen.getByText(/Connected successfully/)).toBeInTheDocument());
 
@@ -107,7 +107,7 @@ describe("settings/JiraSettings", () => {
 
     render(<JiraSettings />);
 
-    const testBtn = screen.getAllByRole("button", { name: "🔌 Test Connection" })[0];
+    const testBtn = screen.getAllByRole("button", { name: "Test Connection" })[0];
 
     fireEvent.click(testBtn);
     await waitFor(() => expect(screen.getByText(/Test issue: Created/)).toBeInTheDocument());
@@ -128,7 +128,7 @@ describe("settings/JiraSettings", () => {
     render(<JiraSettings />);
     store.cfg.authHeader = "Bearer token123";
 
-    fireEvent.click(screen.getAllByRole("button", { name: "🔌 Test Connection" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Test Connection" })[0]);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
     // Ensure config carried the auth header into the request options

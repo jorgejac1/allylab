@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllyLab Icon Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f8fafc;
+    }
+    h1 { color: #1e293b; }
+    .icon-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin: 20px 0;
+      padding: 16px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    canvas { border: 1px solid #e2e8f0; border-radius: 4px; }
+    button {
+      padding: 8px 16px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #2563eb; }
+    .instructions {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .instructions h3 { margin-top: 0; color: #1d4ed8; }
+    .instructions ol { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <h1>AllyLab Extension Icons</h1>
+
+  <div class="instructions">
+    <h3>Instructions</h3>
+    <ol>
+      <li>Click each "Download" button below</li>
+      <li>Save the files as <code>icon16.png</code>, <code>icon48.png</code>, and <code>icon128.png</code></li>
+      <li>Place them in the <code>icons/</code> folder</li>
+      <li>Reload the extension in chrome://extensions/</li>
+    </ol>
+  </div>
+
+  <div class="icon-row">
+    <canvas id="icon16" width="16" height="16"></canvas>
+    <span>16x16 (toolbar)</span>
+    <button onclick="download('icon16', 16)">Download icon16.png</button>
+  </div>
+
+  <div class="icon-row">
+    <canvas id="icon48" width="48" height="48"></canvas>
+    <span>48x48 (extension page)</span>
+    <button onclick="download('icon48', 48)">Download icon48.png</button>
+  </div>
+
+  <div class="icon-row">
+    <canvas id="icon128" width="128" height="128"></canvas>
+    <span>128x128 (web store)</span>
+    <button onclick="download('icon128', 128)">Download icon128.png</button>
+  </div>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const scale = size / 128;
+
+      // Background - rounded square
+      ctx.fillStyle = '#3b82f6';
+      const radius = 20 * scale;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+
+      // "A" letter for AllyLab
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${72 * scale}px -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('A', size / 2, size / 2 + 2 * scale);
+
+      // Accessibility circle indicator
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3 * scale;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, 45 * scale, -0.5 * Math.PI, 1.2 * Math.PI);
+      ctx.stroke();
+    }
+
+    function download(id, size) {
+      const canvas = document.getElementById(id);
+      const link = document.createElement('a');
+      link.download = `${id}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Draw all icons
+    [16, 48, 128].forEach(size => {
+      drawIcon(document.getElementById(`icon${size}`), size);
+    });
+  </script>
+</body>
+</html>

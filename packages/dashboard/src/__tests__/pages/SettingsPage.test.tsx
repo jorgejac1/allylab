@@ -8,6 +8,16 @@ vi.mock("../../components/settings", () => import("../__mocks__/pageComponents")
 vi.mock("../../components/ui", () => import("../__mocks__/pageComponents"));
 vi.mock("../../hooks", () => import("../__mocks__/hooks"));
 
+// Mock individual settings components for lazy loading
+vi.mock("../../components/settings/CICDGenerator", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/JiraSettings", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/ScheduleManager", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/WebhookManager", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/GitHubSettings", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/AlertSettings", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/ReportSettings", () => import("../__mocks__/pageComponents"));
+vi.mock("../../components/settings/CustomRulesManager", () => import("../__mocks__/pageComponents"));
+
 const defaultSettings = {
   defaultStandard: "wcag21aa",
   includeWarnings: false,
@@ -41,7 +51,7 @@ describe("pages/SettingsPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Save Settings/i }));
     expect(success).toHaveBeenCalledWith("Settings saved successfully");
-    expect(screen.getByRole("button", { name: /✓ Saved!/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Saved/i })).toBeInTheDocument();
     vi.advanceTimersByTime(2000);
 
     fireEvent.change(screen.getByTestId("select"), { target: { value: "wcag22aa" } });
@@ -210,7 +220,7 @@ describe("pages/SettingsPage", () => {
     expect(writeText).toHaveBeenCalled();
     expect(success).toHaveBeenCalledWith("Copied to clipboard");
 
-    const copyButtons = screen.getAllByRole("button", { name: "📋" });
+    const copyButtons = screen.getAllByRole("button", { name: /copy/i });
     fireEvent.click(copyButtons[0]);
     await waitFor(() => {
       expect(success).toHaveBeenCalled();
@@ -219,7 +229,7 @@ describe("pages/SettingsPage", () => {
     Object.defineProperty(globalThis.navigator, "clipboard", { value: originalClipboard, configurable: true });
   });
 
-  it("renders tab-specific content when selecting tabs", () => {
+  it("renders tab-specific content when selecting tabs", async () => {
     mockUseLocalStorage.mockImplementation((key: string, initial: unknown) => {
       if (key === "allylab_settings") return [defaultSettings, vi.fn()];
       if (key === "allylab_api_url") return ["http://initial", vi.fn()];
@@ -236,28 +246,29 @@ describe("pages/SettingsPage", () => {
 
     render(<SettingsPage />);
 
+    // Settings tabs are lazy-loaded, so we need to wait for them to render
     fireEvent.click(screen.getByRole("button", { name: "Reports" }));
-    expect(screen.getByTestId("report-settings")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("report-settings")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Alerts" }));
-    expect(screen.getByTestId("alert-settings")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("alert-settings")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Rules" }));
-    expect(screen.getByTestId("custom-rules-manager")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("custom-rules-manager")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "CI/CD" }));
-    expect(screen.getByTestId("cicd-generator")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("cicd-generator")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Scheduled Scans" }));
-    expect(screen.getByTestId("schedule-manager")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("schedule-manager")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Notifications" }));
-    expect(screen.getByTestId("webhook-manager")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("webhook-manager")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "JIRA" }));
-    expect(screen.getByTestId("jira-settings")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("jira-settings")).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: "GitHub" }));
-    expect(screen.getByTestId("github-settings")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Git" }));
+    await waitFor(() => expect(screen.getByTestId("git-integration-settings")).toBeInTheDocument());
   });
 });

@@ -31,15 +31,15 @@ export function Hero() {
             </h1>
 
             <p className="text-lg text-text-secondary mb-8 max-w-lg">
-              Stop just finding problems. AllyLab generates production-ready code fixes 
-              and creates GitHub pull requests automatically. Fix accessibility issues 
+              Stop just finding problems. AllyLab generates production-ready code fixes
+              and creates GitHub PRs or GitLab MRs automatically. Fix accessibility issues
               in minutes, not days.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-8">
-              <Link href="/signup">
+              <Link href="/contact">
                 <Button size="lg">
-                  Start Free Trial
+                  Get Early Access
                   <ArrowRight size={18} />
                 </Button>
               </Link>
@@ -84,7 +84,7 @@ export function Hero() {
                   <span className="w-3 h-3 rounded-full bg-primary" />
                 </div>
                 <div className="flex-1 bg-surface rounded-lg px-3 py-1">
-                  <span className="text-xs text-text-muted font-mono">app.allylab.io/dashboard</span>
+                  <span className="text-xs text-text-muted font-mono">allylab.io/dashboard</span>
                 </div>
               </div>
 

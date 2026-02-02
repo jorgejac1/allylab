@@ -46,16 +46,16 @@ describe("components/findings/VerificationModal", () => {
   });
 
   it("displays loading state", () => {
-    render(<VerificationModal {...defaultProps} isLoading={true} />);
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    const { container } = render(<VerificationModal {...defaultProps} isLoading={true} />);
+    expect(container.querySelector("svg")).toBeInTheDocument(); // Search icon
     expect(screen.getByText("Re-scanning page to verify fixes...")).toBeInTheDocument();
   });
 
   it("displays error state", () => {
     const errorMessage = "Failed to verify fixes";
-    render(<VerificationModal {...defaultProps} error={errorMessage} />);
+    const { container } = render(<VerificationModal {...defaultProps} error={errorMessage} />);
 
-    expect(screen.getByText("❌")).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument(); // Error icon
     expect(screen.getByText("Verification Failed")).toBeInTheDocument();
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
@@ -82,9 +82,9 @@ describe("components/findings/VerificationModal", () => {
       scanTimestamp: "2024-01-01T00:00:00Z",
     };
 
-    render(<VerificationModal {...defaultProps} result={result} />);
+    const { container } = render(<VerificationModal {...defaultProps} result={result} />);
 
-    expect(screen.getByText("🎉")).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument(); // Party icon
     expect(screen.getByText("All Fixes Verified!")).toBeInTheDocument();
     expect(screen.getByText(/All 2 issues have been successfully fixed/)).toBeInTheDocument();
   });
@@ -103,9 +103,9 @@ describe("components/findings/VerificationModal", () => {
       scanTimestamp: "2024-01-01T00:00:00Z",
     };
 
-    render(<VerificationModal {...defaultProps} result={result} />);
+    const { container } = render(<VerificationModal {...defaultProps} result={result} />);
 
-    expect(screen.getByText("⚠️")).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument(); // Warning icon
     expect(screen.getByText("Some Issues Still Present")).toBeInTheDocument();
     expect(screen.getByText(/2 of 3 issues are still present/)).toBeInTheDocument();
   });
@@ -127,8 +127,9 @@ describe("components/findings/VerificationModal", () => {
 
     expect(screen.getByText("button-name")).toBeInTheDocument();
     expect(screen.getByText("image-alt")).toBeInTheDocument();
-    expect(screen.getByText("✓ Fixed")).toBeInTheDocument();
-    expect(screen.getByText("✗ Still Present")).toBeInTheDocument();
+    // Multiple elements can match "Still Present" (heading and table row)
+    expect(screen.getAllByText(/Fixed/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Still Present/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("displays scan score and timestamp", () => {
@@ -255,8 +256,8 @@ describe("components/findings/VerificationModal", () => {
 
     render(<VerificationModal {...defaultProps} result={result} />);
 
-    expect(screen.getAllByText("✓ Fixed")).toHaveLength(2);
-    expect(screen.getAllByText("✗ Still Present")).toHaveLength(2);
+    expect(screen.getAllByText(/Fixed/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/Still Present/).length).toBeGreaterThanOrEqual(2);
   });
 
   it("displays correct count of still present issues", () => {

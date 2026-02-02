@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#dc2626',
   serious: '#f97316',
@@ -9,7 +11,7 @@ interface SeverityDotProps {
   severity: string;
 }
 
-export function SeverityDot({ severity }: SeverityDotProps) {
+export const SeverityDot = memo(function SeverityDot({ severity }: SeverityDotProps) {
   return (
     <span
       style={{
@@ -22,4 +24,4 @@ export function SeverityDot({ severity }: SeverityDotProps) {
       }}
     />
   );
-}
+});

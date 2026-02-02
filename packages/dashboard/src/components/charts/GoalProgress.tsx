@@ -1,4 +1,5 @@
 import { Card } from "../ui";
+import { Target, Check } from 'lucide-react';
 
 interface GoalProgressProps {
   currentScore: number;
@@ -29,8 +30,8 @@ export function GoalProgress({
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
-          🎯 Goal Progress
+        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Target size={16} /> Goal Progress
         </h4>
         {goalReached ? (
           <span
@@ -46,7 +47,7 @@ export function GoalProgress({
               fontWeight: 600,
             }}
           >
-            <span>✓</span>
+            <Check size={14} />
             Goal Reached!
           </span>
         ) : (

@@ -1,23 +1,25 @@
-import { useState } from "react";
-import { Button, SeverityBadge, StatusBadge } from "../ui";
+import { Button, SeverityBadge, StatusBadge, Section } from "../ui";
 import { FixCodePreview } from "./FixCodePreview";
 import { ApplyFixModal } from "./ApplyFixModal";
 import { ElementScreenshot } from "./ElementScreenshot";
+import { useDrawerState } from "../../hooks";
 import type { TrackedFinding } from "../../types";
-import type { CodeFix } from "../../types/fixes";
 import {
-  markAsFalsePositive,
-  unmarkFalsePositive,
-} from "../../utils/falsePositives";
-import { getApiBase } from "../../utils/api";
+  X,
+  Ban,
+  Check,
+  Wrench,
+  RefreshCw,
+  Settings,
+  Sparkles,
+  BookOpen,
+} from 'lucide-react';
 
 interface FindingDetailsDrawerProps {
   isOpen: boolean;
   finding: TrackedFinding | null;
   onClose: () => void;
   onFalsePositiveChange?: () => void;
-  onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
-  isGeneratingFix?: boolean;
   scanUrl?: string;
 }
 
@@ -28,95 +30,25 @@ export function FindingDetailsDrawer({
   onFalsePositiveChange,
   scanUrl,
 }: FindingDetailsDrawerProps) {
-  const [showFpForm, setShowFpForm] = useState(false);
-  const [fpReason, setFpReason] = useState("");
-  const [copiedSelector, setCopiedSelector] = useState(false);
-  const [copiedHtml, setCopiedHtml] = useState(false);
-
-  // AI Fix state
-  const [isGeneratingFix, setIsGeneratingFix] = useState(false);
-  const [codeFix, setCodeFix] = useState<CodeFix | null>(null);
-  const [fixError, setFixError] = useState<string | null>(null);
-
-  // Apply Fix Modal state
-  const [showApplyFixModal, setShowApplyFixModal] = useState(false);
+  const {
+    showFpForm,
+    fpReason,
+    copiedSelector,
+    copiedHtml,
+    isGeneratingFix,
+    codeFix,
+    fixError,
+    showApplyFixModal,
+    setShowFpForm,
+    setFpReason,
+    handleMarkFalsePositive,
+    handleUnmarkFalsePositive,
+    handleCopy,
+    handleGenerateEnhancedFix,
+    setShowApplyFixModal,
+  } = useDrawerState({ finding, onFalsePositiveChange, onClose });
 
   if (!isOpen || !finding) return null;
-
-  const handleCopy = async (text: string, type: "selector" | "html") => {
-    await navigator.clipboard.writeText(text);
-    if (type === "selector") {
-      setCopiedSelector(true);
-      setTimeout(() => setCopiedSelector(false), 2000);
-    } else {
-      setCopiedHtml(true);
-      setTimeout(() => setCopiedHtml(false), 2000);
-    }
-  };
-
-  const handleMarkFalsePositive = () => {
-    markAsFalsePositive(
-      finding.fingerprint,
-      finding.ruleId,
-      fpReason || undefined
-    );
-    setShowFpForm(false);
-    setFpReason("");
-    onFalsePositiveChange?.();
-    onClose();
-  };
-
-  const handleUnmarkFalsePositive = () => {
-    unmarkFalsePositive(finding.fingerprint);
-    onFalsePositiveChange?.();
-    onClose();
-  };
-
-  const handleGenerateEnhancedFix = async () => {
-    setIsGeneratingFix(true);
-    setFixError(null);
-    setCodeFix(null);
-
-    try {
-      const response = await fetch(`${getApiBase()}/fixes/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          finding: {
-            ruleId: finding.ruleId,
-            ruleTitle: finding.ruleTitle,
-            description: finding.description,
-            html: finding.html,
-            selector: finding.selector,
-            wcagTags: finding.wcagTags,
-            impact: finding.impact,
-          },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.fix) {
-        setCodeFix(data.fix);
-      } else {
-        const errorMessage = data.error || "Failed to generate fix";
-        console.error(
-          "[FindingDetailsDrawer] Fix generation failed:",
-          errorMessage
-        );
-        setFixError(errorMessage);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Network error";
-      console.error(
-        "[FindingDetailsDrawer] Failed to connect to AI service:",
-        message
-      );
-      setFixError("Failed to connect to AI service");
-    } finally {
-      setIsGeneratingFix(false);
-    }
-  };
 
   return (
     <>
@@ -170,13 +102,14 @@ export function FindingDetailsDrawer({
               style={{
                 background: "none",
                 border: "none",
-                fontSize: 24,
                 cursor: "pointer",
                 color: "#64748b",
                 padding: 4,
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
-              ×
+              <X size={24} />
             </button>
           </div>
 
@@ -200,7 +133,8 @@ export function FindingDetailsDrawer({
                   fontWeight: 500,
                 }}
               >
-                🚫 Marked as False Positive
+                <Ban size={16} />
+                Marked as False Positive
               </div>
               {finding.falsePositiveReason && (
                 <div style={{ marginTop: 8, fontSize: 13, color: "#64748b" }}>
@@ -289,9 +223,12 @@ export function FindingDetailsDrawer({
                   color: "#fff",
                   fontSize: 11,
                   cursor: "pointer",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                 }}
               >
-                {copiedSelector ? "✓ Copied!" : "Copy"}
+                {copiedSelector ? <><Check size={12} />Copied!</> : "Copy"}
               </button>
             </div>
           </Section>
@@ -326,15 +263,18 @@ export function FindingDetailsDrawer({
                   color: "#fff",
                   fontSize: 11,
                   cursor: "pointer",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                 }}
               >
-                {copiedHtml ? "✓ Copied!" : "Copy"}
+                {copiedHtml ? <><Check size={12} />Copied!</> : "Copy"}
               </button>
             </div>
           </Section>
 
           {/* AI Fix Section */}
-          <Section title="🔧 AI-Powered Fix">
+          <Section title={<><Wrench size={14} style={{ marginRight: 6 }} />AI-Powered Fix</>}>
             {codeFix ? (
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 12 }}
@@ -348,14 +288,16 @@ export function FindingDetailsDrawer({
                     size="sm"
                     onClick={() => setShowApplyFixModal(true)}
                   >
-                    🔧 Apply Fix
+                    <Wrench size={14} style={{ marginRight: 6 }} />
+                    Apply Fix
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleGenerateEnhancedFix}
                   >
-                    🔄 Regenerate
+                    <RefreshCw size={14} style={{ marginRight: 6 }} />
+                    Regenerate
                   </Button>
                 </div>
               </div>
@@ -385,19 +327,17 @@ export function FindingDetailsDrawer({
                   >
                     {isGeneratingFix ? (
                       <>
-                        <span
+                        <Settings
+                          size={14}
                           style={{
-                            display: "inline-block",
-                            animation: "spin 1s linear infinite",
                             marginRight: 8,
+                            animation: "spin 1s linear infinite",
                           }}
-                        >
-                          ⚙️
-                        </span>
+                        />
                         Generating Fix...
                       </>
                     ) : (
-                      "✨ Generate AI Fix"
+                      <><Sparkles size={14} style={{ marginRight: 6 }} />Generate AI Fix</>
                     )}
                   </Button>
                 )}
@@ -480,7 +420,8 @@ export function FindingDetailsDrawer({
                 fontWeight: 500,
               }}
             >
-              📚 WCAG Documentation →
+              <BookOpen size={16} />
+              WCAG Documentation →
             </a>
           </Section>
         </div>
@@ -497,14 +438,16 @@ export function FindingDetailsDrawer({
         >
           {finding.falsePositive ? (
             <Button variant="secondary" onClick={handleUnmarkFalsePositive}>
-              ✓ Restore Issue
+              <Check size={14} style={{ marginRight: 6 }} />
+              Restore Issue
             </Button>
           ) : (
             <Button
               variant="secondary"
               onClick={() => setShowFpForm(!showFpForm)}
             >
-              🚫 Mark as False Positive
+              <Ban size={14} style={{ marginRight: 6 }} />
+              Mark as False Positive
             </Button>
           )}
           <Button onClick={onClose}>Close</Button>
@@ -537,30 +480,5 @@ export function FindingDetailsDrawer({
         }
       `}</style>
     </>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <h4
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: "#64748b",
-          marginBottom: 8,
-          textTransform: "uppercase",
-        }}
-      >
-        {title}
-      </h4>
-      {children}
-    </div>
   );
 }

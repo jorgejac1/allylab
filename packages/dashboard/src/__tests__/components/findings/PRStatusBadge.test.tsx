@@ -31,9 +31,10 @@ describe("findings/PRStatusBadge", () => {
 
   it("renders merged PR badge", () => {
     const mergedPR = { ...basePR, status: "merged" as const };
-    render(<PRStatusBadge pr={mergedPR} />);
+    const { container } = render(<PRStatusBadge pr={mergedPR} />);
 
-    expect(screen.getByText(/🔀 Merged/)).toBeInTheDocument();
+    expect(screen.getByText(/Merged/)).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders closed PR badge", () => {
@@ -45,16 +46,18 @@ describe("findings/PRStatusBadge", () => {
 
   it("renders verified PR badge", () => {
     const verifiedPR = { ...basePR, verificationStatus: "verified" as const };
-    render(<PRStatusBadge pr={verifiedPR} />);
+    const { container } = render(<PRStatusBadge pr={verifiedPR} />);
 
-    expect(screen.getByText(/✓ Verified/)).toBeInTheDocument();
+    expect(screen.getByText(/Verified/)).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders failed verification badge", () => {
     const failedPR = { ...basePR, verificationStatus: "failed" as const };
-    render(<PRStatusBadge pr={failedPR} />);
+    const { container } = render(<PRStatusBadge pr={failedPR} />);
 
-    expect(screen.getByText(/✗ Still Present/)).toBeInTheDocument();
+    expect(screen.getByText(/Still Present/)).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
   it("shows verify button for merged PR without verification", () => {

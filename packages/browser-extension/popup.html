@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllyLab Cookie Capture</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      width: 360px;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .domain-info {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .domain-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .domain-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+      word-break: break-all;
+    }
+
+    .cookie-count {
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .status.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .status.info {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .options {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-group label {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .preview {
+      margin-top: 16px;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .preview code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4M12 8h.01"/>
+    </svg>
+    <div>
+      <h1>AllyLab Cookie Capture</h1>
+      <p>Export cookies for authenticated scanning</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="domain-info">
+      <div class="domain-label">Current Domain</div>
+      <div class="domain-value" id="current-domain">Loading...</div>
+      <div class="cookie-count" id="cookie-count">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 12h.01M12 12h.01M16 12h.01"/>
+        </svg>
+        <span id="cookie-count-text">0 cookies</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="capture-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      Copy Cookies to Clipboard
+    </button>
+
+    <button class="btn btn-secondary" id="preview-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      Preview JSON
+    </button>
+
+    <div class="preview hidden" id="preview">
+      <code id="preview-code"></code>
+    </div>
+
+    <div class="options">
+      <div class="checkbox-group">
+        <input type="checkbox" id="include-subdomains" checked>
+        <label for="include-subdomains">Include subdomain cookies</label>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="session-only">
+        <label for="session-only">Session cookies only</label>
+      </div>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+  </div>
+
+  <div class="footer">
+    Paste in <a href="https://allylab.io" target="_blank">AllyLab</a> Settings &rarr; Authentication
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

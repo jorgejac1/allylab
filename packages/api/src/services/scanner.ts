@@ -1,11 +1,30 @@
 import AxeBuilder from '@axe-core/playwright';
-import type { Page } from 'playwright';
-import { createPage } from './browser.js';
+import type { Page, BrowserContext } from 'playwright';
+import {
+  acquirePage,
+  releasePage,
+  destroyPage,
+  createAuthenticatedContext,
+  executeLoginFlow,
+  closeAuthenticatedContext,
+} from './browser.js';
 import { calculateScore } from '../utils/scoring.js';
 import { getWcagTags } from '../utils/wcag.js';
 import { evaluateCustomRules, getEnabledRulesCount } from './rule-evaluator.js';
-import type { Finding, ScanResult, Severity, Viewport } from '../types/index.js';
+import { config } from '../config/env.js';
+import type { Finding, ScanResult, Severity, Viewport, ScanAuthOptions } from '../types/index.js';
 import type { RuleViolation } from '../types/rules.js';
+import { scannerLogger } from '../utils/logger.js';
+
+/**
+ * Scan timeout error - thrown when scan exceeds total timeout
+ */
+export class ScanTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ScanTimeoutError';
+  }
+}
 
 // Browser globals for page.evaluate (these run in browser context, not Node.js)
 declare const document: {
@@ -24,6 +43,7 @@ interface ScanOptions {
   includeWarnings?: boolean;
   includeCustomRules?: boolean;
   captureScreenshots?: boolean;
+  auth?: ScanAuthOptions;
   onProgress?: (progress: { percent: number; message: string }) => void;
   onFinding?: (finding: Finding) => void;
 }
@@ -136,52 +156,88 @@ async function captureElementScreenshot(
 }
 
 export async function runScan(options: ScanOptions): Promise<ScanResult> {
-  const { 
-    url, 
-    standard = 'wcag21aa', 
+  const {
+    url,
+    standard = 'wcag21aa',
     viewport = 'desktop',
     includeWarnings = false,
     includeCustomRules = true,
     captureScreenshots = true,
-    onProgress, 
-    onFinding 
+    auth,
+    onProgress,
+    onFinding
   } = options;
-  
+
   const startTime = Date.now();
   const viewportLabel = viewport === 'desktop' ? '🖥️ Desktop' : viewport === 'tablet' ? '📱 Tablet' : '📲 Mobile';
-  const customRulesCount = includeCustomRules ? getEnabledRulesCount() : 0;
+  const customRulesCount = includeCustomRules ? await getEnabledRulesCount() : 0;
 
-  const page = await createPage(viewport);
+  // Wrap scan in total timeout
+  const scanWithTimeout = async (): Promise<ScanResult> => {
+    let page: Page | undefined;
+    let authenticatedContext: BrowserContext | null = null;
+    let scanFailed = false;
 
-  try {
-    onProgress?.({ percent: 10, message: `Navigating to page (${viewportLabel})...` });
+    // Determine if using authenticated context or page pool
+    const useAuth = !!(auth && (auth.cookies || auth.headers || auth.storageState || auth.basicAuth || auth.loginFlow));
 
-    // Use domcontentloaded instead of networkidle
     try {
-      await page.goto(url, {
-        waitUntil: 'domcontentloaded',
-        timeout: 60000,
-      });
-    } catch (navError) {
-      if (navError instanceof Error && navError.message.includes('Timeout')) {
-        onProgress?.({ percent: 15, message: 'Page loading slowly, continuing scan...' });
-        await page.goto(url, {
-          waitUntil: 'commit',
-          timeout: 30000,
-        });
+      if (useAuth) {
+        // Create authenticated context (not from pool)
+        onProgress?.({ percent: 5, message: 'Setting up authenticated session...' });
+        scannerLogger.info({ msg: 'Using authenticated scanning', url, hasLoginFlow: !!auth?.loginFlow });
+
+        const authResult = await createAuthenticatedContext(viewport, auth!);
+        page = authResult.page;
+        authenticatedContext = authResult.context;
+
+        // Execute login flow if provided
+        if (auth?.loginFlow) {
+          onProgress?.({ percent: 8, message: 'Executing login flow...' });
+          const loginSuccess = await executeLoginFlow(page, auth.loginFlow);
+
+          if (!loginSuccess) {
+            throw new Error('Login flow failed - could not authenticate. Check your login steps and success indicator.');
+          }
+
+          scannerLogger.info({ msg: 'Login flow completed successfully', url });
+        }
       } else {
-        throw navError;
+        // Use page pool for unauthenticated scans
+        page = await acquirePage(viewport, config.scanPageAcquireTimeout);
       }
-    }
+
+      // TypeScript assertion - page is guaranteed to be assigned at this point
+      const activePage = page!;
+
+      onProgress?.({ percent: 10, message: `Navigating to page (${viewportLabel})...` });
+
+      // Use domcontentloaded instead of networkidle
+      try {
+        await activePage.goto(url, {
+          waitUntil: 'domcontentloaded',
+          timeout: config.scanNavigationTimeout,
+        });
+      } catch (navError) {
+        if (navError instanceof Error && navError.message.includes('Timeout')) {
+          onProgress?.({ percent: 15, message: 'Page loading slowly, continuing scan...' });
+          await activePage.goto(url, {
+            waitUntil: 'commit',
+            timeout: config.scanNavigationTimeout / 2,
+          });
+        } else {
+          throw navError;
+        }
+      }
 
     // Wait a bit for JavaScript to render content
     onProgress?.({ percent: 30, message: 'Waiting for page to render...' });
-    await page.waitForTimeout(2000);
+    await activePage.waitForTimeout(2000);
 
     onProgress?.({ percent: 40, message: `Running accessibility scan (${viewportLabel})...` });
 
     // Run axe-core
-    const axeBuilder = new AxeBuilder({ page })
+    const axeBuilder = new AxeBuilder({ page: activePage })
       .withTags(getWcagTags(standard));
 
     const results = await axeBuilder.analyze();
@@ -210,7 +266,7 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
         // Capture element screenshot if enabled
         let screenshot: string | undefined;
         if (captureScreenshots) {
-          screenshot = await captureElementScreenshot(page, selector);
+          screenshot = await captureElementScreenshot(activePage, selector);
         }
 
         const finding: Finding = {
@@ -245,12 +301,12 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
       onProgress?.({ percent: 75, message: `Running ${customRulesCount} custom rules...` });
 
       const customViolations = await evaluateCustomRules({
-        page,
+        page: activePage,
         onViolation: async (violation) => {
           // Capture screenshot for custom rule violations too
           let screenshot: string | undefined;
           if (captureScreenshots) {
-            screenshot = await captureElementScreenshot(page, violation.selector);
+            screenshot = await captureElementScreenshot(activePage, violation.selector);
           }
 
           const finding = ruleViolationToFinding(violation, findings.length, screenshot);
@@ -287,9 +343,33 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
     onProgress?.({ percent: 100, message: 'Scan complete!' });
 
     return result;
-  } finally {
-    await page.close();
-  }
+    } catch (error) {
+      scanFailed = true;
+      throw error;
+    } finally {
+      // Clean up based on whether we used authenticated context or pool
+      if (authenticatedContext) {
+        // Close the authenticated context (not returned to pool)
+        await closeAuthenticatedContext(authenticatedContext);
+      } else if (page) {
+        // Page pool cleanup
+        if (scanFailed) {
+          await destroyPage(page);
+        } else {
+          await releasePage(page);
+        }
+      }
+    }
+  };
+
+  // Apply total scan timeout
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new ScanTimeoutError(`Scan timed out after ${config.scanTotalTimeout}ms`));
+    }, config.scanTotalTimeout);
+  });
+
+  return Promise.race([scanWithTimeout(), timeoutPromise]);
 }
 
 /**

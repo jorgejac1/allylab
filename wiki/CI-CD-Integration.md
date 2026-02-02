@@ -170,6 +170,31 @@ accessibility:
     - npx @allylab/cli scan $CI_ENVIRONMENT_URL --fail-on critical
 ```
 
+### With GitLab Integration
+
+When GitLab is connected in AllyLab dashboard, you can automatically create MRs with fixes:
+
+```yaml
+accessibility:
+  image: node:20
+  script:
+    - |
+      # Run scan and save results
+      npx @allylab/cli scan $CI_ENVIRONMENT_URL \
+        --format json \
+        --output scan-results.json
+
+      # If issues found, AllyLab dashboard can generate fixes
+      # and create MRs directly to your GitLab project
+  artifacts:
+    paths:
+      - scan-results.json
+    reports:
+      accessibility: scan-results.json
+```
+
+> **Note:** For automatic MR creation, ensure GitLab is connected in **Settings** → **Git** with appropriate repository permissions.
+
 ---
 
 ## Harness

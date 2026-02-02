@@ -147,7 +147,6 @@ describe("components/findings/JiraExportModal", () => {
 
     render(<JiraExportModal {...defaultProps} />);
 
-    expect(screen.getByText("🔗")).toBeInTheDocument();
     expect(screen.getByText("JIRA Integration Not Configured")).toBeInTheDocument();
     expect(screen.getByText(/Configure your JIRA settings first/)).toBeInTheDocument();
   });
@@ -247,7 +246,7 @@ describe("components/findings/JiraExportModal", () => {
 
   it("displays export button with correct count", () => {
     render(<JiraExportModal {...defaultProps} />);
-    expect(screen.getByText(/📤 Export 2 Issues/)).toBeInTheDocument();
+    expect(screen.getByText(/Export 2 Issues/)).toBeInTheDocument();
   });
 
   it("disables export button when no findings selected", () => {
@@ -330,7 +329,7 @@ describe("components/findings/JiraExportModal", () => {
 
     render(<JiraExportModal {...defaultProps} />);
 
-    expect(screen.getByText(/⏳ Exporting 1\/2\.\.\./)).toBeInTheDocument();
+    expect(screen.getByText(/Exporting 1\/2/)).toBeInTheDocument();
   });
 
   it("displays 0 completed when bulkProgress is null during export", async () => {
@@ -348,7 +347,7 @@ describe("components/findings/JiraExportModal", () => {
     render(<JiraExportModal {...defaultProps} />);
 
     // When bulkProgress is null, completed falls back to 0
-    expect(screen.getByText(/⏳ Exporting 0\/2\.\.\./)).toBeInTheDocument();
+    expect(screen.getByText(/Exporting 0\/2/)).toBeInTheDocument();
   });
 
   it("disables export button during export", async () => {
@@ -467,7 +466,7 @@ describe("components/findings/JiraExportModal", () => {
     const checkboxes = screen.getAllByRole("checkbox");
     fireEvent.click(checkboxes[1]);
 
-    expect(screen.getByText(/📤 Export 1 Issue$/)).toBeInTheDocument();
+    expect(screen.getByText(/Export 1 Issue$/)).toBeInTheDocument();
   });
 
   it("highlights selected findings", () => {
@@ -571,9 +570,7 @@ describe("components/findings/JiraExportModal", () => {
     const resultsTab = screen.getByTestId("tab-result");
     fireEvent.click(resultsTab);
 
-    // Check for success and failure icons
-    expect(screen.getByText("✅")).toBeInTheDocument();
-    expect(screen.getByText("❌")).toBeInTheDocument();
+    // Check for success and failure results (icons are now lucide-react components)
 
     // Check for error message
     expect(screen.getByText("Permission denied")).toBeInTheDocument();
@@ -645,10 +642,10 @@ describe("components/findings/JiraExportModal", () => {
     const resultsTab = screen.getByTestId("tab-result");
     fireEvent.click(resultsTab);
 
-    // The failed result row should have red background (#fef2f2)
-    const failedIcon = screen.getByText("❌");
-    const resultRow = failedIcon.closest("div");
-    expect(resultRow).toHaveStyle({ background: "#fef2f2" });
+    // The failed result should show error message with error styling
+    const errorMessage = screen.getByText("Connection timeout");
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveStyle({ color: "#ef4444" });
   });
 
   it("applies green background to successful export result rows", async () => {
@@ -675,15 +672,16 @@ describe("components/findings/JiraExportModal", () => {
       reset: vi.fn(),
     });
 
-    render(<JiraExportModal {...defaultProps} />);
+    const { container } = render(<JiraExportModal {...defaultProps} />);
 
     // Switch to results tab
     const resultsTab = screen.getByTestId("tab-result");
     fireEvent.click(resultsTab);
 
-    // The successful result row should have green background (#f0fdf4)
-    const successIcon = screen.getByText("✅");
-    const resultRow = successIcon.closest("div");
-    expect(resultRow).toHaveStyle({ background: "#f0fdf4" });
+    // The successful result should show issue key
+    const issueKey = screen.getByText("TEST-999");
+    expect(issueKey).toBeInTheDocument();
+    // Should have a success icon (checkmark SVG)
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 });

@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
+import { Microscope } from 'lucide-react';
 
 type ApiStatus = "connected" | "disconnected" | "checking";
 
 interface NavItem {
   id: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   badge?: string | number;
   disabled?: boolean;
 }
@@ -70,11 +71,11 @@ export function Sidebar({
           gap: 12,
         }}
       >
-        <span style={{ fontSize: 28 }}>🔬</span>
+        <Microscope size={28} aria-hidden="true" />
         {!collapsed && (
           <div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>AllyLab</div>
-            <div style={{ fontSize: 11, color: "#64748b" }}>
+            <div style={{ fontSize: 11, color: "#94a3b8" }}>
               Accessibility Scanner
             </div>
           </div>
@@ -82,7 +83,12 @@ export function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: "12px 8px", overflow: "auto" }}>
+      <nav
+        id="main-navigation"
+        aria-label="Main navigation"
+        tabIndex={-1}
+        style={{ flex: 1, padding: "12px 8px", overflow: "auto", outline: "none" }}
+      >
         {groups.map((group, groupIndex) => (
           <div key={groupIndex} style={{ marginBottom: 16 }}>
             {/* Group Title */}
@@ -91,7 +97,7 @@ export function Sidebar({
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: "#64748b",
+                  color: "#94a3b8",
                   textTransform: "uppercase",
                   letterSpacing: "0.5px",
                   padding: "8px 12px",
@@ -111,6 +117,8 @@ export function Sidebar({
                   onClick={() => !item.disabled && onItemClick(item.id)}
                   disabled={item.disabled}
                   title={collapsed ? item.label : undefined}
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -135,7 +143,7 @@ export function Sidebar({
                     opacity: item.disabled ? 0.5 : 1,
                   }}
                 >
-                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true">{item.icon}</span>
                   {!collapsed && (
                     <>
                       <span style={{ flex: 1 }}>{item.label}</span>
@@ -177,7 +185,7 @@ export function Sidebar({
             style={{
               padding: "8px 16px",
               fontSize: 10,
-              color: "#475569",
+              color: "#94a3b8",
               borderTop: "1px solid #1e293b",
             }}
           >
@@ -203,7 +211,7 @@ export function Sidebar({
                 boxShadow: `0 0 6px ${statusColors[apiStatus]}`,
               }}
             />
-            <span style={{ fontSize: 12, color: "#64748b" }}>
+            <span style={{ fontSize: 12, color: "#94a3b8" }}>
               {statusLabels[apiStatus]}
             </span>
           </div>

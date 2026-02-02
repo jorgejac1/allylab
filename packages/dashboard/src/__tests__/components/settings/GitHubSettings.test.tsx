@@ -50,7 +50,7 @@ describe("settings/GitHubSettings", () => {
     render(<GitHubSettings />);
 
     expect(screen.getByText("bad")).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole("button", { name: "🔗 Connect GitHub" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Connect GitHub/i })[0]);
     const input = screen.getByPlaceholderText("ghp_xxxxxxxxxxxxxxxxxxxx");
     fireEvent.change(input, { target: { value: " token " } });
     fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[0]);
@@ -74,7 +74,7 @@ describe("settings/GitHubSettings", () => {
     vi.spyOn(window, "confirm").mockReturnValueOnce(true);
     render(<GitHubSettings />);
 
-    expect(screen.getByText("✓ Connected")).toBeInTheDocument();
+    expect(screen.getByText("Connected")).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole("button", { name: "Disconnect GitHub" })[0]);
     expect(disconnect).toHaveBeenCalled();
   });
@@ -85,7 +85,7 @@ describe("settings/GitHubSettings", () => {
     const user = userEvent.setup();
     render(<GitHubSettings />);
 
-    await user.click(screen.getAllByRole("button", { name: "🔗 Connect GitHub" })[0]);
+    await user.click(screen.getAllByRole("button", { name: /Connect GitHub/i })[0]);
     const input = screen.getByPlaceholderText("ghp_xxxxxxxxxxxxxxxxxxxx");
 
     // Test 1: Empty token (input starts empty)
@@ -111,7 +111,7 @@ describe("settings/GitHubSettings", () => {
     render(<GitHubSettings />);
 
     // Show token input
-    fireEvent.click(screen.getAllByRole("button", { name: "🔗 Connect GitHub" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Connect GitHub/i })[0]);
     expect(screen.getByPlaceholderText("ghp_xxxxxxxxxxxxxxxxxxxx")).toBeInTheDocument();
 
     // Click cancel
@@ -124,7 +124,7 @@ describe("settings/GitHubSettings", () => {
     mockUseGitHub.mockReturnValue({ connection: { connected: false }, isLoading: false, error: null, connect, disconnect: vi.fn() });
     render(<GitHubSettings />);
 
-    fireEvent.click(screen.getAllByRole("button", { name: "🔗 Connect GitHub" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Connect GitHub/i })[0]);
     const input = screen.getByPlaceholderText("ghp_xxxxxxxxxxxxxxxxxxxx");
     fireEvent.change(input, { target: { value: "token" } });
     fireEvent.click(screen.getAllByRole("button", { name: "Connect" })[0]);

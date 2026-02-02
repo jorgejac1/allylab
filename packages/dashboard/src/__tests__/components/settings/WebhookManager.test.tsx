@@ -257,14 +257,17 @@ describe("settings/WebhookManager", () => {
     // Existing webhook interactions
     const listHeading = screen.getAllByText(/Notifications/)[0];
     const listCard = listHeading.closest("div") as HTMLElement;
-    fireEvent.click(within(listCard).getAllByRole("button", { name: "🧪 Test" })[0]);
+    fireEvent.click(within(listCard).getAllByRole("button", { name: "Test" })[0]);
     await waitFor(() => expect(hookReturn.testWebhook).toHaveBeenCalledWith("1"));
 
-    fireEvent.click(within(listCard).getAllByText("🗑️")[0]);
+    // Find delete button (ghost button with red color for Trash icon)
+    const allButtons = within(listCard).getAllByRole("button");
+    const deleteButton = allButtons.find(btn => btn.style.color === 'rgb(220, 38, 38)' || btn.style.color === '#dc2626');
+    fireEvent.click(deleteButton!);
     await waitFor(() => expect(hookReturn.deleteWebhook).toHaveBeenCalledWith("1"));
 
-    fireEvent.click(within(listCard).getAllByRole("button", { name: "🧪 Test" })[0]);
-    await waitFor(() => expect(screen.getByText(/Test passed/)).toBeInTheDocument());
+    fireEvent.click(within(listCard).getAllByRole("button", { name: "Test" })[0]);
+    await waitFor(() => expect(screen.getByText(/Test passed/i)).toBeInTheDocument());
 
     // Toggle enabled via first toggle button in list
     const toggle = document.querySelector('button[style*="width: 40px"]') as HTMLButtonElement;
@@ -277,12 +280,12 @@ describe("settings/WebhookManager", () => {
     hookReturn.webhooks = [baseWebhook];
     render(<WebhookManager />);
 
-    const testButtons = screen.getAllByRole("button", { name: "🧪 Test" });
+    const testButtons = screen.getAllByRole("button", { name: "Test" });
     for (const btn of testButtons) {
       fireEvent.click(btn);
     }
     await waitFor(() => expect(hookReturn.testWebhook).toHaveBeenCalledWith("1"));
-    await waitFor(() => expect(screen.getByText("✕ bad")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("bad")).toBeInTheDocument());
   });
 
   it("renders generic/teams styling, truncation, and failure states", async () => {
@@ -316,7 +319,7 @@ describe("settings/WebhookManager", () => {
 
     render(<WebhookManager />);
 
-    const failedStatusNode = screen.getAllByText("✕ Failed")[0] as HTMLElement;
+    const failedStatusNode = screen.getAllByText("Failed")[0] as HTMLElement;
     let genericCard: HTMLElement | null = failedStatusNode;
     while (genericCard && !genericCard.style.border) {
       genericCard = genericCard.parentElement;
@@ -326,9 +329,9 @@ describe("settings/WebhookManager", () => {
     expect(card).toHaveStyle({ background: "#f8fafc", opacity: "0.7" });
     const toggleBtn = card.querySelector("button") as HTMLButtonElement;
     expect(toggleBtn).toHaveStyle({ background: "#cbd5e1" });
-    expect(card.textContent).toContain("🔗");
+    expect(card.textContent).toContain("Generic");
 
-    const failedStatus = within(card).getByText("✕ Failed");
+    const failedStatus = within(card).getByText("Failed");
     expect(failedStatus).toHaveStyle({ background: "#fef2f2", color: "#dc2626" });
 
     const teamsNode = screen.getByText("Teams Alert") as HTMLElement;
@@ -342,7 +345,7 @@ describe("settings/WebhookManager", () => {
     // Test failure result without error message defaults to "Test failed"
     fireEvent.click(card.querySelectorAll("button")[card.querySelectorAll("button").length - 2]);
     await waitFor(() => expect(hookReturn.testWebhook).toHaveBeenCalledWith("g1"));
-    await waitFor(() => expect(screen.getByText("✕ Test failed")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Test failed")).toBeInTheDocument());
 
     // Truncated URL renders ellipsis
     expect(
@@ -356,6 +359,5 @@ describe("settings/WebhookManager", () => {
     }
     expect(unknownCard).not.toBeNull();
     expect((unknownCard as HTMLElement).textContent).toContain("Generic");
-    expect((unknownCard as HTMLElement).textContent).toContain("🔗");
   });
 });

@@ -1,3 +1,4 @@
+import { memo, type ReactNode } from 'react';
 import { Sparkline } from '../charts';
 
 interface KPICardProps {
@@ -6,16 +7,16 @@ interface KPICardProps {
   subValue?: string;
   color?: string;
   trend?: number[];
-  icon?: string;
+  icon?: ReactNode;
 }
 
-export function KPICard({ 
-  label, 
-  value, 
-  subValue, 
+export const KPICard = memo(function KPICard({
+  label,
+  value,
+  subValue,
   color,
   trend,
-  icon 
+  icon
 }: KPICardProps) {
   return (
     <div style={{
@@ -32,8 +33,8 @@ export function KPICard({
         justifyContent: 'space-between', 
         alignItems: 'flex-start' 
       }}>
-        <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500 }}>
-          {icon && <span style={{ marginRight: 6 }}>{icon}</span>}
+        <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+          {icon && <span style={{ marginRight: 6, display: 'flex', alignItems: 'center' }}>{icon}</span>}
           {label}
         </span>
         {trend && trend.length >= 2 && (
@@ -53,4 +54,4 @@ export function KPICard({
       )}
     </div>
   );
-}
+});

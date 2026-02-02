@@ -59,6 +59,83 @@ GITHUB_API_URL=https://github.your-company.com/api/v3
 
 ---
 
+## GitLab Integration
+
+### Overview
+
+GitLab integration enables:
+- Automatic MR (Merge Request) creation with fixes
+- Batch MR for multiple issues
+- MR status tracking
+- Fix verification after merge
+- Support for GitLab.com and self-hosted instances
+
+### Setup
+
+1. Navigate to **Settings** → **Git**
+2. Click on the **GitLab** provider card
+3. Generate a [Personal Access Token](https://gitlab.com/-/user_settings/personal_access_tokens)
+   - Required scope: `api` (Full API access)
+   - Or minimum: `read_repository`, `write_repository`
+4. (Optional) Check "Self-hosted GitLab" for on-premise instances
+5. Enter token in AllyLab
+6. Click **Connect**
+
+### Token Formats
+
+GitLab supports multiple token formats:
+- **Personal Access Tokens:** `glpat-xxxxxxxxxxxxxxxxxxxx`
+- **Legacy Tokens:** 20+ character alphanumeric string
+
+### Creating Merge Requests
+
+#### Single Fix MR
+1. View finding details
+2. Click **Generate AI Fix**
+3. Review suggested code
+4. Click **Create MR**
+5. Select project and branch
+6. MR created automatically
+
+#### Batch MR (Multiple Fixes)
+1. Select multiple findings
+2. Click **Create Batch MR**
+3. Map file paths for each fix
+4. Generate all fixes
+5. Single MR with all changes
+
+### MR Workflow
+```
+Finding → Generate Fix → Review → Create MR → Merge → Verify
+```
+
+### Verification
+
+After MR merge:
+1. Click **Verify Fixes**
+2. AllyLab re-scans the page
+3. Checks if issues are resolved
+4. Updates finding status
+
+### Self-Hosted GitLab
+
+For on-premise GitLab installations:
+1. Click "Self-hosted GitLab" checkbox
+2. Enter your instance URL (e.g., `https://gitlab.yourcompany.com`)
+3. Enter your Personal Access Token
+4. Click **Connect**
+
+### GitLab vs GitHub Comparison
+
+| Feature | GitHub | GitLab |
+|---------|--------|--------|
+| Fix creation | Pull Request | Merge Request |
+| Token type | `ghp_*` PAT | `glpat-*` PAT |
+| Self-hosted | Enterprise Server | Self-managed |
+| Pipeline status | GitHub Actions | GitLab CI |
+
+---
+
 ## JIRA Integration
 
 ### Overview
@@ -244,6 +321,9 @@ View all integrations in **Settings**:
 | Integration | Status       | Actions    |
 |-------------|--------------|------------|
 | GitHub      | Connected ✅ | Disconnect |
+| GitLab      | Connected ✅ | Disconnect |
 | JIRA        | Mock Mode 🔶 | Configure  |
 | Slack       | 2 webhooks   | Manage     |
 | Teams       | 1 webhook    | Manage     |
+
+> **Note:** Both GitHub and GitLab can be connected simultaneously. You can choose which provider to use when creating fix requests.

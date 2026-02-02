@@ -49,12 +49,58 @@ export interface ScanResult {
   customRulesCount?: number;
 }
 
+// Authentication types for scanning protected pages
+export interface AuthCookie {
+  name: string;
+  value: string;
+  domain: string;
+  path?: string;
+  expires?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+}
+
+export interface LoginStep {
+  action: 'goto' | 'fill' | 'click' | 'wait' | 'waitForNavigation';
+  selector?: string;
+  value?: string;
+  url?: string;
+  timeout?: number;
+}
+
+export interface LoginFlowConfig {
+  loginUrl: string;
+  steps: LoginStep[];
+  successIndicator: {
+    type: 'url-contains' | 'selector-exists' | 'cookie-exists';
+    value: string;
+  };
+}
+
+export interface StorageState {
+  cookies: AuthCookie[];
+  origins?: Array<{
+    origin: string;
+    localStorage: Array<{ name: string; value: string }>;
+  }>;
+}
+
+export interface ScanAuthOptions {
+  cookies?: AuthCookie[];
+  headers?: Record<string, string>;
+  storageState?: StorageState;
+  basicAuth?: { username: string; password: string };
+  loginFlow?: LoginFlowConfig;
+}
+
 export interface ScanRequest {
   url: string;
   standard?: string;
   viewport?: Viewport;
   includeWarnings?: boolean;
   includeCustomRules?: boolean;
+  auth?: ScanAuthOptions;
 }
 
 // Report Settings
@@ -82,3 +128,4 @@ export interface ReportSettings {
 export * from './jira';
 export * from './schedule';
 export * from './rules';
+export * from './auth';

@@ -23,7 +23,7 @@ const plans = [
       { text: "100 scans per month", included: true },
       { text: "WCAG 2.1 AA testing", included: true },
       { text: "AI-powered fix suggestions", included: true, limit: "10/month" },
-      { text: "GitHub PR creation", included: true, limit: "5/month" },
+      { text: "GitHub PR / GitLab MR creation", included: true, limit: "5/month" },
       { text: "CSV export", included: true },
       { text: "Community support", included: true },
       { text: "1 team member", included: true },
@@ -46,7 +46,7 @@ const plans = [
       { text: "Unlimited scans", included: true },
       { text: "WCAG 2.2 AA testing", included: true },
       { text: "AI-powered fix suggestions", included: true, limit: "Unlimited" },
-      { text: "GitHub PR creation", included: true, limit: "Unlimited" },
+      { text: "GitHub PR / GitLab MR creation", included: true, limit: "Unlimited" },
       { text: "PDF, CSV, Excel export", included: true },
       { text: "Priority email support", included: true },
       { text: "5 team members", included: true },
@@ -69,7 +69,7 @@ const plans = [
       { text: "Unlimited scans", included: true },
       { text: "WCAG 2.2 AA testing", included: true },
       { text: "AI-powered fix suggestions", included: true, limit: "Unlimited" },
-      { text: "GitHub PR creation", included: true, limit: "Unlimited" },
+      { text: "GitHub PR / GitLab MR creation", included: true, limit: "Unlimited" },
       { text: "All export formats", included: true },
       { text: "Priority support + Slack", included: true },
       { text: "20 team members", included: true },
@@ -109,7 +109,7 @@ const competitorComparison = [
   { feature: "Starting Price", allylab: "Free", audioeye: "$49/mo", accessibe: "$59/mo", deque: "Contact Sales" },
   { feature: "AI Code Fix Generation", allylab: true, audioeye: false, accessibe: false, deque: false },
   { feature: "Framework-Specific Fixes (React, Vue)", allylab: true, audioeye: false, accessibe: false, deque: false },
-  { feature: "One-Click GitHub PRs", allylab: true, audioeye: false, accessibe: false, deque: false },
+  { feature: "One-Click GitHub PRs / GitLab MRs", allylab: true, audioeye: false, accessibe: false, deque: false },
   { feature: "Batch Fix Multiple Issues", allylab: true, audioeye: false, accessibe: false, deque: false },
   { feature: "Fix Verification After Merge", allylab: true, audioeye: false, accessibe: false, deque: false },
   { feature: "WCAG 2.2 Support", allylab: true, audioeye: true, accessibe: "Partial", deque: true },
@@ -194,7 +194,16 @@ export default function PricingPage() {
                 <p className="text-sm text-text-secondary">{plan.description}</p>
               </div>
 
-              <Link href={plan.name === "Enterprise" ? "/contact" : "/signup"} className="mb-6">
+              <Link
+                href={
+                  plan.name === "Free"
+                    ? "/sign-up"
+                    : plan.name === "Enterprise"
+                      ? "/contact"
+                      : `/sign-up?plan=${plan.name.toLowerCase()}`
+                }
+                className="mb-6"
+              >
                 <Button variant={plan.ctaVariant} className="w-full">
                   {plan.cta}
                 </Button>
@@ -335,7 +344,7 @@ export default function PricingPage() {
               </div>
             </div>
             <p className="text-sm text-text-muted">
-              Plus, AllyLab includes AI code fixes and GitHub PRs that others charge extra for or don&apos;t offer at all.
+              Plus, AllyLab includes AI code fixes and GitHub/GitLab integration that others charge extra for or don&apos;t offer at all.
             </p>
           </Card>
         </div>
@@ -372,9 +381,9 @@ export default function PricingPage() {
             Start free today. No credit card required.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button size="lg">
-                Start Free Trial
+                Get Started Free
                 <ArrowRight size={18} />
               </Button>
             </Link>

@@ -10,6 +10,8 @@ export interface Schedule {
   nextRun?: string;
   lastScore?: number;
   lastIssues?: number;
+  /** ID of the auth profile to use for authenticated scanning */
+  authProfileId?: string;
 }
 
 export interface ScheduleRunResult {

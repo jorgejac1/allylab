@@ -1,6 +1,7 @@
 import { Button, Spinner } from '../../ui';
 import { SeverityDot } from './SeverityDot';
 import type { FindingWithFix } from '../../../types/batch-pr';
+import { Check, X } from 'lucide-react';
 
 interface FixGenerationListProps {
   findings: FindingWithFix[];
@@ -140,15 +141,15 @@ function FixStatus({ item, onGenerate }: FixStatusProps) {
   if (item.fix) {
     return (
       <span style={{ fontSize: 12, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 4 }}>
-        ✓ Fix ready
+        <Check size={12} /> Fix ready
       </span>
     );
   }
 
   if (item.error) {
     return (
-      <span style={{ fontSize: 12, color: '#dc2626' }} title={item.error}>
-        ✗ Failed
+      <span style={{ fontSize: 12, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 4 }} title={item.error}>
+        <X size={12} /> Failed
       </span>
     );
   }

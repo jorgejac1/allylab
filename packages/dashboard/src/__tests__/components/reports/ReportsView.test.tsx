@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ReportsView, ReportsSummary } from "../../../components/reports/ReportsView";
 import type { SavedScan } from "../../../types";
@@ -60,9 +60,18 @@ vi.mock("../../../components/ui", () => ({
       <p>{description}</p>
     </div>
   ),
+  TabLoader: () => <div data-testid="tab-loader">Loading...</div>,
 }));
 
 vi.mock("../../../components/scan", () => ({
+  ScanResults: (props: unknown) => {
+    mockScanResults(props);
+    return <div data-testid="scan-results">scan details</div>;
+  },
+}));
+
+// Mock the direct path used by lazy import
+vi.mock("../../../components/scan/ScanResults", () => ({
   ScanResults: (props: unknown) => {
     mockScanResults(props);
     return <div data-testid="scan-results">scan details</div>;
@@ -275,7 +284,7 @@ describe("reports/ReportsView", () => {
     expect(screen.getByText("No Reports Available")).toBeInTheDocument();
   });
 
-  it("navigates history flow, selection, and comparison", () => {
+  it("navigates history flow, selection, and comparison", async () => {
     render(<ReportsView scans={scans} hasRegression={hasRegression} />);
 
     // default history renders ScanHistory and sidebar
@@ -287,47 +296,49 @@ describe("reports/ReportsView", () => {
     expect(screen.getByText(/Avg Score/)).toBeInTheDocument();
     expect(screen.getByText("Sites Scanned")).toBeInTheDocument();
 
-    // select a scan to show details
+    // select a scan to show details (lazy-loaded)
     fireEvent.click(screen.getByText("Select Scan"));
-    expect(screen.getByTestId("scan-results")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("scan-results")).toBeInTheDocument());
 
     // go back
     fireEvent.click(screen.getByText("← Back to History"));
     expect(screen.getByTestId("scan-history")).toBeInTheDocument();
 
-    // trigger compare to show ComparisonView
+    // trigger compare to show ComparisonView (lazy-loaded)
     fireEvent.click(screen.getByText("Trigger Compare"));
-    expect(screen.getByTestId("comparison-view")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("comparison-view")).toBeInTheDocument());
     fireEvent.click(screen.getByText("Close Comparison"));
     expect(screen.getByTestId("scan-history")).toBeInTheDocument();
   });
 
-  it("switches tabs to trends, compare, and export", () => {
+  it("switches tabs to trends, compare, and export", async () => {
     render(<ReportsView scans={scans} />);
 
     fireEvent.click(screen.getAllByText("Trends")[0]);
-    expect(screen.getByTestId("trend-charts")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("trend-charts")).toBeInTheDocument());
 
     fireEvent.click(screen.getAllByText("Period Compare")[0]);
-    expect(screen.getByTestId("period-comparison")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("period-comparison")).toBeInTheDocument());
     fireEvent.click(screen.getByText("Close Period"));
     expect(screen.getAllByTestId("scan-history").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getAllByText("Export")[0]);
-    expect(screen.getByTestId("export-options")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("export-options")).toBeInTheDocument());
     expect(screen.getByText(/Summary Statistics/)).toBeInTheDocument();
   });
 
-  it("orders comparison older/newer scans correctly", () => {
+  it("orders comparison older/newer scans correctly", async () => {
     render(<ReportsView scans={scans} />);
     fireEvent.click(screen.getByText("Trigger Compare"));
+    await waitFor(() => expect(screen.getByTestId("comparison-view")).toBeInTheDocument());
     expect(screen.getByTestId("older-scan")).toHaveTextContent("c1");
     expect(screen.getByTestId("newer-scan")).toHaveTextContent("c2");
   });
 
-  it("orders comparison when first arg is newer", () => {
+  it("orders comparison when first arg is newer", async () => {
     render(<ReportsView scans={scans} />);
     fireEvent.click(screen.getByText("Trigger Reverse Compare"));
+    await waitFor(() => expect(screen.getByTestId("comparison-view")).toBeInTheDocument());
     expect(screen.getByTestId("older-scan")).toHaveTextContent("c1");
     expect(screen.getByTestId("newer-scan")).toHaveTextContent("c2");
   });
@@ -351,19 +362,20 @@ describe("reports/ReportsView", () => {
     expect(screen.getByText(olderThanWeek.toLocaleDateString())).toBeInTheDocument();
   });
 
-  it("selects scan from recent activity list", () => {
+  it("selects scan from recent activity list", async () => {
     const scan = baseScan({ id: "only", url: "https://allylab.com/foo", score: 85 });
     render(<ReportsView scans={[scan]} />);
 
     fireEvent.click(screen.getByRole("button", { name: /allylab.com/i }));
-    expect(screen.getByTestId("scan-results")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("scan-results")).toBeInTheDocument());
   });
 
-  it("passes onRescan handler to scan results", () => {
+  it("passes onRescan handler to scan results", async () => {
     const onRescan = vi.fn();
     render(<ReportsView scans={scans} onRescan={onRescan} />);
 
     fireEvent.click(screen.getByText("Select Scan"));
+    await waitFor(() => expect(screen.getByTestId("scan-results")).toBeInTheDocument());
     const props = mockScanResults.mock.calls[mockScanResults.mock.calls.length - 1]?.[0] as { onRescan?: () => void } | undefined;
     expect(props?.onRescan).toBeDefined();
     props?.onRescan?.();

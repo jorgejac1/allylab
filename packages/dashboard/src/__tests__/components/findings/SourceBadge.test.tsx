@@ -6,23 +6,26 @@ import { SourceBadge } from "../../../components/findings/SourceBadge";
 
 describe("findings/SourceBadge", () => {
   it("renders custom rule badge", () => {
-    render(<SourceBadge source="custom-rule" />);
+    const { container } = render(<SourceBadge source="custom-rule" />);
 
-    expect(screen.getByText("📋")).toBeInTheDocument();
+    // ClipboardList icon is rendered as SVG
+    expect(container.querySelector("svg")).toBeInTheDocument();
     expect(screen.getByText("Custom")).toBeInTheDocument();
   });
 
   it("renders axe-core badge when source is undefined", () => {
-    render(<SourceBadge />);
+    const { container } = render(<SourceBadge />);
 
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    // Search icon is rendered as SVG
+    expect(container.querySelector("svg")).toBeInTheDocument();
     expect(screen.getByText("axe-core")).toBeInTheDocument();
   });
 
   it("renders axe-core badge when source is axe-core", () => {
-    render(<SourceBadge source="axe-core" />);
+    const { container } = render(<SourceBadge source="axe-core" />);
 
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    // Search icon is rendered as SVG
+    expect(container.querySelector("svg")).toBeInTheDocument();
     expect(screen.getByText("axe-core")).toBeInTheDocument();
   });
 

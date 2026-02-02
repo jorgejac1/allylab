@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { Card, Button, Tabs, EmptyState } from '../ui';
+import { useState, lazy, Suspense, type ReactNode } from 'react';
+import { Card, Button, Tabs, EmptyState, TabLoader } from '../ui';
 import { ScanHistory } from './ScanHistory';
-import { ComparisonView } from './ComparisonView';
-import { PeriodComparison } from './PeriodComparison';
-import { TrendCharts } from './TrendCharts';
-import { ExportOptions } from './ExportOptions';
-import { ScanResults } from '../scan';
 import type { SavedScan } from '../../types';
 import type { RegressionInfo } from '../../hooks/useScans';
+import { ClipboardList, TrendingUp, Calendar, Upload, BarChart3, Clock, TrendingDown } from 'lucide-react';
+
+// Lazy load heavy components for better code splitting
+const ComparisonView = lazy(() => import('./ComparisonView').then(m => ({ default: m.ComparisonView })));
+const PeriodComparison = lazy(() => import('./PeriodComparison').then(m => ({ default: m.PeriodComparison })));
+const TrendCharts = lazy(() => import('./TrendCharts').then(m => ({ default: m.TrendCharts })));
+const ExportOptions = lazy(() => import('./ExportOptions').then(m => ({ default: m.ExportOptions })));
+const ScanResults = lazy(() => import('../scan/ScanResults').then(m => ({ default: m.ScanResults })));
 
 interface ReportsViewProps {
   scans: SavedScan[];
@@ -34,11 +37,11 @@ export function ReportsView({
     newer: SavedScan;
   } | null>(null);
 
-  const tabs = [
-    { id: 'history', label: 'Scan History', icon: '📋', count: scans.length },
-    { id: 'trends', label: 'Trends', icon: '📈' },
-    { id: 'compare', label: 'Period Compare', icon: '📅' },
-    { id: 'export', label: 'Export', icon: '📤' },
+  const tabs: { id: string; label: ReactNode; count?: number }[] = [
+    { id: 'history', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ClipboardList size={14} />Scan History</span>, count: scans.length },
+    { id: 'trends', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} />Trends</span> },
+    { id: 'compare', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={14} />Period Compare</span> },
+    { id: 'export', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={14} />Export</span> },
   ];
 
   const handleSelectScan = (scan: SavedScan) => {
@@ -71,7 +74,7 @@ export function ReportsView({
   if (scans.length === 0) {
     return (
       <EmptyState
-        icon="📊"
+        icon={<BarChart3 size={32} />}
         title="No Reports Available"
         description="Run your first accessibility scan to start generating reports and tracking progress over time."
       />
@@ -126,12 +129,14 @@ export function ReportsView({
           {activeTab === 'history' && (
             <>
               {comparisonScans ? (
-                <ComparisonView
-                  olderScan={comparisonScans.older}
-                  newerScan={comparisonScans.newer}
-                  onClose={handleCloseComparison}
-                  hasRegression={hasRegression}
-                />
+                <Suspense fallback={<TabLoader />}>
+                  <ComparisonView
+                    olderScan={comparisonScans.older}
+                    newerScan={comparisonScans.newer}
+                    onClose={handleCloseComparison}
+                    hasRegression={hasRegression}
+                  />
+                </Suspense>
               ) : selectedScan ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <Button
@@ -142,10 +147,12 @@ export function ReportsView({
                   >
                     ← Back to History
                   </Button>
-                  <ScanResults
-                    scan={selectedScan}
-                    onRescan={onRescan ? () => onRescan(selectedScan.url) : undefined}
-                  />
+                  <Suspense fallback={<TabLoader />}>
+                    <ScanResults
+                      scan={selectedScan}
+                      onRescan={onRescan ? () => onRescan(selectedScan.url) : undefined}
+                    />
+                  </Suspense>
                 </div>
               ) : (
                 <ScanHistory
@@ -161,24 +168,30 @@ export function ReportsView({
           )}
 
           {activeTab === 'trends' && (
-            <TrendCharts 
-              scans={scans} 
-              recentRegressions={recentRegressions}
-            />
+            <Suspense fallback={<TabLoader />}>
+              <TrendCharts
+                scans={scans}
+                recentRegressions={recentRegressions}
+              />
+            </Suspense>
           )}
 
           {activeTab === 'compare' && (
-            <PeriodComparison
-              scans={scans}
-              onClose={() => setActiveTab('history')}
-            />
+            <Suspense fallback={<TabLoader />}>
+              <PeriodComparison
+                scans={scans}
+                onClose={() => setActiveTab('history')}
+              />
+            </Suspense>
           )}
 
           {activeTab === 'export' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-              <ExportOptions scans={scans} selectedScan={selectedScan || undefined} />
-              <ReportsSummary scans={scans} />
-            </div>
+            <Suspense fallback={<TabLoader />}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                <ExportOptions scans={scans} selectedScan={selectedScan || undefined} />
+                <ReportsSummary scans={scans} />
+              </div>
+            </Suspense>
           )}
         </div>
 
@@ -244,8 +257,8 @@ interface RecentActivityProps {
 function RecentActivity({ scans, onSelect, hasRegression }: RecentActivityProps) {
   return (
     <Card>
-      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px' }}>
-        🕐 Recent Activity
+      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Clock size={16} />Recent Activity
       </h4>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {scans.map(scan => {
@@ -299,8 +312,8 @@ function RecentActivity({ scans, onSelect, hasRegression }: RecentActivityProps)
                 >
                   {new URL(scan.url).hostname}
                   {regression && (
-                    <span style={{ fontSize: 11, color: '#dc2626' }}>
-                      🔻-{regression.scoreDrop}
+                    <span style={{ fontSize: 11, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <TrendingDown size={12} />-{regression.scoreDrop}
                     </span>
                   )}
                 </div>
@@ -333,17 +346,17 @@ function ReportsSummary({ scans }: ReportsSummaryProps) {
   const seriousIssues = scans.reduce((sum, s) => sum + s.serious, 0);
   const uniqueSites = new Set(scans.map(s => new URL(s.url).hostname)).size;
 
-  const firstScan = scans.length > 0 
-    ? new Date(Math.min(...scans.map(s => new Date(s.timestamp).getTime()))) 
+  const firstScan = scans.length > 0
+    ? new Date(Math.min(...scans.map(s => new Date(s.timestamp).getTime())))
     : null;
-  const lastScan = scans.length > 0 
-    ? new Date(Math.max(...scans.map(s => new Date(s.timestamp).getTime()))) 
+  const lastScan = scans.length > 0
+    ? new Date(Math.max(...scans.map(s => new Date(s.timestamp).getTime())))
     : null;
 
   return (
     <Card>
-      <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-        📊 Summary Statistics
+      <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <BarChart3 size={18} />Summary Statistics
       </h4>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <SummaryRow label="Total Scans" value={scans.length.toString()} />

@@ -9,13 +9,29 @@ import {
   getScheduleHistory,
   runScheduleNow,
 } from '../services/scheduler';
+import { getPaginationFromQuery, paginate } from '../utils/pagination.js';
+
+interface ScheduleListQuery {
+  limit?: string;
+  offset?: string;
+  page?: string;
+}
 
 export async function scheduleRoutes(fastify: FastifyInstance) {
-  // List all schedules
-  fastify.get('/schedules', async (_request: FastifyRequest, reply: FastifyReply) => {
-    const schedules = getAllSchedules();
-    return reply.send({ schedules });
-  });
+  // List all schedules with pagination
+  fastify.get<{ Querystring: ScheduleListQuery }>(
+    '/schedules',
+    async (request: FastifyRequest<{ Querystring: ScheduleListQuery }>, reply: FastifyReply) => {
+      const schedules = getAllSchedules();
+      const pagination = getPaginationFromQuery(request.query as Record<string, unknown>);
+      const result = paginate(schedules, pagination);
+
+      return reply.send({
+        schedules: result.items,
+        pagination: result.pagination,
+      });
+    }
+  );
 
   // Get single schedule
   fastify.get<{ Params: { id: string } }>(

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
+import { Trash2, AlertTriangle, Info } from 'lucide-react';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -46,10 +47,10 @@ export function ConfirmDialog({
 
   if (!isOpen) return null;
 
-  const iconMap = {
-    danger: '🗑️',
-    warning: '⚠️',
-    info: 'ℹ️',
+  const iconMap: Record<typeof variant, ReactNode> = {
+    danger: <Trash2 size={24} />,
+    warning: <AlertTriangle size={24} />,
+    info: <Info size={24} />,
   };
 
   const colorMap = {
@@ -107,7 +108,7 @@ export function ConfirmDialog({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 24,
+            color: colorMap[variant],
             marginBottom: 16,
           }}
         >

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { SeverityBadge, StatusBadge, Button } from '../ui';
 import type { TrackedFinding } from '../../types';
 
@@ -8,7 +9,7 @@ interface FindingRowProps {
   onSelect?: (id: string, selected: boolean) => void;
 }
 
-export function FindingRow({ finding, onViewDetails, selected, onSelect }: FindingRowProps) {
+export const FindingRow = memo(function FindingRow({ finding, onViewDetails, selected, onSelect }: FindingRowProps) {
   return (
     <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
       {/* Checkbox (if selectable) */}
@@ -94,7 +95,7 @@ export function FindingRow({ finding, onViewDetails, selected, onSelect }: Findi
       </td>
     </tr>
   );
-}
+});
 
 const tdStyle: React.CSSProperties = {
   padding: '12px 16px',

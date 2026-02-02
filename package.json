@@ -5,12 +5,14 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "website"
   ],
   "scripts": {
     "dev:website": "npm run dev --workspace=website",
     "build:website": "npm run build --workspace=website",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:dashboard\"",
+    "dev:all": "concurrently \"npm run dev:api\" \"npm run dev:dashboard\" \"npm run dev:website\"",
     "dev:api": "npm run dev --workspace=@allylab/api",
     "dev:dashboard": "npm run dev --workspace=@allylab/dashboard",
     "build": "npm run build --workspaces",
@@ -21,9 +23,11 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:api": "vitest run --project api",
-    "test:dashboard": "vitest run --project dashboard",
-    "test:cli": "vitest run --project cli",
+    "test:api": "npm test --workspace=@allylab/api",
+    "test:dashboard": "npm test --workspace=@allylab/dashboard",
+    "test:cli": "npm test --workspace=@allylab/cli",
+    "test:e2e": "npm run test:e2e --workspace=@allylab/dashboard",
+    "test:e2e:ui": "npm run test:e2e:ui --workspace=@allylab/dashboard",
     "clean": "rm -rf packages/*/dist packages/*/.turbo node_modules/.cache packages/*/coverage",
     "prepare": "husky"
   },

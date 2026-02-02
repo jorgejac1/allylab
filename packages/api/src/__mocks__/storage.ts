@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 /**
- * In-memory mock storage for testing
+ * In-memory mock storage for testing (async interface)
  */
 export class MockJsonStorage<T extends { id: string }> {
   private data: Map<string, T> = new Map();
@@ -10,35 +10,39 @@ export class MockJsonStorage<T extends { id: string }> {
     initialData.forEach(item => this.data.set(item.id, item));
   }
 
-  get(id: string): T | undefined {
+  async get(id: string): Promise<T | undefined> {
     return this.data.get(id);
   }
 
-  getAll(): T[] {
+  async getAll(): Promise<T[]> {
     return Array.from(this.data.values());
   }
 
-  set(id: string, item: T): void {
+  async set(id: string, item: T): Promise<void> {
     this.data.set(id, item);
   }
 
-  delete(id: string): boolean {
+  async delete(id: string): Promise<boolean> {
     return this.data.delete(id);
   }
 
-  has(id: string): boolean {
+  async has(id: string): Promise<boolean> {
     return this.data.has(id);
   }
 
-  size(): number {
+  async size(): Promise<number> {
     return this.data.size;
   }
 
-  clear(): void {
+  async clear(): Promise<void> {
     this.data.clear();
   }
 
-  import(items: T[], replace = false): number {
+  async flush(): Promise<void> {
+    // No-op for mock
+  }
+
+  async import(items: T[], replace = false): Promise<number> {
     if (replace) {
       this.data.clear();
     }

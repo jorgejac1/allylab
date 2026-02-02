@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../ui';
 import { useReportSettings } from '../../hooks';
+import { Target, FileText } from 'lucide-react';
 
 export function ReportSettings() {
   const { settings, updateScoreGoalSettings, updatePdfExportSettings, resetToDefaults, defaults } = useReportSettings();
@@ -44,7 +45,7 @@ export function ReportSettings() {
       {/* Score Goal Settings */}
       <Card>
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>🎯 Score Goal</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}><Target size={18} /> Score Goal</h3>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
             Set your target accessibility score and track progress
           </p>
@@ -92,7 +93,7 @@ export function ReportSettings() {
       {/* PDF Export Settings */}
       <Card>
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>📄 PDF Export</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}><FileText size={18} /> PDF Export</h3>
           <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
             Customize what's included in exported PDF reports
           </p>

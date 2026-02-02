@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Image, Camera } from 'lucide-react';
 
 interface ElementScreenshotProps {
   screenshot?: string; // base64 encoded PNG
@@ -20,7 +21,7 @@ export function ElementScreenshot({ screenshot, selector }: ElementScreenshotPro
         color: '#64748b',
         fontSize: 13,
       }}>
-        <div style={{ fontSize: 24, marginBottom: 8 }}>🖼️</div>
+        <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><Image size={24} /></div>
         <p style={{ margin: 0 }}>Screenshot not available</p>
         <p style={{ margin: '4px 0 0', fontSize: 11 }}>
           Run a new scan to capture element screenshots
@@ -45,8 +46,8 @@ export function ElementScreenshot({ screenshot, selector }: ElementScreenshotPro
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: '#475569' }}>
-          📸 Element Screenshot
+        <span style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Camera size={14} /> Element Screenshot
         </span>
         <button
           onClick={() => setIsExpanded(!isExpanded)}

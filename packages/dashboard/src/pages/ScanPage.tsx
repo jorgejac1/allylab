@@ -3,6 +3,7 @@ import { PageContainer } from '../components/layout';
 import { ScanForm, ScanProgress, ScanResults } from '../components/scan';
 import { EmptyState, Button } from '../components/ui';
 import { useScanSSE, useScans } from '../hooks';
+import { X, Search } from 'lucide-react';
 import { getScansForUrl, loadAllScans } from '../utils/storage';
 import { performRescan } from '../utils/scan';
 import type { SavedScan, WCAGStandard, Viewport, DrillDownTarget } from '../types';
@@ -102,7 +103,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
             />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Button variant="secondary" size="sm" onClick={handleCancel}>
-                ✕ Cancel Scan
+                <X size={12} style={{ marginRight: 4 }} /> Cancel Scan
               </Button>
             </div>
           </div>
@@ -140,7 +141,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
           </div>
         ) : !isScanning && !error ? (
           <EmptyState
-            icon="🔍"
+            icon={<Search size={48} />}
             title="Ready to Scan"
             description="Enter a URL above to start scanning for accessibility issues."
           />

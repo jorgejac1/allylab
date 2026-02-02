@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { getApiBase } from '../utils/api';
+import { STORAGE_KEYS } from '../config';
 import type { PRTrackingInfo, PRStatus, VerificationResult, PRResult } from '../types/github';
 
 interface TrackPROptions {
@@ -10,7 +11,7 @@ interface TrackPROptions {
 }
 
 export function usePRTracking() {
-  const [trackedPRs, setTrackedPRs] = useLocalStorage<PRTrackingInfo[]>('allylab_tracked_prs', []);
+  const [trackedPRs, setTrackedPRs] = useLocalStorage<PRTrackingInfo[]>(STORAGE_KEYS.TRACKED_PRS, []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +44,6 @@ export function usePRTracking() {
     };
 
     setTrackedPRs(prev => [...prev, newTracking]);
-    console.log(`[usePRTracking] Tracking PR #${prResult.prNumber}`);
   }, [setTrackedPRs]);
 
   // Get PR status from GitHub

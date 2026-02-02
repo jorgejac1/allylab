@@ -15,7 +15,7 @@ describe("components/scan/ScanForm", () => {
 
     const input = screen.getAllByPlaceholderText(/Enter URL to scan/)[0];
     fireEvent.change(input, { target: { value: "allylab.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "🔍 Scan Page" }));
+    fireEvent.click(screen.getByRole("button", { name: /Scan Page/ }));
     expect(onScan).toHaveBeenCalledWith("https://allylab.com", {
       standard: "wcag21aa",
       viewport: "desktop",
@@ -26,7 +26,7 @@ describe("components/scan/ScanForm", () => {
     const onScan = vi.fn();
     render(<ScanForm onScan={onScan} isScanning={true} initialUrl="   " />);
 
-    const button = screen.getByRole("button", { name: "⏳ Scanning..." });
+    const button = screen.getByRole("button", { name: /Scanning\.\.\./ });
     expect(button).toBeDisabled();
     fireEvent.click(button);
     expect(onScan).not.toHaveBeenCalled();

@@ -2,6 +2,8 @@ export { AlertSettings } from './AlertSettings';
 export { CICDGenerator } from './CICDGenerator';
 export { FieldMappingConfig } from './FieldMappingConfig';
 export { GitHubSettings } from './GitHubSettings';
+export { GitLabSettings } from './GitLabSettings';
+export { GitIntegrationSettings } from './GitIntegrationSettings';
 export { JiraSettings } from './JiraSettings';
 export { ReportSettings } from './ReportSettings';
 export { ScheduleManager } from './ScheduleManager';

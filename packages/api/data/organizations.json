@@ -1,0 +1,30 @@
+[
+  {
+    "id": "org_acme",
+    "name": "Acme Corp",
+    "plan": "team",
+    "ownerId": "user_admin",
+    "createdAt": "2026-01-31T16:00:24.993Z",
+    "limits": {
+      "scansPerMonth": 500,
+      "pagesPerScan": 100,
+      "usersAllowed": 10,
+      "scheduledScans": true,
+      "customRules": true,
+      "apiAccess": true,
+      "prioritySupport": true,
+      "ssoEnabled": false,
+      "multipleWorkspaces": true,
+      "auditLogs": true
+    },
+    "usage": {
+      "scansThisMonth": 42,
+      "usersCount": 5
+    },
+    "settings": {
+      "defaultViewport": "desktop",
+      "defaultStandard": "wcag22aa",
+      "notificationsEnabled": true
+    }
+  }
+]

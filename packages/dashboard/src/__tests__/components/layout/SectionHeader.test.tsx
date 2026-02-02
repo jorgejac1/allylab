@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { SectionHeader } from "../../../components/layout/SectionHeader";
+import { BarChart3, Search, Zap, Palette } from "lucide-react";
 
 describe("layout/SectionHeader", () => {
   it("renders title", () => {
@@ -12,16 +13,17 @@ describe("layout/SectionHeader", () => {
   });
 
   it("renders icon when provided", () => {
-    render(<SectionHeader title="Section Title" icon="📊" />);
+    render(<SectionHeader title="Section Title" icon={<BarChart3 size={20} data-testid="section-icon" />} />);
 
-    expect(screen.getByText("📊")).toBeInTheDocument();
+    expect(screen.getByTestId("section-icon")).toBeInTheDocument();
   });
 
   it("does not render icon when not provided", () => {
-    render(<SectionHeader title="Section Title" />);
+    const { container } = render(<SectionHeader title="Section Title" />);
 
-    const iconSpan = screen.queryByText("📊");
-    expect(iconSpan).not.toBeInTheDocument();
+    // No SVG icon should be rendered when icon prop is not provided
+    const svgElements = container.querySelectorAll("svg");
+    expect(svgElements.length).toBe(0);
   });
 
   it("renders subtitle when provided", () => {
@@ -63,14 +65,14 @@ describe("layout/SectionHeader", () => {
       <SectionHeader
         title="Complete Section"
         subtitle="With all props"
-        icon="🔍"
+        icon={<Search size={20} data-testid="search-icon" />}
         actions={actions}
       />
     );
 
     expect(screen.getByText("Complete Section")).toBeInTheDocument();
     expect(screen.getByText("With all props")).toBeInTheDocument();
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    expect(screen.getByTestId("search-icon")).toBeInTheDocument();
     expect(screen.getByText("Button 1")).toBeInTheDocument();
     expect(screen.getByText("Button 2")).toBeInTheDocument();
   });
@@ -99,18 +101,18 @@ describe("layout/SectionHeader", () => {
   });
 
   it("applies correct styling to icon", () => {
-    const { container } = render(<SectionHeader title="Title" icon="🎨" />);
+    const { container } = render(<SectionHeader title="Title" icon={<Palette size={20} data-testid="palette-icon" />} />);
 
     const iconSpan = container.querySelector('span[style*="font-size: 20px"]');
     expect(iconSpan).toBeInTheDocument();
-    expect(iconSpan?.textContent).toBe("🎨");
+    expect(screen.getByTestId("palette-icon")).toBeInTheDocument();
   });
 
   it("renders with only title and icon", () => {
-    render(<SectionHeader title="Title" icon="⚡" />);
+    render(<SectionHeader title="Title" icon={<Zap size={20} data-testid="zap-icon" />} />);
 
     expect(screen.getByText("Title")).toBeInTheDocument();
-    expect(screen.getByText("⚡")).toBeInTheDocument();
+    expect(screen.getByTestId("zap-icon")).toBeInTheDocument();
     expect(screen.queryByText("Subtitle")).not.toBeInTheDocument();
   });
 

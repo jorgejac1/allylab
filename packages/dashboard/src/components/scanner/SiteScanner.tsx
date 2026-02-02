@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Card, Button, Input, Select } from "../ui";
 import { useSiteScan, type PageResult } from "../../hooks/useSiteScan";
+import { Globe, Rocket, Search, BarChart3, XCircle } from "lucide-react";
+import { getScoreColor } from "../../utils/scoreUtils";
 
 export function SiteScanner() {
   const [url, setUrl] = useState("");
@@ -31,8 +33,8 @@ export function SiteScanner() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       {/* Scan Form */}
       <Card>
-        <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600 }}>
-          🌐 Multi-Page Site Scan
+        <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+          <Globe size={20} />Multi-Page Site Scan
         </h3>
         <p style={{ fontSize: 14, color: "#64748b", marginBottom: 16 }}>
           Crawl and scan multiple pages across your website for accessibility
@@ -100,7 +102,7 @@ export function SiteScanner() {
 
             <div style={{ display: "flex", gap: 12 }}>
               <Button type="submit" disabled={!url.trim() || isScanning}>
-                {isScanning ? "Scanning..." : "🚀 Start Site Scan"}
+                {isScanning ? "Scanning..." : <><Rocket size={14} style={{ marginRight: 6 }} />Start Site Scan</>}
               </Button>
               {(phase === "complete" || phase === "error") && (
                 <Button variant="secondary" onClick={reset}>
@@ -115,10 +117,10 @@ export function SiteScanner() {
       {/* Progress */}
       {isScanning && (
         <Card>
-          <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 600 }}>
+          <h3 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
             {phase === "crawling"
-              ? "🔍 Discovering Pages..."
-              : "📊 Scanning Pages..."}
+              ? <><Search size={18} />Discovering Pages...</>
+              : <><BarChart3 size={18} />Scanning Pages...</>}
           </h3>
 
           {phase === "crawling" && (
@@ -198,7 +200,7 @@ export function SiteScanner() {
       {/* Error */}
       {phase === "error" && error && (
         <Card style={{ borderColor: "#fecaca", background: "#fef2f2" }}>
-          <p style={{ margin: 0, color: "#dc2626" }}>❌ {error}</p>
+          <p style={{ margin: 0, color: "#dc2626", display: "flex", alignItems: "center", gap: 8 }}><XCircle size={16} />{error}</p>
         </Card>
       )}
 
@@ -207,8 +209,8 @@ export function SiteScanner() {
         <>
           {/* Summary */}
           <Card>
-            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600 }}>
-              📊 Site Scan Results
+            <h3 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+              <BarChart3 size={20} />Site Scan Results
             </h3>
 
             <div
@@ -370,13 +372,6 @@ function SummaryCard({
       </div>
     </div>
   );
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 90) return "#10b981";
-  if (score >= 70) return "#f59e0b";
-  if (score >= 50) return "#f97316";
-  return "#dc2626";
 }
 
 const labelStyle: React.CSSProperties = {

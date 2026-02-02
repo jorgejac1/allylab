@@ -36,7 +36,7 @@ const competitors = [
     ],
     cons: [
       "No code fixes generated",
-      "No GitHub integration",
+      "No Git integration",
       "Overlay approach controversial",
       "Higher pricing",
     ],
@@ -62,7 +62,7 @@ const competitors = [
       "Widget masks issues",
       "Limited scanning",
       "No code generation",
-      "No GitHub/JIRA integration",
+      "No Git/JIRA integration",
     ],
   },
   {
@@ -90,7 +90,7 @@ const competitors = [
     cons: [
       "Very expensive",
       "No code fixes",
-      "No GitHub integration",
+      "No Git integration",
       "Overkill for small teams",
     ],
   },
@@ -203,7 +203,7 @@ const detailedComparison = [
     category: "Developer Workflow",
     features: [
       {
-        name: "GitHub PR Creation",
+        name: "GitHub PR / GitLab MR Creation",
         allylab: true,
         audioeye: false,
         accessibe: false,
@@ -211,7 +211,7 @@ const detailedComparison = [
         userway: false,
       },
       {
-        name: "Batch PRs (Multiple Fixes)",
+        name: "Batch PRs/MRs (Multiple Fixes)",
         allylab: true,
         audioeye: false,
         accessibe: false,
@@ -370,9 +370,9 @@ const whyAllyLab = [
   },
   {
     icon: GitPullRequest,
-    title: "GitHub-Native Workflow",
+    title: "Git-Native Workflow",
     description:
-      "Create pull requests with one click. Review diffs, merge fixes, and verify they worked—all from one platform.",
+      "Create GitHub PRs or GitLab MRs with one click. Review diffs, merge fixes, and verify they worked—all from one platform.",
   },
   {
     icon: DollarSign,
@@ -412,7 +412,7 @@ export default function ComparePage() {
             automatically.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg">
                 Try AllyLab Free
                 <ArrowRight size={18} />
@@ -646,7 +646,7 @@ export default function ComparePage() {
               fixing issues immediately.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/signup">
+              <Link href="/contact">
                 <Button>
                   Start Free Migration
                   <ArrowRight size={16} />
@@ -670,7 +670,7 @@ export default function ComparePage() {
             Join developers who chose code fixes over band-aid overlays.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg">
                 Start Free Today
                 <ArrowRight size={18} />

@@ -12,6 +12,7 @@ vi.mock("../../../../components/ui", () => ({
   Button: ({ children, onClick, variant, disabled }: { children: React.ReactNode; onClick?: () => void; variant?: string; disabled?: boolean }) => (
     <button onClick={onClick} data-variant={variant} disabled={disabled}>{children}</button>
   ),
+  Spinner: ({ size }: { size?: number }) => <span data-testid="spinner" data-size={size}>Loading...</span>,
 }));
 
 // Mock SeverityDot
@@ -250,12 +251,12 @@ describe("batch-pr/FilePathMapper", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f2" }), filePath: "src/file2.tsx" }),
     ];
     render(<FilePathMapper {...defaultProps} findings={findings} />);
-    expect(screen.getByText("🚀 Create PR (2 fixes)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Create PR \(2\)/ })).toBeInTheDocument();
   });
 
   it("disables Create PR when no file paths are provided", () => {
     render(<FilePathMapper {...defaultProps} />);
-    expect(screen.getByText("🚀 Create PR (0 fixes)")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Create PR \(0\)/ })).toBeDisabled();
   });
 
   it("enables Create PR when at least one file path is provided", () => {
@@ -264,7 +265,7 @@ describe("batch-pr/FilePathMapper", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f2" }), filePath: "" }),
     ];
     render(<FilePathMapper {...defaultProps} findings={findings} />);
-    expect(screen.getByText("🚀 Create PR (1 fixes)")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /Create PR \(1\)/ })).not.toBeDisabled();
   });
 
   it("disables Create PR when isLoading is true", () => {
@@ -272,15 +273,15 @@ describe("batch-pr/FilePathMapper", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), filePath: "src/file1.tsx" }),
     ];
     render(<FilePathMapper {...defaultProps} findings={findings} isLoading={true} />);
-    expect(screen.getByText("Creating PR...")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Creating\.\.\./ })).toBeDisabled();
   });
 
-  it("shows Creating PR... text when isLoading is true", () => {
+  it("shows Creating... text when isLoading is true", () => {
     const findings = [
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), filePath: "src/file1.tsx" }),
     ];
     render(<FilePathMapper {...defaultProps} findings={findings} isLoading={true} />);
-    expect(screen.getByText("Creating PR...")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Creating\.\.\./ })).toBeInTheDocument();
   });
 
   it("calls onSubmit when Create PR button is clicked", () => {
@@ -289,7 +290,7 @@ describe("batch-pr/FilePathMapper", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), filePath: "src/file1.tsx" }),
     ];
     render(<FilePathMapper {...defaultProps} findings={findings} onSubmit={onSubmit} />);
-    fireEvent.click(screen.getByText("🚀 Create PR (1 fixes)"));
+    fireEvent.click(screen.getByRole("button", { name: /Create PR \(1\)/ }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
@@ -333,5 +334,117 @@ describe("batch-pr/FilePathMapper", () => {
   it("populates PR description textarea with existing value", () => {
     render(<FilePathMapper {...defaultProps} prDescription="Existing description" />);
     expect(screen.getByDisplayValue("Existing description")).toBeInTheDocument();
+  });
+
+  // Auto-detect features (when searchCode and getFileContent are provided)
+  it("shows Auto-detect button when searchCode and getFileContent are provided", () => {
+    render(
+      <FilePathMapper
+        {...defaultProps}
+        searchCode={vi.fn().mockResolvedValue([])}
+        getFileContent={vi.fn().mockResolvedValue(null)}
+      />
+    );
+    expect(screen.getByText(/Auto-detect/)).toBeInTheDocument();
+  });
+
+  it("shows detect icon button for each unmapped finding when detection is available", () => {
+    render(
+      <FilePathMapper
+        {...defaultProps}
+        searchCode={vi.fn().mockResolvedValue([])}
+        getFileContent={vi.fn().mockResolvedValue(null)}
+      />
+    );
+    // Should have Search buttons for unmapped findings
+    const detectButtons = screen.getAllByRole("button", { name: /Search/ });
+    // Filter out Auto-detect All button
+    const perFindingButtons = detectButtons.filter(btn => !btn.textContent?.includes("Auto"));
+    expect(perFindingButtons.length).toBeGreaterThan(0);
+  });
+
+  it("does not show detect buttons when searchCode is not provided", () => {
+    render(<FilePathMapper {...defaultProps} />);
+    // Should not have per-finding Search buttons (only Auto-detect which requires capability)
+    const buttons = screen.getAllByRole("button");
+    const searchButtons = buttons.filter(btn =>
+      btn.textContent?.includes("Search") && !btn.textContent?.includes("Auto")
+    );
+    expect(searchButtons).toHaveLength(0);
+  });
+
+  it("displays text preview when original code has text content", () => {
+    const findingWithText = makeFindingWithFix({
+      finding: makeFinding({ id: "f1", ruleTitle: "Rule with text" }),
+      fix: {
+        id: "fix1",
+        findingId: "f1",
+        ruleId: "rule1",
+        original: { code: '<button>Click Here</button>', selector: "button", language: "html" },
+        fixes: { html: '<button aria-label="submit">Click Here</button>' },
+        diff: "",
+        explanation: "",
+        confidence: "high",
+        effort: "easy",
+        wcagCriteria: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    });
+    render(<FilePathMapper {...defaultProps} findings={[findingWithText]} />);
+    expect(screen.getByText(/Click Here/)).toBeInTheDocument();
+  });
+
+  it("shows rule title when no text preview available", () => {
+    const findingNoText = makeFindingWithFix({
+      finding: makeFinding({ id: "f1", ruleTitle: "Missing Alt Text", selector: "div.my-class" }),
+      fix: {
+        id: "fix1",
+        findingId: "f1",
+        ruleId: "rule1",
+        original: { code: '<div class="my-class"></div>', selector: "div.my-class", language: "html" },
+        fixes: { html: '<div class="my-class" role="region"></div>' },
+        diff: "",
+        explanation: "",
+        confidence: "high",
+        effort: "easy",
+        wcagCriteria: [],
+        createdAt: "2024-01-01T00:00:00Z",
+      },
+    });
+    render(<FilePathMapper {...defaultProps} findings={[findingNoText]} />);
+    // Shows rule title rather than selector
+    expect(screen.getByText("Missing Alt Text")).toBeInTheDocument();
+  });
+
+  it("handles finding without fix gracefully", () => {
+    const findings = [
+      { ...makeFindingWithFix({ finding: makeFinding({ id: "f1" }) }), fix: null },
+    ];
+    render(<FilePathMapper {...defaultProps} findings={findings} />);
+    // Should render without errors but not show the finding in the list
+    expect(screen.getByText("File Paths (0/0 mapped)")).toBeInTheDocument();
+  });
+
+  it("displays confidence hint text in submit button", () => {
+    const findings = [
+      makeFindingWithFix({ finding: makeFinding({ id: "f1" }), filePath: "src/file.tsx" }),
+    ];
+    render(<FilePathMapper {...defaultProps} findings={findings} />);
+    // Without detection results, the hint should mention the count
+    expect(screen.getByRole("button", { name: /Create PR \(1\)/ })).toBeInTheDocument();
+  });
+
+  it("handles findings array with mixed fix states", () => {
+    const findings = [
+      makeFindingWithFix({ finding: makeFinding({ id: "f1", ruleTitle: "Has Fix" }) }),
+      { ...makeFindingWithFix({ finding: makeFinding({ id: "f2", ruleTitle: "No Fix" }) }), fix: null },
+      makeFindingWithFix({ finding: makeFinding({ id: "f3", ruleTitle: "Also Has Fix" }), filePath: "mapped.tsx" }),
+    ];
+    render(<FilePathMapper {...defaultProps} findings={findings} />);
+    // Should show only the 2 fixed findings
+    expect(screen.getByText("Has Fix")).toBeInTheDocument();
+    expect(screen.getByText("Also Has Fix")).toBeInTheDocument();
+    expect(screen.queryByText("No Fix")).not.toBeInTheDocument();
+    expect(screen.getByText(/File Paths \(1\/2 mapped\)/)).toBeInTheDocument();
   });
 });

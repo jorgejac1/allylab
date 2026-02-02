@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import { Button, Input, Select } from '../ui';
 import { CustomRulesIndicator } from './CustomRulesIndicator';
+import { Monitor, Tablet, Smartphone, Search, Loader2, Lock } from 'lucide-react';
 import type { WCAGStandard, Viewport } from '../../types';
+import type { ScanAuthOptions } from '../../types/auth';
+import { getAuthProfiles, profileToAuthOptions, findProfileForDomain } from '../../utils/authProfiles';
+
+interface ScanOptions {
+  standard: WCAGStandard;
+  viewport: Viewport;
+  auth?: ScanAuthOptions;
+}
 
 interface ScanFormProps {
-  onScan: (url: string, options: { standard: WCAGStandard; viewport: Viewport }) => void;
+  onScan: (url: string, options: ScanOptions) => void;
   isScanning: boolean;
   initialUrl?: string;
 }
@@ -17,26 +26,65 @@ const STANDARDS: { value: WCAGStandard; label: string }[] = [
   { value: 'wcag2a', label: 'WCAG 2.0 A' },
 ];
 
-const VIEWPORTS: { value: Viewport; label: string; icon: string }[] = [
-  { value: 'desktop', label: 'Desktop', icon: '🖥️' },
-  { value: 'tablet', label: 'Tablet', icon: '📱' },
-  { value: 'mobile', label: 'Mobile', icon: '📲' },
+const VIEWPORTS: { value: Viewport; label: string; icon: ReactNode }[] = [
+  { value: 'desktop', label: 'Desktop', icon: <Monitor size={16} /> },
+  { value: 'tablet', label: 'Tablet', icon: <Tablet size={16} /> },
+  { value: 'mobile', label: 'Mobile', icon: <Smartphone size={16} /> },
 ];
 
 export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps) {
   const [url, setUrl] = useState(initialUrl);
   const [standard, setStandard] = useState<WCAGStandard>('wcag21aa');
   const [viewport, setViewport] = useState<Viewport>('desktop');
+  const [selectedAuthId, setSelectedAuthId] = useState<string>('');
+
+  // Load auth profiles (lazy initialization)
+  const authProfiles = useMemo(() => getAuthProfiles().filter(p => p.enabled), []);
+
+  // Auto-detect matching profile when URL changes
+  const autoDetectedProfile = useMemo(() => {
+    if (!url.trim()) {
+      return null;
+    }
+
+    try {
+      let testUrl = url.trim();
+      if (!testUrl.startsWith('http://') && !testUrl.startsWith('https://')) {
+        testUrl = `https://${testUrl}`;
+      }
+      const domain = new URL(testUrl).hostname;
+      return findProfileForDomain(domain) || null;
+    } catch {
+      return null;
+    }
+  }, [url]);
+
+  // Auto-select profile when auto-detected and no manual selection
+  useEffect(() => {
+    if (autoDetectedProfile && !selectedAuthId) {
+      setSelectedAuthId(autoDetectedProfile.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoDetectedProfile]);
 
   const handleSubmit = () => {
     if (!url.trim()) return;
-    
+
     let finalUrl = url.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = `https://${finalUrl}`;
     }
-    
-    onScan(finalUrl, { standard, viewport });
+
+    // Get auth options from selected profile
+    let auth: ScanAuthOptions | undefined;
+    if (selectedAuthId) {
+      const profile = authProfiles.find(p => p.id === selectedAuthId);
+      if (profile) {
+        auth = profileToAuthOptions(profile);
+      }
+    }
+
+    onScan(finalUrl, { standard, viewport, auth });
   };
 
   return (
@@ -93,11 +141,12 @@ export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps)
 
         {/* Standard Selector */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ color: '#94a3b8', fontSize: 14 }}>Standard:</span>
+          <span id="wcag-standard-label" style={{ color: '#94a3b8', fontSize: 14 }}>Standard:</span>
           <Select
             options={STANDARDS}
             value={standard}
             onChange={e => setStandard(e.target.value as WCAGStandard)}
+            aria-labelledby="wcag-standard-label"
             style={{
               background: '#0f172a',
               border: '1px solid #334155',
@@ -106,29 +155,66 @@ export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps)
             }}
           />
         </div>
-        
+
+        {/* Auth Profile Selector (only show if profiles exist) */}
+        {authProfiles.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Lock size={14} style={{ color: selectedAuthId ? '#22c55e' : '#94a3b8' }} />
+            <Select
+              options={[
+                { value: '', label: 'No Auth' },
+                ...authProfiles.map(p => ({
+                  value: p.id,
+                  label: `${p.name}${autoDetectedProfile?.id === p.id ? ' (auto)' : ''}`,
+                })),
+              ]}
+              value={selectedAuthId}
+              onChange={e => setSelectedAuthId(e.target.value)}
+              aria-label="Authentication profile"
+              style={{
+                background: '#0f172a',
+                border: `1px solid ${selectedAuthId ? '#22c55e' : '#334155'}`,
+                color: '#fff',
+                minWidth: 130,
+              }}
+            />
+          </div>
+        )}
+
         <Button onClick={handleSubmit} disabled={isScanning || !url.trim()}>
-          {isScanning ? '⏳ Scanning...' : '🔍 Scan Page'}
+          {isScanning ? (
+            <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Scanning...</>
+          ) : (
+            <><Search size={14} style={{ marginRight: 6 }} />Scan Page</>
+          )}
         </Button>
       </div>
       
       {/* Bottom Info Row */}
-      <div 
-        style={{ 
-          marginTop: 12, 
-          display: 'flex', 
-          alignItems: 'center', 
+      <div
+        style={{
+          marginTop: 12,
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: 12,
         }}
       >
         {/* Viewport Info */}
-        <div style={{ fontSize: 12, color: '#64748b' }}>
-          Testing as: {VIEWPORTS.find(v => v.value === viewport)?.icon}{' '}
-          {viewport === 'desktop' && '1280×720'}
-          {viewport === 'tablet' && '768×1024'}
-          {viewport === 'mobile' && '375×667 (2x scale)'}
+        <div style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span>
+            Testing as: {VIEWPORTS.find(v => v.value === viewport)?.icon}{' '}
+            {viewport === 'desktop' && '1280×720'}
+            {viewport === 'tablet' && '768×1024'}
+            {viewport === 'mobile' && '375×667 (2x scale)'}
+          </span>
+          {selectedAuthId && (
+            <span style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Lock size={12} />
+              Authenticated scan
+            </span>
+          )}
         </div>
 
         {/* Custom Rules Indicator */}

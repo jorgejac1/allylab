@@ -3,6 +3,8 @@ import { FilterButton, PillButton, Divider } from './FilterButton';
 import { ExportDropdown } from './ExportDropdown';
 import { SourceFilter, SourceFilterValue } from './SourceFilter';
 import type { Severity, IssueStatus, TrackedFinding } from '../../types';
+import type { ReactNode } from 'react';
+import { BadgePlus, RefreshCw, CheckCircle, Link, Upload } from 'lucide-react';
 
 export type FalsePositiveFilter = 'all' | 'active' | 'false-positive';
 
@@ -42,10 +44,10 @@ interface FindingsFilterBarProps {
   onExportToJira: () => void;
 }
 
-const STATUS_CONFIG: { status: IssueStatus; icon: string; color: string }[] = [
-  { status: 'new', icon: '🆕', color: '#1d4ed8' },
-  { status: 'recurring', icon: '🔄', color: '#b45309' },
-  { status: 'fixed', icon: '✅', color: '#15803d' },
+const STATUS_CONFIG: { status: IssueStatus; icon: ReactNode; color: string }[] = [
+  { status: 'new', icon: <BadgePlus size={12} />, color: '#1d4ed8' },
+  { status: 'recurring', icon: <RefreshCw size={12} />, color: '#b45309' },
+  { status: 'fixed', icon: <CheckCircle size={12} />, color: '#15803d' },
 ];
 
 export function FindingsFilterBar({
@@ -91,7 +93,7 @@ export function FindingsFilterBar({
         <FilterButton
           active={fpFilter === 'false-positive'}
           onClick={() => onFpFilterChange('false-positive')}
-          label={`🚫 False Positives (${fpCount})`}
+          label={`False Positives (${fpCount})`}
         />
         <FilterButton
           active={fpFilter === 'all'}
@@ -133,7 +135,7 @@ export function FindingsFilterBar({
           active={statusFilter === status}
           activeColor={color}
           onClick={() => onStatusFilterChange(statusFilter === status ? 'all' : status)}
-          label={`${icon} ${statusCounts[status]} ${status.charAt(0).toUpperCase() + status.slice(1)}`}
+          label={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{icon} {statusCounts[status]} {status.charAt(0).toUpperCase() + status.slice(1)}</span>}
         />
       ))}
 
@@ -141,8 +143,8 @@ export function FindingsFilterBar({
 
       {/* JIRA Linked Count */}
       {linkedCount > 0 && (
-        <span style={{ fontSize: 12, color: '#64748b', marginRight: 8 }}>
-          🔗 {linkedCount} linked to JIRA
+        <span style={{ fontSize: 12, color: '#64748b', marginRight: 8, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <Link size={12} /> {linkedCount} linked to JIRA
         </span>
       )}
 
@@ -154,12 +156,13 @@ export function FindingsFilterBar({
       />
 
       {/* Export to JIRA Button */}
-      <Button 
-        variant="secondary" 
-        size="sm" 
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onExportToJira}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
       >
-        📤 Export to JIRA {selectedCount > 0 && `(${selectedCount})`}
+        <Upload size={12} /> Export to JIRA {selectedCount > 0 && `(${selectedCount})`}
       </Button>
     </div>
   );

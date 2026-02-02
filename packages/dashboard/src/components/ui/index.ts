@@ -22,5 +22,13 @@ export {
 } from './Table';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Toast } from './Toast';
+export { Icon } from './Icon';
+export { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
+export { Section } from './Section';
+export { StatCard } from './StatCard';
+export { ProgressRow } from './ProgressRow';
+export { TabLoader } from './TabLoader';
+export { SettingRow } from './SettingRow';
+export type { IconProps } from './Icon';
 export type { ToastType, ToastItem, ToastProps } from './Toast';
 export type { ConfirmDialogProps } from './ConfirmDialog';

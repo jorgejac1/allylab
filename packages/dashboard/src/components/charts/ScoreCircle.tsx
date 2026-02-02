@@ -1,4 +1,4 @@
-import { getScoreColor } from '../../utils/scoring';
+import { getScoreColor, getScoreGrade } from '../../utils/scoring';
 
 interface ScoreCircleProps {
   score: number;
@@ -18,14 +18,6 @@ export function ScoreCircle({
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
   const color = getScoreColor(score);
-
-  const getGrade = (s: number) => {
-    if (s >= 90) return 'A';
-    if (s >= 80) return 'B';
-    if (s >= 70) return 'C';
-    if (s >= 60) return 'D';
-    return 'F';
-  };
 
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
@@ -65,7 +57,7 @@ export function ScoreCircle({
         </div>
         {showGrade && (
           <div style={{ fontSize: size * 0.14, color: '#64748b', marginTop: 2 }}>
-            Grade {getGrade(score)}
+            Grade {getScoreGrade(score)}
           </div>
         )}
       </div>

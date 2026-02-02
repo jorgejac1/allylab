@@ -92,13 +92,11 @@ export function useSiteScan() {
           }
           
           if (!eventType || !dataStr) {
-            console.log('[useSiteScan] Skipping incomplete chunk:', chunk);
             continue;
           }
-          
+
           try {
             const data = JSON.parse(dataStr);
-            console.log('[useSiteScan] Event:', eventType, data);
             
             switch (eventType) {
               case 'status':
@@ -130,7 +128,7 @@ export function useSiteScan() {
                 break;
                 
               default:
-                console.log('[useSiteScan] Unknown event type:', eventType);
+                // Unknown event type - ignore silently
             }
           } catch (parseError) {
             console.error('[useSiteScan] Failed to parse SSE data:', parseError, dataStr);

@@ -190,7 +190,7 @@ describe("batch-pr/FixGenerationList", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), fix: makeCodeFix("f1") }),
     ];
     render(<FixGenerationList {...defaultProps} findings={findings} />);
-    expect(screen.getByText("✓ Fix ready")).toBeInTheDocument();
+    expect(screen.getByText("Fix ready")).toBeInTheDocument();
   });
 
   it("displays Failed status when error is present", () => {
@@ -198,7 +198,7 @@ describe("batch-pr/FixGenerationList", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), error: "Generation failed" }),
     ];
     render(<FixGenerationList {...defaultProps} findings={findings} />);
-    expect(screen.getByText("✗ Failed")).toBeInTheDocument();
+    expect(screen.getByText("Failed")).toBeInTheDocument();
   });
 
   it("displays error message in title attribute when error is present", () => {
@@ -206,7 +206,7 @@ describe("batch-pr/FixGenerationList", () => {
       makeFindingWithFix({ finding: makeFinding({ id: "f1" }), error: "Generation failed" }),
     ];
     render(<FixGenerationList {...defaultProps} findings={findings} />);
-    const failedSpan = screen.getByText("✗ Failed");
+    const failedSpan = screen.getByText("Failed");
     expect(failedSpan).toHaveAttribute("title", "Generation failed");
   });
 

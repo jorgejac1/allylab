@@ -130,12 +130,12 @@ describe("reports/ComparisonView", () => {
     const older = makeScan({ id: "old", score: 70, totalIssues: 5 });
     const newer = makeScan({ id: "new", score: 70, totalIssues: 5, timestamp: new Date("2024-01-02").toISOString() });
 
-    render(<ComparisonView olderScan={older} newerScan={newer} onClose={vi.fn()} />);
+    const { container } = render(<ComparisonView olderScan={older} newerScan={newer} onClose={vi.fn()} />);
 
-    // With score unchanged, should show neutral icon (➖)
+    // With score unchanged, should show neutral icon (Minus SVG)
     // This covers the score unchanged branch (line 121)
-    const neutralIcons = screen.getAllByText("➖");
-    expect(neutralIcons.length).toBeGreaterThanOrEqual(2); // score and issues both unchanged
+    const minusIcons = container.querySelectorAll('svg.lucide-minus');
+    expect(minusIcons.length).toBeGreaterThanOrEqual(2); // score and issues both unchanged
   });
 
   it("renders ScanCard with and without regression styling", () => {
@@ -160,7 +160,7 @@ describe("reports/ComparisonView", () => {
       />
     );
 
-    // Should show regression badge on the "After" card
-    expect(screen.getByText(/🔻 -10 from previous/)).toBeInTheDocument();
+    // Should show regression badge on the "After" card (now uses TrendingDown icon instead of emoji)
+    expect(screen.getByText(/-10 from previous/)).toBeInTheDocument();
   });
 });

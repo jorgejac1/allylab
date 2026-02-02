@@ -4,6 +4,7 @@ import { registerRoutes } from "../../routes";
 
 const mockRegister = vi.fn();
 
+vi.mock("../../routes/auth", () => ({ authRoutes: vi.fn() }));
 vi.mock("../../routes/health", () => ({ healthRoutes: vi.fn() }));
 vi.mock("../../routes/scan", () => ({ scanRoutes: vi.fn() }));
 vi.mock("../../routes/scan-json", () => ({ scanJsonRoutes: vi.fn() }));
@@ -16,6 +17,7 @@ vi.mock("../../routes/github", () => ({ githubRoutes: vi.fn() }));
 vi.mock("../../routes/fixes", () => ({ fixesRoutes: vi.fn() }));
 vi.mock("../../routes/trends", () => ({ trendsRoutes: vi.fn() }));
 vi.mock("../../routes/rules", () => ({ rulesRoutes: vi.fn() }));
+vi.mock("../../routes/users", () => ({ userRoutes: vi.fn() }));
 
 describe("routes/index registerRoutes", () => {
   it("registers all route modules with fastify", async () => {
@@ -23,6 +25,6 @@ describe("routes/index registerRoutes", () => {
 
     await registerRoutes(fastify);
 
-    expect(mockRegister).toHaveBeenCalledTimes(12);
+    expect(mockRegister).toHaveBeenCalledTimes(14);
   });
 });

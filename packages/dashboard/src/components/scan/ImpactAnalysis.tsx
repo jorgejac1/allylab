@@ -1,6 +1,7 @@
 import { Card } from '../ui';
 import type { ScanResult } from '../../types';
 import { calculateDevTime, getRiskAssessment } from '../../utils/devTime';
+import { Zap, BarChart3 } from 'lucide-react';
 
 interface ImpactAnalysisProps {
   result: ScanResult;
@@ -22,7 +23,7 @@ export function ImpactAnalysis({ result }: ImpactAnalysisProps) {
   return (
     <Card>
       <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-        ⚡ Resource & Impact Analysis
+        <Zap size={18} /> Resource & Impact Analysis
         <span style={{ fontSize: 12, fontWeight: 400, color: '#64748b' }}>
           Development capacity and business impact assessment
         </span>
@@ -80,7 +81,7 @@ export function ImpactAnalysis({ result }: ImpactAnalysisProps) {
 
       {/* Business Metrics */}
       <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>📊 Enterprise Impact Metrics</div>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}><BarChart3 size={14} /> Enterprise Impact Metrics</div>
         <ul style={{ fontSize: 13, color: '#78350f', margin: 0, paddingLeft: 20, lineHeight: 1.8 }}>
           <li><strong>Legal Exposure:</strong> 4,000+ ADA lawsuits filed in 2023, settlements range $70K-$250K+</li>
           <li><strong>User Behavior:</strong> 71% of users with disabilities leave inaccessible sites immediately</li>

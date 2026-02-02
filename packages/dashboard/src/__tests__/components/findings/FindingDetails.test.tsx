@@ -85,7 +85,9 @@ describe("components/findings/FindingDetails", () => {
       const onClose = vi.fn();
       render(<FindingDetails {...defaultProps} onClose={onClose} />);
 
-      const closeButton = screen.getByText("×");
+      // Close button uses X icon from lucide-react
+      const buttons = screen.getAllByRole("button");
+      const closeButton = buttons[0];
       fireEvent.click(closeButton);
 
       expect(onClose).toHaveBeenCalledTimes(1);
@@ -120,7 +122,7 @@ describe("components/findings/FindingDetails", () => {
     it("renders Learn More link with correct href", () => {
       render(<FindingDetails {...defaultProps} />);
 
-      const learnMoreLink = screen.getByText("📚 WCAG Documentation →");
+      const learnMoreLink = screen.getByText(/WCAG Documentation/);
       expect(learnMoreLink).toHaveAttribute("href", "https://dequeuniversity.com/rules/axe/4.4/image-alt");
       expect(learnMoreLink).toHaveAttribute("target", "_blank");
       expect(learnMoreLink).toHaveAttribute("rel", "noopener noreferrer");
@@ -156,7 +158,7 @@ describe("components/findings/FindingDetails", () => {
     it("copies selector to clipboard when Copy Selector button is clicked", () => {
       render(<FindingDetails {...defaultProps} />);
 
-      const copyButton = screen.getByText("📋 Copy Selector");
+      const copyButton = screen.getByText(/Copy Selector/);
       fireEvent.click(copyButton);
 
       expect(mockClipboard.writeText).toHaveBeenCalledWith("img.hero-image");
@@ -165,24 +167,24 @@ describe("components/findings/FindingDetails", () => {
     it("shows Copied! state after copying selector", () => {
       render(<FindingDetails {...defaultProps} />);
 
-      const copyButton = screen.getByText("📋 Copy Selector");
+      const copyButton = screen.getByText(/Copy Selector/);
       fireEvent.click(copyButton);
 
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText(/Copied!/)).toBeInTheDocument();
     });
 
     it("resets copied selector state when animation ends", () => {
       render(<FindingDetails {...defaultProps} />);
 
-      // Click to copy - shows "✓ Copied!"
-      const copyButton = screen.getByText("📋 Copy Selector");
+      // Click to copy - shows "/Copied!/"
+      const copyButton = screen.getByText(/Copy Selector/);
       fireEvent.click(copyButton);
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText(/Copied!/)).toBeInTheDocument();
 
-      // Trigger animation end - resets to "📋 Copy Selector"
-      const copiedButton = screen.getByText("✓ Copied!");
+      // Trigger animation end - resets to "/Copy Selector/"
+      const copiedButton = screen.getByText(/Copied!/);
       fireEvent.animationEnd(copiedButton);
-      expect(screen.getByText("📋 Copy Selector")).toBeInTheDocument();
+      expect(screen.getByText(/Copy Selector/)).toBeInTheDocument();
     });
 
     it("renders fix difficulty based on severity", () => {
@@ -224,7 +226,7 @@ describe("components/findings/FindingDetails", () => {
     it("renders AI-powered suggestions section", () => {
       render(<FindingDetails {...defaultProps} />);
 
-      expect(screen.getByText("🤖 AI-POWERED SUGGESTIONS")).toBeInTheDocument();
+      expect(screen.getByText(/AI-POWERED SUGGESTIONS/)).toBeInTheDocument();
       expect(screen.getByText("Powered by Claude AI")).toBeInTheDocument();
       expect(screen.getByText("Element does not have an alt attribute")).toBeInTheDocument();
     });
@@ -247,7 +249,7 @@ describe("components/findings/FindingDetails", () => {
         });
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
-        expect(screen.getByText("💡 SUGGESTED FIX")).toBeInTheDocument();
+        expect(screen.getByText(/SUGGESTED FIX/)).toBeInTheDocument();
         expect(screen.getByText('<img src="hero.jpg" alt="Hero banner image">')).toBeInTheDocument();
       });
 
@@ -257,7 +259,7 @@ describe("components/findings/FindingDetails", () => {
         });
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
-        expect(screen.getAllByText("📋 Copy Fix").length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/Copy Fix/).length).toBeGreaterThan(0);
       });
 
       it("copies fix to clipboard when Copy Fix button is clicked", () => {
@@ -266,7 +268,7 @@ describe("components/findings/FindingDetails", () => {
         });
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
-        const copyButtons = screen.getAllByText("📋 Copy Fix");
+        const copyButtons = screen.getAllByText(/Copy Fix/);
         fireEvent.click(copyButtons[0]);
 
         expect(mockClipboard.writeText).toHaveBeenCalledWith('<img src="hero.jpg" alt="Hero banner image">');
@@ -278,11 +280,11 @@ describe("components/findings/FindingDetails", () => {
         });
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
-        const copyButtons = screen.getAllByText("📋 Copy Fix");
+        const copyButtons = screen.getAllByText(/Copy Fix/);
         fireEvent.click(copyButtons[0]);
 
-        // Both buttons should now show "✓ Copied!" (header and suggested fix section)
-        expect(screen.getAllByText("✓ Copied!").length).toBeGreaterThan(0);
+        // Both buttons should now show "/Copied!/" (header and suggested fix section)
+        expect(screen.getAllByText(/Copied!/).length).toBeGreaterThan(0);
       });
 
       it("resets copied fix state when animation ends on header button", () => {
@@ -292,16 +294,16 @@ describe("components/findings/FindingDetails", () => {
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
         // Click to copy
-        const copyButtons = screen.getAllByText("📋 Copy Fix");
+        const copyButtons = screen.getAllByText(/Copy Fix/);
         fireEvent.click(copyButtons[0]);
 
-        // Both buttons show "✓ Copied!"
-        const copiedButtons = screen.getAllByText("✓ Copied!");
+        // Both buttons show "/Copied!/"
+        const copiedButtons = screen.getAllByText(/Copied!/);
         expect(copiedButtons.length).toBeGreaterThan(0);
 
         // Trigger animation end on first button - resets state
         fireEvent.animationEnd(copiedButtons[0]);
-        expect(screen.getAllByText("📋 Copy Fix").length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/Copy Fix/).length).toBeGreaterThan(0);
       });
 
       it("resets copied fix state when animation ends on suggested fix section button", () => {
@@ -311,16 +313,16 @@ describe("components/findings/FindingDetails", () => {
         render(<FindingDetails {...defaultProps} finding={finding} />);
 
         // Click the second copy button (in suggested fix section)
-        const copyButtons = screen.getAllByText("📋 Copy Fix");
+        const copyButtons = screen.getAllByText(/Copy Fix/);
         fireEvent.click(copyButtons[1]);
 
-        // Both buttons show "✓ Copied!"
-        const copiedButtons = screen.getAllByText("✓ Copied!");
+        // Both buttons show "/Copied!/"
+        const copiedButtons = screen.getAllByText(/Copied!/);
         expect(copiedButtons.length).toBe(2);
 
         // Trigger animation end on second button (suggested fix section) - lines 292-293
         fireEvent.animationEnd(copiedButtons[1]);
-        expect(screen.getAllByText("📋 Copy Fix").length).toBe(2);
+        expect(screen.getAllByText(/Copy Fix/).length).toBe(2);
       });
 
       it("does not render Generate AI Fix button when fixSuggestion exists", () => {
@@ -329,7 +331,7 @@ describe("components/findings/FindingDetails", () => {
         });
         render(<FindingDetails {...defaultProps} finding={finding} onGenerateFix={vi.fn()} />);
 
-        expect(screen.queryByText("🤖 Generate AI Fix")).not.toBeInTheDocument();
+        expect(screen.queryByText(/Generate AI Fix/)).not.toBeInTheDocument();
       });
     });
 
@@ -338,14 +340,14 @@ describe("components/findings/FindingDetails", () => {
         const onGenerateFix = vi.fn();
         render(<FindingDetails {...defaultProps} onGenerateFix={onGenerateFix} />);
 
-        expect(screen.getByText("🤖 Generate AI Fix")).toBeInTheDocument();
+        expect(screen.getByText(/Generate AI Fix/)).toBeInTheDocument();
       });
 
       it("calls onGenerateFix when Generate AI Fix button is clicked", () => {
         const onGenerateFix = vi.fn();
         render(<FindingDetails {...defaultProps} onGenerateFix={onGenerateFix} />);
 
-        const generateButton = screen.getByText("🤖 Generate AI Fix");
+        const generateButton = screen.getByText(/Generate AI Fix/);
         fireEvent.click(generateButton);
 
         expect(onGenerateFix).toHaveBeenCalledWith(defaultProps.finding);
@@ -354,13 +356,13 @@ describe("components/findings/FindingDetails", () => {
       it("shows generating state when isGeneratingFix is true", () => {
         render(<FindingDetails {...defaultProps} onGenerateFix={vi.fn()} isGeneratingFix={true} />);
 
-        expect(screen.getByText("⏳ Generating...")).toBeInTheDocument();
+        expect(screen.getByText(/Generating.../)).toBeInTheDocument();
       });
 
       it("disables Generate button when isGeneratingFix is true", () => {
         render(<FindingDetails {...defaultProps} onGenerateFix={vi.fn()} isGeneratingFix={true} />);
 
-        const generateButton = screen.getByText("⏳ Generating...");
+        const generateButton = screen.getByText(/Generating.../);
         expect(generateButton).toBeDisabled();
       });
     });

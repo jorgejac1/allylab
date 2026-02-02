@@ -52,15 +52,17 @@ describe("executive/KPICard", () => {
   });
 
   it("renders icon when provided", () => {
-    render(<KPICard label="Issues" value="50" icon="🐛" />);
+    // icon prop now accepts ReactNode (JSX elements like lucide-react icons)
+    const TestIcon = () => <span data-testid="test-icon">icon</span>;
+    render(<KPICard label="Issues" value="50" icon={<TestIcon />} />);
 
-    expect(screen.getByText("🐛")).toBeInTheDocument();
+    expect(screen.getByTestId("test-icon")).toBeInTheDocument();
   });
 
   it("does not render icon when not provided", () => {
     render(<KPICard label="Issues" value="50" />);
 
-    expect(screen.queryByText("🐛")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("test-icon")).not.toBeInTheDocument();
   });
 
   it("renders Sparkline when trend has 2 or more data points", () => {
@@ -93,18 +95,20 @@ describe("executive/KPICard", () => {
   });
 
   it("renders all elements together", () => {
+    // icon prop now accepts ReactNode (JSX elements like lucide-react icons)
+    const TestIcon = () => <span data-testid="target-icon">target</span>;
     render(
       <KPICard
         label="Average Score"
         value={92}
         subValue="Grade A"
         color="#10b981"
-        icon="🎯"
+        icon={<TestIcon />}
         trend={[88, 90, 92]}
       />
     );
 
-    expect(screen.getByText("🎯")).toBeInTheDocument();
+    expect(screen.getByTestId("target-icon")).toBeInTheDocument();
     expect(screen.getByText("Average Score")).toBeInTheDocument();
     expect(screen.getByText("92")).toBeInTheDocument();
     expect(screen.getByText("Grade A")).toBeInTheDocument();

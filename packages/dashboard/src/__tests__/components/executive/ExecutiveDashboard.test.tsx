@@ -126,11 +126,11 @@ vi.mock("../../../components/executive/KPICard", () => ({
     value: string | number;
     subValue?: string;
     color?: string;
-    icon?: string;
+    icon?: React.ReactNode;
     trend?: number[];
   }) => (
-    <div data-testid="kpi-card" data-label={label} data-value={value} data-subvalue={subValue} data-color={color} data-icon={icon} data-trend={JSON.stringify(trend)}>
-      {icon} {label}: {value}
+    <div data-testid="kpi-card" data-label={label} data-value={value} data-subvalue={subValue} data-color={color} data-has-icon={icon ? "true" : "false"} data-trend={JSON.stringify(trend)}>
+      {icon && <span data-testid="kpi-icon">{icon}</span>} {label}: {value}
     </div>
   ),
 }));
@@ -188,11 +188,12 @@ describe("executive/ExecutiveDashboard", () => {
     currentMockData = mockDashboardData;
   });
 
-  it("renders dashboard header", () => {
+  it("renders dashboard components", () => {
     render(<ExecutiveDashboard />);
 
-    expect(screen.getByText("Executive Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("High-level accessibility overview across all monitored sites")).toBeInTheDocument();
+    // The header is now rendered by the page layout - dashboard renders KPI grid directly
+    expect(screen.getByTestId("kpi-grid")).toBeInTheDocument();
+    expect(screen.getByTestId("pdf-button")).toBeInTheDocument();
   });
 
   it("renders empty state when no sites", () => {
@@ -202,7 +203,8 @@ describe("executive/ExecutiveDashboard", () => {
 
     expect(screen.getByText("No Data Yet")).toBeInTheDocument();
     expect(screen.getByText(/Run some accessibility scans first/)).toBeInTheDocument();
-    expect(screen.getByText("📊")).toBeInTheDocument();
+    // BarChart3 icon is now used instead of emoji - check for the empty state container
+    expect(screen.getByText("No Data Yet")).toBeInTheDocument();
   });
 
   it("renders PDF export button", () => {
@@ -234,29 +236,29 @@ describe("executive/ExecutiveDashboard", () => {
     const kpiCards = screen.getAllByTestId("kpi-card");
     expect(kpiCards).toHaveLength(4);
 
-    // Average Score card
+    // Average Score card - now uses Target icon (ReactNode)
     const avgScoreCard = kpiCards.find((card) => card.getAttribute("data-label") === "Average Score");
     expect(avgScoreCard).toBeDefined();
     expect(avgScoreCard?.getAttribute("data-value")).toBe("72");
-    expect(avgScoreCard?.getAttribute("data-icon")).toBe("🎯");
+    expect(avgScoreCard?.getAttribute("data-has-icon")).toBe("true");
 
-    // Total Issues card
+    // Total Issues card - now uses Bug icon (ReactNode)
     const totalIssuesCard = kpiCards.find((card) => card.getAttribute("data-label") === "Total Issues");
     expect(totalIssuesCard).toBeDefined();
     expect(totalIssuesCard?.getAttribute("data-value")).toBe("150");
-    expect(totalIssuesCard?.getAttribute("data-icon")).toBe("🐛");
+    expect(totalIssuesCard?.getAttribute("data-has-icon")).toBe("true");
 
-    // Critical Issues card
+    // Critical Issues card - now uses AlertCircle icon (ReactNode)
     const criticalCard = kpiCards.find((card) => card.getAttribute("data-label") === "Critical Issues");
     expect(criticalCard).toBeDefined();
     expect(criticalCard?.getAttribute("data-value")).toBe("10");
-    expect(criticalCard?.getAttribute("data-icon")).toBe("🚨");
+    expect(criticalCard?.getAttribute("data-has-icon")).toBe("true");
 
-    // Sites Monitored card
+    // Sites Monitored card - now uses Globe icon (ReactNode)
     const sitesCard = kpiCards.find((card) => card.getAttribute("data-label") === "Sites Monitored");
     expect(sitesCard).toBeDefined();
     expect(sitesCard?.getAttribute("data-value")).toBe("5");
-    expect(sitesCard?.getAttribute("data-icon")).toBe("🌐");
+    expect(sitesCard?.getAttribute("data-has-icon")).toBe("true");
   });
 
   it("renders severity breakdown", () => {
@@ -290,8 +292,9 @@ describe("executive/ExecutiveDashboard", () => {
     render(<ExecutiveDashboard />);
 
     expect(screen.getByText("Issue Severity Distribution")).toBeInTheDocument();
-    expect(screen.getByText("🔥 Top Issues by Frequency")).toBeInTheDocument();
-    expect(screen.getByText("📉 Sites Needing Attention")).toBeInTheDocument();
+    // These now use lucide-react icons (Flame, TrendingDown) instead of emojis
+    expect(screen.getByText("Top Issues by Frequency")).toBeInTheDocument();
+    expect(screen.getByText("Sites Needing Attention")).toBeInTheDocument();
     expect(screen.getByText("Ranked by accessibility score (lowest first)")).toBeInTheDocument();
   });
 

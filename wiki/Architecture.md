@@ -48,12 +48,42 @@ Technical architecture and design of AllyLab.
 **Key Directories:**
 ```
 src/
-├── components/     # UI components
-├── hooks/          # Custom React hooks
-├── pages/          # Page components
-├── types/          # TypeScript types
-└── utils/          # Utilities
+├── components/         # UI components (100+)
+│   ├── alerts/             # Alert & notification components
+│   ├── charts/             # Chart components (IssueChangeBadge, etc.)
+│   ├── findings/           # Findings table, details, PR creation
+│   │   ├── apply-fix/          # Apply fix workflow components
+│   │   ├── batch-pr/           # Batch PR components
+│   │   └── create-pr/          # Create PR workflow components
+│   ├── reports/            # Reports & trend views
+│   │   └── comparison/         # Period comparison components
+│   ├── settings/           # Settings page components
+│   └── ui/                 # Reusable UI primitives
+├── config/             # Centralized configuration (API, storage keys, etc.)
+├── context/            # React context (AppContext with providers)
+├── hooks/              # Custom React hooks (25+)
+├── pages/              # Page components
+├── services/           # API service layer
+├── types/              # TypeScript types
+├── utils/              # Utilities
+│   └── pdf/                # PDF export utilities
+└── __tests__/          # Unit tests (1900+ tests, ~95% coverage)
+
+e2e/                    # Playwright E2E tests (60 tests)
 ```
+
+**Key Hooks:**
+- `useScanSSE` - SSE streaming for real-time scans
+- `useScans` - Scan history management
+- `useDashboardData` - Dashboard state aggregation
+- `useAsyncOperation` - Generic async operation handler
+- `useDateRanges` - Date range calculations
+- `useTrendData` - Trend data aggregations
+- `useDrawerState` - Drawer/modal state management
+- `useFindingsPagination` - Pagination for findings
+
+**Key Context:**
+- `AppContext` - Global app state with `useApp`, `useNavigation`, `useCurrentScan`, `useDrillDown` hooks
 
 ### API (Backend)
 
@@ -69,10 +99,42 @@ src/
 **Key Directories:**
 ```
 src/
+├── config/         # Environment & plugin configuration
+│   ├── env.ts          # Environment variables with validation
+│   └── swagger.ts      # OpenAPI documentation config
+├── interfaces/     # Storage abstraction interfaces
+│   └── storage.ts      # IStorage interface for DB migration
 ├── routes/         # API endpoints
+│   ├── health.ts       # Health & metrics endpoints
+│   ├── scan.ts         # SSE streaming scan
+│   ├── scan-json.ts    # JSON response scan
+│   ├── crawl.ts        # Multi-page site scanning
+│   ├── fixes.ts        # AI-powered fix generation
+│   ├── rules.ts        # Custom accessibility rules
+│   ├── trends.ts       # Historical trend analysis
+│   ├── schedules.ts    # Scheduled scans
+│   ├── webhooks.ts     # Webhook notifications
+│   ├── github.ts       # GitHub PR integration
+│   ├── jira.ts         # JIRA issue integration
+│   └── export.ts       # CSV/JSON export
 ├── services/       # Business logic
-├── types/          # TypeScript types
+│   ├── scanner.ts      # axe-core scanning engine
+│   ├── browser.ts      # Playwright browser pool
+│   ├── crawler.ts      # Site crawling with depth control
+│   ├── ai-fixes.ts     # Claude AI integration
+│   ├── github.ts       # GitHub API client
+│   ├── scheduler.ts    # Cron-based scan scheduling
+│   └── webhooks.ts     # Webhook delivery with retries
+├── types/          # TypeScript type definitions
 └── utils/          # Utilities
+    ├── errors.ts       # Standardized error handling
+    ├── logger.ts       # Pino structured logging
+    ├── metrics.ts      # Prometheus metrics
+    ├── pagination.ts   # List pagination helpers
+    ├── scoring.ts      # Accessibility score calculation
+    ├── sse.ts          # Server-Sent Events helpers
+    ├── storage.ts      # JSON file storage (implements IStorage)
+    └── wcag.ts         # WCAG standards mapping
 ```
 
 ### Scanner Engine
@@ -153,9 +215,30 @@ Request → Browser Launch → Navigate → Render → axe-core → Results
 | Type | Storage | Purpose |
 |------|---------|---------|
 | Sessions | Memory | GitHub tokens |
-| Rules | Memory | Custom rules |
-| Webhooks | Memory | Webhook config |
-| Browser | Singleton | Playwright instance |
+| Rules | JSON File | Custom rules (via IStorage) |
+| Webhooks | JSON File | Webhook config (via IStorage) |
+| Schedules | JSON File | Scheduled scans (via IStorage) |
+| Browser Pool | Singleton | Playwright instances with pooling |
+| Metrics | Memory | Prometheus counters/gauges |
+
+**Storage Interface:**
+
+The API uses an `IStorage<T>` interface that abstracts storage operations, enabling future migration to database backends:
+
+```typescript
+interface IStorage<T extends IEntity> {
+  get(id: string): Promise<T | undefined>;
+  getAll(options?: QueryOptions<T>): Promise<T[]>;
+  query(options: QueryOptions<T>): Promise<QueryResult<T>>;
+  set(id: string, item: T): Promise<void>;
+  delete(id: string): Promise<boolean>;
+  count(filter?: (item: T) => boolean): Promise<number>;
+  flush(): Promise<void>;
+  close(): Promise<void>;
+}
+```
+
+Current implementation: `JsonStorage` (file-based with in-memory caching and write debouncing)
 
 ---
 
@@ -177,8 +260,10 @@ Request → Browser Launch → Navigate → Render → axe-core → Results
 
 - HTTPS for production
 - Token encryption at rest
-- Rate limiting for production
-- Input validation
+- Rate limiting (configurable via `ENABLE_RATE_LIMITING`, `RATE_LIMIT_MAX`, `RATE_LIMIT_TIME_WINDOW`)
+- Input validation with Fastify schemas
+- Request ID correlation (`X-Request-ID` header)
+- Standardized error responses with error codes
 
 ---
 
@@ -249,42 +334,144 @@ Request → Browser Launch → Navigate → Render → axe-core → Results
 
 ---
 
-## Future Architecture
+## Testing Architecture
 
-### Database Migration
+### Unit Tests
+
+**Technology:** Vitest, React Testing Library
+
+**Coverage:** ~95% statement coverage, ~92% branch coverage
+
+**Test Structure:**
 ```
-LocalStorage
+src/__tests__/
+├── components/         # Component tests
+│   ├── findings/           # Findings component tests
+│   ├── reports/            # Reports component tests
+│   ├── settings/           # Settings component tests
+│   └── ui/                 # UI component tests
+├── hooks/              # Hook tests
+├── context/            # Context tests
+├── integration/        # Integration tests
+└── services/           # Service layer tests
 ```
 
-### Multi-tenancy
+### E2E Tests
+
+**Technology:** Playwright
+
+**Coverage:** 60 tests covering all major workflows
+
+**Test Files:**
 ```
-Single instance → Tenant isolation
+e2e/
+├── scan-workflow.spec.ts       # Scan form, options, execution
+├── findings-workflow.spec.ts   # Findings table, filtering, details
+├── executive-dashboard.spec.ts # KPI cards, trends, drill-down
+├── benchmark-workflow.spec.ts  # Competitor management, comparison
+├── settings-workflow.spec.ts   # All settings tabs, integrations
+└── settings.spec.ts            # Basic settings tests
 ```
 
 ---
 
-## Monitoring
+## Future Architecture
 
-### Metrics
+### Database Migration Path
 
-| Metric | Purpose |
-|--------|---------|
-| Scan duration | Performance |
-| Error rate | Reliability |
-| API latency | Performance |
-| Active scans | Capacity |
+The `IStorage` interface enables seamless migration between storage backends:
 
-### Logging
+```
+Phase 1 (Current): JsonStorage
+├── File-based with in-memory caching
+├── Write debouncing for performance
+└── Suitable for single-instance deployments
+
+Phase 2: SQLiteStorage
+├── Embedded database, no external deps
+├── Better query performance
+└── Suitable for medium-scale deployments
+
+Phase 3: PostgresStorage
+├── Full ACID compliance
+├── Connection pooling
+└── Suitable for production scale
+```
+
+Migration steps:
+1. Implement new storage class implementing `IStorage<T>`
+2. Update storage factory to return new implementation
+3. Run data migration script
+4. No route/service changes required
+
+### Multi-tenancy
+```
+Single instance → Tenant isolation via:
+├── Request context with tenant ID
+├── Storage partitioning by tenant
+└── Rate limits per tenant
+```
+
+---
+
+## Monitoring & Observability
+
+### Prometheus Metrics
+
+The API exposes metrics at `GET /metrics` in Prometheus format:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `http_requests_total` | Counter | Total HTTP requests by method/status |
+| `http_request_duration_seconds` | Histogram | Request duration distribution |
+| `http_requests_in_progress` | Gauge | Currently active requests |
+| `scan_duration_seconds` | Histogram | Scan execution time |
+| `scan_total` | Counter | Total scans by status |
+| `error_total` | Counter | Errors by type |
+
+### Request Correlation
+
+Every request is assigned a unique ID for tracing:
+- Incoming `X-Request-ID` header is preserved
+- Auto-generated if not provided: `{timestamp-base36}-{random-hex}`
+- Returned in response `X-Request-ID` header
+- Included in all log entries
+
+### Structured Logging
 
 | Level | Use |
 |-------|-----|
-| ERROR | Failures |
-| WARN | Degraded |
-| INFO | Operations |
-| DEBUG | Development |
+| ERROR | Failures with stack traces |
+| WARN | Degraded states, retries |
+| INFO | Operations, lifecycle events |
+| DEBUG | Development details |
+
+Logs include: request ID, duration, method, path, status, and error context.
+
+### Graceful Shutdown
+
+The server handles `SIGINT` and `SIGTERM` signals for graceful shutdown:
+
+1. Stop accepting new connections
+2. Drain existing requests (30s timeout)
+3. Shutdown scheduler (cancel pending jobs)
+4. Close browser page pool
+5. Close browser instance
+6. Exit cleanly
+
+### Health Check
+
+`GET /health` returns server status and is excluded from rate limiting:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
 
 ### Recommended Tools
 
-- Prometheus/Grafana (metrics)
-- ELK Stack (logs)
-- Sentry (errors)
+- Prometheus/Grafana (metrics visualization)
+- ELK Stack or Loki (log aggregation)
+- Sentry (error tracking)

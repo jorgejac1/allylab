@@ -1,14 +1,6 @@
 import type { ReactNode } from 'react';
 import { Header } from './Header';
-import { TabNav } from './TabNav';
-
-interface Tab {
-  id: string;
-  label: string;
-  icon?: string;
-  badge?: string | number;
-  disabled?: boolean;
-}
+import { TabNav, type Tab } from './TabNav';
 
 interface AppShellProps {
   children: ReactNode;

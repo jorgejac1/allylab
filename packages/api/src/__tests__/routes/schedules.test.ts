@@ -98,9 +98,11 @@ describe("routes/schedules", () => {
     const reply = createReply();
     mockGetAll.mockReturnValueOnce([{ id: "1" }]);
 
-    await handler({} as never, reply);
+    await handler({ query: {} } as never, reply);
 
-    expect(reply.payload).toEqual({ schedules: [{ id: "1" }] });
+    const payload = reply.payload as { schedules: unknown[]; pagination: unknown };
+    expect(payload.schedules).toEqual([{ id: "1" }]);
+    expect(payload.pagination).toBeDefined();
   });
 
   it("returns 404 when schedule not found", async () => {

@@ -17,23 +17,48 @@ const roadmapSections = [
     badgeText: "✓",
     items: [
       {
+        title: "CLI v1.1.0",
+        description: "Major CLI update with batch scanning, watch mode, HTML reports, SARIF output, and configuration files.",
+        status: "done",
+      },
+      {
+        title: "Batch URL Scanning",
+        description: "Scan multiple URLs from a file with configurable concurrency for large sites.",
+        status: "done",
+      },
+      {
+        title: "Watch Mode",
+        description: "Continuously monitor URLs at intervals with change detection and alerts.",
+        status: "done",
+      },
+      {
+        title: "HTML Report Export",
+        description: "Generate standalone HTML reports that can be shared without dependencies.",
+        status: "done",
+      },
+      {
+        title: "SARIF Output",
+        description: "Static Analysis Results Interchange Format for GitHub Code Scanning integration.",
+        status: "done",
+      },
+      {
+        title: "Configuration System",
+        description: "Support for .allylabrc.json config files, environment variables, and CLI flag priority.",
+        status: "done",
+      },
+      {
         title: "Batch PR Fixes",
         description: "Select multiple issues and create a single PR with all fixes combined.",
         status: "done",
       },
       {
         title: "Custom Rules Engine",
-        description: "Create organization-specific accessibility rules with pattern matching, structure validation, and attribute checks.",
+        description: "Create organization-specific accessibility rules with pattern matching and attribute checks.",
         status: "done",
       },
       {
         title: "GitHub Action",
         description: "Official marketplace action for CI/CD integration with configurable thresholds.",
-        status: "done",
-      },
-      {
-        title: "npm CLI",
-        description: "Command-line tool for scanning from terminal and CI pipelines.",
         status: "done",
       },
       {
@@ -44,6 +69,31 @@ const roadmapSections = [
       {
         title: "Slack & Teams Notifications",
         description: "Real-time notifications with rich formatting via Block Kit and Adaptive Cards.",
+        status: "done",
+      },
+      {
+        title: "GitLab Integration",
+        description: "Full GitLab support for merge request creation, including GitLab.com and self-hosted instances.",
+        status: "done",
+      },
+      {
+        title: "Authenticated Scanning",
+        description: "Scan protected pages with support for cookies, headers, storage state, login flows, and basic auth.",
+        status: "done",
+      },
+      {
+        title: "Cookie Capture Extension",
+        description: "Chrome extension to capture session cookies from authenticated sites with one-click export.",
+        status: "done",
+      },
+      {
+        title: "Credential Encryption",
+        description: "AES-256-GCM encryption for stored authentication credentials with device-specific keys.",
+        status: "done",
+      },
+      {
+        title: "Profile Health Monitoring",
+        description: "Track credential freshness with automatic health checks and expiration warnings.",
         status: "done",
       },
     ],
@@ -106,8 +156,8 @@ const roadmapSections = [
     badgeText: "🔮",
     items: [
       {
-        title: "Browser Extension",
-        description: "Scan pages directly from Chrome/Firefox with instant results overlay.",
+        title: "Full Scanner Extension",
+        description: "Scan pages directly from Chrome/Firefox with instant results overlay. Builds on the Cookie Capture extension.",
         status: "planned",
       },
       {

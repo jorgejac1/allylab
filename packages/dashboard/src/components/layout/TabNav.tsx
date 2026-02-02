@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 export interface Tab {
   id: string;
   label: string;
-  icon?: string;
+  icon?: ReactNode;
   badge?: string | number;
   disabled?: boolean;
 }

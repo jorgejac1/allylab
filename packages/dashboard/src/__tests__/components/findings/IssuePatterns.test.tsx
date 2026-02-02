@@ -91,7 +91,7 @@ describe("findings/IssuePatterns", () => {
   it("renders title and description", () => {
     render(<IssuePatterns findings={mockFindings} />);
 
-    expect(screen.getByText("🧠 Smart Issue Analysis")).toBeInTheDocument();
+    expect(screen.getByText(/Smart Issue Analysis/)).toBeInTheDocument();
     expect(screen.getByText("Pattern detection & deduplication")).toBeInTheDocument();
   });
 
@@ -143,9 +143,9 @@ describe("findings/IssuePatterns", () => {
   it("displays pattern types with correct styling", () => {
     render(<IssuePatterns findings={mockFindings} />);
 
-    expect(screen.getByText("🔄 Template")).toBeInTheDocument();
-    expect(screen.getByText("🌐 Global")).toBeInTheDocument();
-    expect(screen.getByText("📄 Page")).toBeInTheDocument();
+    expect(screen.getAllByText(/Template/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Global/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Page/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("displays pattern counts and pages", () => {
@@ -167,7 +167,7 @@ describe("findings/IssuePatterns", () => {
   it("renders recommended fix order section", () => {
     render(<IssuePatterns findings={mockFindings} />);
 
-    expect(screen.getByText("✨ Recommended Fix Order")).toBeInTheDocument();
+    expect(screen.getByText(/Recommended Fix Order/)).toBeInTheDocument();
   });
 
   it("displays component issues recommendation", () => {

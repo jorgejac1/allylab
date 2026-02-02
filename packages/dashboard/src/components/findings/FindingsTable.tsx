@@ -1,22 +1,23 @@
-import { useState, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Card, Pagination } from "../ui";
-import { usePRTracking } from "../../hooks";
+import { Check, Search } from 'lucide-react';
 import { PRStatusBadge } from "./PRStatusBadge";
 import { VerificationModal } from "./VerificationModal";
-import type { VerificationResult } from "../../types/github";
 import { BatchPRModal } from "./BatchPRModal";
-import { FindingsFilterBar, FalsePositiveFilter } from "./FindingsFilterBar";
+import { FindingsFilterBar, type FalsePositiveFilter } from "./FindingsFilterBar";
 import { FindingsSelectionBar } from "./FindingsSelectionBar";
 import { FindingsRow } from "./FindingsRow";
 import { JiraExportModal } from "./JiraExportModal";
-import { useLocalStorage } from "../../hooks";
-import type { TrackedFinding, Severity, IssueStatus, FindingSource } from "../../types";
-import type { SourceFilterValue } from "./SourceFilter";
 import {
-  markAsFalsePositive,
-  unmarkFalsePositive,
-  applyFalsePositiveStatus,
-} from "../../utils/falsePositives";
+  useFindingsFilters,
+  useFindingsSelection,
+  useFindingsPagination,
+  useFindingsJira,
+  useFindingsVerification,
+} from "../../hooks";
+import type { TrackedFinding, Severity, IssueStatus } from "../../types";
+import type { SourceFilterValue } from "./SourceFilter";
+import { markAsFalsePositive, unmarkFalsePositive } from "../../utils/falsePositives";
 
 interface FindingsTableProps {
   findings: TrackedFinding[];
@@ -27,8 +28,6 @@ interface FindingsTableProps {
   onFalsePositiveChange?: () => void;
 }
 
-type JiraLinks = Record<string, string>;
-
 export function FindingsTable({
   findings,
   pageUrl,
@@ -37,200 +36,72 @@ export function FindingsTable({
   onViewDetails,
   onFalsePositiveChange,
 }: FindingsTableProps) {
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // State management via custom hooks
+  const filters = useFindingsFilters(findings);
+  const selection = useFindingsSelection(filters.filteredFindings);
+  const pagination = useFindingsPagination(filters.filteredFindings);
+  const jira = useFindingsJira();
+  const verification = useFindingsVerification();
 
-  // Filters
-  const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<IssueStatus | "all">("all");
-  const [sourceFilter, setSourceFilter] = useState<SourceFilterValue>("all");
-  const [fpFilter, setFpFilter] = useState<FalsePositiveFilter>("active");
-  const [fpVersion, setFpVersion] = useState(0);
-
-  // PR Fix Verification
-  const { getPRsForFinding, verifyFixes } = usePRTracking();
-  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
-  const [verificationResult, setVerificationResult] =
-    useState<VerificationResult | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verifyingPRId, setVerifyingPRId] = useState<string | null>(null);
-  const [verificationError, setVerificationError] = useState<string | null>(
-    null
-  );
-
-  const handleVerifyFix = async (prId: string) => {
-    setVerifyingPRId(prId);
-    setIsVerifying(true);
-    setVerificationError(null);
-    setVerificationModalOpen(true);
-
-    const result = await verifyFixes(prId);
-
-    if (result) {
-      setVerificationResult(result);
-    } else {
-      setVerificationError("Failed to verify fixes");
-    }
-
-    setIsVerifying(false);
-    setVerifyingPRId(null);
-  };
-
-  // Selection
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  // JIRA
+  // Modal state
   const [jiraModalOpen, setJiraModalOpen] = useState(false);
-  const [jiraLinks, setJiraLinks] = useLocalStorage<JiraLinks>(
-    "allylab_jira_links",
-    {}
-  );
-  const [linkingFindingId, setLinkingFindingId] = useState<string | null>(null);
-  const [linkInput, setLinkInput] = useState("");
-
-  // PR Batch
   const [batchPRModalOpen, setBatchPRModalOpen] = useState(false);
 
-  // Apply false positive status
-  const findingsWithFpStatus = useMemo(() => {
-    void fpVersion;
-    return applyFalsePositiveStatus(findings);
-  }, [findings, fpVersion]);
-
-  // Calculate source counts
-  const sourceCounts = useMemo(() => {
-    const axeCore = findingsWithFpStatus.filter(f => !f.source || f.source === 'axe-core').length;
-    const customRule = findingsWithFpStatus.filter(f => f.source === 'custom-rule').length;
-    return {
-      axeCore,
-      customRule,
-      total: findingsWithFpStatus.length,
-    };
-  }, [findingsWithFpStatus]);
-
-  // Filter findings
-  const filtered = useMemo(() => {
-    return findingsWithFpStatus.filter((f) => {
-      // False positive filter
-      if (fpFilter === "active" && f.falsePositive) return false;
-      if (fpFilter === "false-positive" && !f.falsePositive) return false;
-      
-      // Source filter
-      if (sourceFilter !== "all") {
-        const findingSource: FindingSource = f.source || 'axe-core';
-        if (findingSource !== sourceFilter) return false;
-      }
-      
-      // Severity filter
-      if (severityFilter !== "all" && f.impact !== severityFilter) return false;
-      
-      // Status filter
-      if (statusFilter !== "all" && f.status !== statusFilter) return false;
-      
-      return true;
-    });
-  }, [findingsWithFpStatus, severityFilter, statusFilter, sourceFilter, fpFilter]);
-
-  // Pagination
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = filtered.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  // Counts
-  const activeFindings = findingsWithFpStatus.filter((f) => !f.falsePositive);
-  const fpCount = findingsWithFpStatus.filter((f) => f.falsePositive).length;
-  const linkedCount = filtered.filter((f) => jiraLinks[f.id]).length;
-
-  const severityCounts: Record<Severity, number> = useMemo(
-    () => ({
-      critical: activeFindings.filter((f) => f.impact === "critical").length,
-      serious: activeFindings.filter((f) => f.impact === "serious").length,
-      moderate: activeFindings.filter((f) => f.impact === "moderate").length,
-      minor: activeFindings.filter((f) => f.impact === "minor").length,
-    }),
-    [activeFindings]
-  );
-
-  const statusCounts: Record<IssueStatus, number> = useMemo(
-    () => ({
-      new: activeFindings.filter((f) => f.status === "new").length,
-      recurring: activeFindings.filter((f) => f.status === "recurring").length,
-      fixed: activeFindings.filter((f) => f.status === "fixed").length,
-    }),
-    [activeFindings]
+  // Linked count for filtered findings - memoized to prevent recalculation
+  const linkedCount = useMemo(
+    () => jira.getLinkedCount(filters.filteredFindings.map((f) => f.id)),
+    [jira, filters.filteredFindings]
   );
 
   // Handlers
-  const handleToggleFalsePositive = (finding: TrackedFinding) => {
+  const handleToggleFalsePositive = useCallback((finding: TrackedFinding) => {
     if (finding.falsePositive) {
       unmarkFalsePositive(finding.fingerprint);
     } else {
       markAsFalsePositive(finding.fingerprint, finding.ruleId);
     }
-    setFpVersion((v) => v + 1);
+    filters.triggerFpRefresh();
     onFalsePositiveChange?.();
-  };
+  }, [filters, onFalsePositiveChange]);
 
-  const handleToggleSelect = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    setSelectedIds(next);
-  };
+  const handleFpFilterChange = useCallback((filter: FalsePositiveFilter) => {
+    filters.setFpFilter(filter);
+    pagination.setCurrentPage(1);
+  }, [filters, pagination]);
 
-  const handleSelectAllPage = () => {
-    if (selectedIds.size === paginated.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(paginated.map((f) => f.id)));
-    }
-  };
+  const handleSeverityFilterChange = useCallback((severity: Severity | "all") => {
+    filters.setSeverityFilter(severity);
+    pagination.setCurrentPage(1);
+  }, [filters, pagination]);
 
-  const handleSelectAllFiltered = () => {
-    setSelectedIds(new Set(filtered.map((f) => f.id)));
-  };
+  const handleStatusFilterChange = useCallback((status: IssueStatus | "all") => {
+    filters.setStatusFilter(status);
+    pagination.setCurrentPage(1);
+  }, [filters, pagination]);
 
-  const handleClearSelection = () => {
-    setSelectedIds(new Set());
-  };
+  const handleSourceFilterChange = useCallback((source: SourceFilterValue) => {
+    filters.setSourceFilter(source);
+    pagination.setCurrentPage(1);
+  }, [filters, pagination]);
 
-  const handleOpenJiraExport = () => {
-    if (selectedIds.size === 0) {
-      setSelectedIds(new Set(filtered.map((f) => f.id)));
+  const handleOpenJiraExport = useCallback(() => {
+    if (selection.selectedIds.size === 0) {
+      selection.selectAllFiltered(filters.filteredFindings);
     }
     setJiraModalOpen(true);
-  };
+  }, [selection, filters.filteredFindings]);
 
-  const handleSaveJiraLink = (findingId: string) => {
-    if (linkInput.trim()) {
-      setJiraLinks((prev) => ({
-        ...prev,
-        [findingId]: linkInput.trim().toUpperCase(),
-      }));
-    }
-    setLinkingFindingId(null);
-    setLinkInput("");
-  };
+  const handleOpenBatchPR = useCallback(() => {
+    setBatchPRModalOpen(true);
+  }, []);
 
-  const handleRemoveJiraLink = (findingId: string) => {
-    setJiraLinks((prev) => {
-      const next = { ...prev };
-      delete next[findingId];
-      return next;
-    });
-  };
-
-  const selectedFindings = filtered.filter((f) => selectedIds.has(f.id));
+  const handleSelectAllPage = useCallback(() => {
+    selection.selectAllPage(pagination.paginatedFindings);
+  }, [selection, pagination.paginatedFindings]);
 
   // Render PR Status cell for a finding
-  const renderPRStatusCell = (findingId: string) => {
-    const findingPRs = getPRsForFinding(findingId);
+  const renderPRStatusCell = useCallback((findingId: string) => {
+    const findingPRs = verification.getPRsForFinding(findingId);
 
     if (findingPRs.length === 0) {
       return <span style={{ color: "#94a3b8", fontSize: 12 }}>—</span>;
@@ -242,58 +113,46 @@ export function FindingsTable({
           <PRStatusBadge
             key={pr.id}
             pr={pr}
-            onVerify={() => handleVerifyFix(pr.id)}
-            isVerifying={verifyingPRId === pr.id}
+            onVerify={() => verification.verifyFix(pr.id)}
+            isVerifying={verification.verifyingPRId === pr.id}
           />
         ))}
       </div>
     );
-  };
+  }, [verification]);
 
   return (
     <>
       <Card padding="none">
         <FindingsFilterBar
-          activeCount={activeFindings.length}
-          fpCount={fpCount}
-          totalCount={findingsWithFpStatus.length}
-          severityCounts={severityCounts}
-          statusCounts={statusCounts}
+          activeCount={filters.activeFindings.length}
+          fpCount={filters.fpCount}
+          totalCount={filters.findingsWithFpStatus.length}
+          severityCounts={filters.severityCounts}
+          statusCounts={filters.statusCounts}
           linkedCount={linkedCount}
-          selectedCount={selectedIds.size}
-          fpFilter={fpFilter}
-          severityFilter={severityFilter}
-          statusFilter={statusFilter}
-          sourceFilter={sourceFilter}
-          sourceCounts={sourceCounts}
-          findings={filtered}
+          selectedCount={selection.selectedIds.size}
+          fpFilter={filters.fpFilter}
+          severityFilter={filters.severityFilter}
+          statusFilter={filters.statusFilter}
+          sourceFilter={filters.sourceFilter}
+          sourceCounts={filters.sourceCounts}
+          findings={filters.filteredFindings}
           scanUrl={pageUrl}
           scanDate={new Date().toISOString()}
-          onFpFilterChange={(filter) => {
-            setFpFilter(filter);
-            setCurrentPage(1);
-          }}
-          onSeverityFilterChange={(severity) => {
-            setSeverityFilter(severity);
-            setCurrentPage(1);
-          }}
-          onStatusFilterChange={(status) => {
-            setStatusFilter(status);
-            setCurrentPage(1);
-          }}
-          onSourceFilterChange={(source) => {
-            setSourceFilter(source);
-            setCurrentPage(1);
-          }}
+          onFpFilterChange={handleFpFilterChange}
+          onSeverityFilterChange={handleSeverityFilterChange}
+          onStatusFilterChange={handleStatusFilterChange}
+          onSourceFilterChange={handleSourceFilterChange}
           onExportToJira={handleOpenJiraExport}
         />
 
         <FindingsSelectionBar
-          selectedCount={selectedIds.size}
-          totalFilteredCount={filtered.length}
-          onSelectAll={handleSelectAllFiltered}
-          onClearSelection={handleClearSelection}
-          onCreatePR={() => setBatchPRModalOpen(true)}
+          selectedCount={selection.selectedIds.size}
+          totalFilteredCount={filters.filteredFindings.length}
+          onSelectAll={() => selection.selectAllFiltered(filters.filteredFindings)}
+          onClearSelection={selection.clearSelection}
+          onCreatePR={handleOpenBatchPR}
           onExportJira={handleOpenJiraExport}
         />
 
@@ -301,18 +160,13 @@ export function FindingsTable({
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr
-                style={{
-                  background: "#f8fafc",
-                  borderBottom: "2px solid #e2e8f0",
-                }}
-              >
+              <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
                 <th style={{ ...thStyle, width: 40 }}>
                   <input
                     type="checkbox"
                     checked={
-                      paginated.length > 0 &&
-                      selectedIds.size === paginated.length
+                      pagination.paginatedFindings.length > 0 &&
+                      pagination.paginatedFindings.every((f) => selection.isSelected(f.id))
                     }
                     onChange={handleSelectAllPage}
                     style={{ cursor: "pointer", width: 16, height: 16 }}
@@ -329,28 +183,23 @@ export function FindingsTable({
               </tr>
             </thead>
             <tbody>
-              {paginated.map((finding) => (
+              {pagination.paginatedFindings.map((finding) => (
                 <FindingsRow
                   key={finding.id}
                   finding={finding}
-                  isSelected={selectedIds.has(finding.id)}
-                  jiraIssueKey={jiraLinks[finding.id]}
-                  isLinkingJira={linkingFindingId === finding.id}
-                  jiraLinkInput={linkInput}
-                  onToggleSelect={() => handleToggleSelect(finding.id)}
-                  onToggleFalsePositive={() =>
-                    handleToggleFalsePositive(finding)
-                  }
-                  onViewDetails={() => onViewDetails(finding)}
-                  onJiraLinkInputChange={setLinkInput}
-                  onStartJiraLink={() => {
-                    setLinkingFindingId(finding.id);
-                    setLinkInput("");
-                  }}
-                  onSaveJiraLink={() => handleSaveJiraLink(finding.id)}
-                  onCancelJiraLink={() => setLinkingFindingId(null)}
-                  onRemoveJiraLink={() => handleRemoveJiraLink(finding.id)}
-                  renderPRStatus={() => renderPRStatusCell(finding.id)}
+                  isSelected={selection.isSelected(finding.id)}
+                  jiraIssueKey={jira.getJiraLink(finding.id)}
+                  isLinkingJira={jira.linkingFindingId === finding.id}
+                  jiraLinkInput={jira.linkInput}
+                  onToggleSelect={selection.toggleSelect}
+                  onToggleFalsePositive={handleToggleFalsePositive}
+                  onViewDetails={onViewDetails}
+                  onJiraLinkInputChange={jira.setLinkInput}
+                  onStartJiraLink={jira.startLinking}
+                  onSaveJiraLink={jira.saveLink}
+                  onCancelJiraLink={jira.cancelLinking}
+                  onRemoveJiraLink={jira.removeLink}
+                  renderPRStatus={renderPRStatusCell}
                 />
               ))}
             </tbody>
@@ -358,13 +207,13 @@ export function FindingsTable({
         </div>
 
         {/* Empty State */}
-        {paginated.length === 0 && (
+        {pagination.paginatedFindings.length === 0 && (
           <div style={{ padding: 48, textAlign: "center", color: "#64748b" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>
-              {fpFilter === "false-positive" ? "✓" : "🔍"}
+            <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
+              {filters.fpFilter === "false-positive" ? <Check size={32} /> : <Search size={32} />}
             </div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>
-              {fpFilter === "false-positive"
+              {filters.fpFilter === "false-positive"
                 ? "No false positives marked"
                 : "No findings match the current filters"}
             </div>
@@ -372,17 +221,14 @@ export function FindingsTable({
         )}
 
         {/* Pagination */}
-        {paginated.length > 0 && (
+        {pagination.paginatedFindings.length > 0 && (
           <div style={{ padding: "12px 16px", borderTop: "1px solid #f1f5f9" }}>
             <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              pageSize={pagination.pageSize}
+              onPageChange={pagination.setCurrentPage}
+              onPageSizeChange={pagination.setPageSize}
             />
           </div>
         )}
@@ -392,18 +238,16 @@ export function FindingsTable({
         isOpen={jiraModalOpen}
         onClose={() => {
           setJiraModalOpen(false);
-          setSelectedIds(new Set());
+          selection.clearSelection();
         }}
-        findings={selectedFindings.length > 0 ? selectedFindings : filtered}
+        findings={selection.selectedFindings.length > 0 ? selection.selectedFindings : filters.filteredFindings}
         pageUrl={pageUrl}
       />
 
       <BatchPRModal
         isOpen={batchPRModalOpen}
-        onClose={() => {
-          setBatchPRModalOpen(false);
-        }}
-        findings={selectedFindings.length > 0 ? selectedFindings : []}
+        onClose={() => setBatchPRModalOpen(false)}
+        findings={selection.selectedFindings.length > 0 ? selection.selectedFindings : []}
         scanUrl={pageUrl}
         scanStandard={scanStandard}
         scanViewport={scanViewport}
@@ -411,15 +255,11 @@ export function FindingsTable({
 
       {/* Fix Verification Modal */}
       <VerificationModal
-        isOpen={verificationModalOpen}
-        onClose={() => {
-          setVerificationModalOpen(false);
-          setVerificationResult(null);
-          setVerificationError(null);
-        }}
-        result={verificationResult}
-        isLoading={isVerifying}
-        error={verificationError}
+        isOpen={verification.verificationModalOpen}
+        onClose={verification.closeVerificationModal}
+        result={verification.verificationResult}
+        isLoading={verification.isVerifying}
+        error={verification.verificationError}
       />
     </>
   );

@@ -2,6 +2,7 @@ import { Card } from '../ui';
 import { ScoreCircle } from '../charts';
 import type { SavedScan } from '../../types';
 import { SEVERITY_COLORS } from '../../utils/constants';
+import { CheckCircle } from 'lucide-react';
 
 interface ScanResultsCompactProps {
   scan: SavedScan;
@@ -56,8 +57,8 @@ export function ScanResultsCompact({ scan, onClick, selected = false }: ScanResu
             <SeverityCount severity="minor" count={scan.minor} />
           )}
           {scan.totalIssues === 0 && (
-            <span style={{ fontSize: 12, color: '#10b981', fontWeight: 600 }}>
-              ✅ No issues
+            <span style={{ fontSize: 12, color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <CheckCircle size={14} /> No issues
             </span>
           )}
         </div>

@@ -63,6 +63,7 @@ describe("findings/FindingsRow", () => {
     onSaveJiraLink: vi.fn(),
     onCancelJiraLink: vi.fn(),
     onRemoveJiraLink: vi.fn(),
+    renderPRStatus: vi.fn(() => <span>—</span>),
   };
 
   beforeEach(() => {
@@ -115,12 +116,12 @@ describe("findings/FindingsRow", () => {
     expect(checkbox).toBeChecked();
   });
 
-  it("calls onToggleSelect when checkbox is clicked", () => {
+  it("calls onToggleSelect with finding id when checkbox is clicked", () => {
     const onToggleSelect = vi.fn();
     renderRow({ ...defaultProps, onToggleSelect });
     const checkbox = screen.getByRole("checkbox");
     fireEvent.click(checkbox);
-    expect(onToggleSelect).toHaveBeenCalledTimes(1);
+    expect(onToggleSelect).toHaveBeenCalledWith("f1");
   });
 
   it("renders WCAG tags", () => {
@@ -152,13 +153,14 @@ describe("findings/FindingsRow", () => {
     expect(screen.getByTestId("jira-cell")).toHaveTextContent("linking");
   });
 
-  it("renders PR status when provided", () => {
-    const renderPRStatus = () => <span>PR Status</span>;
+  it("renders PR status from renderPRStatus function", () => {
+    const renderPRStatus = vi.fn(() => <span>PR Status</span>);
     renderRow({ ...defaultProps, renderPRStatus });
     expect(screen.getByText("PR Status")).toBeInTheDocument();
+    expect(renderPRStatus).toHaveBeenCalledWith("f1");
   });
 
-  it("renders dash when no PR status", () => {
+  it("renders result from default renderPRStatus", () => {
     renderRow(defaultProps);
     expect(screen.getByText("—")).toBeInTheDocument();
   });
@@ -168,23 +170,23 @@ describe("findings/FindingsRow", () => {
     expect(screen.getByText("Details")).toBeInTheDocument();
   });
 
-  it("calls onViewDetails when Details button is clicked", () => {
+  it("calls onViewDetails with finding when Details button is clicked", () => {
     const onViewDetails = vi.fn();
     renderRow({ ...defaultProps, onViewDetails });
     fireEvent.click(screen.getByText("Details"));
-    expect(onViewDetails).toHaveBeenCalledTimes(1);
+    expect(onViewDetails).toHaveBeenCalledWith(baseFinding);
   });
 
   it("renders Ignore button for non-false-positive findings", () => {
     renderRow(defaultProps);
-    expect(screen.getByText("✕ Ignore")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Mark as false positive/i })).toBeInTheDocument();
   });
 
-  it("calls onToggleFalsePositive when Ignore button is clicked", () => {
+  it("calls onToggleFalsePositive with finding when Ignore button is clicked", () => {
     const onToggleFalsePositive = vi.fn();
     renderRow({ ...defaultProps, onToggleFalsePositive });
-    fireEvent.click(screen.getByText("✕ Ignore"));
-    expect(onToggleFalsePositive).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: /Mark as false positive/i }));
+    expect(onToggleFalsePositive).toHaveBeenCalledWith(baseFinding);
   });
 
   it("renders false positive badge when marked as false positive", () => {
@@ -196,7 +198,7 @@ describe("findings/FindingsRow", () => {
   it("renders Restore button for false positive findings", () => {
     const finding = { ...baseFinding, falsePositive: true };
     renderRow({ ...defaultProps, finding });
-    expect(screen.getByText("↩ Restore")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Restore/ })).toBeInTheDocument();
   });
 
   it("applies strikethrough to title when false positive", () => {
@@ -235,7 +237,7 @@ describe("findings/FindingsRow", () => {
 
   it("changes button style on mouse over for regular finding", () => {
     renderRow(defaultProps);
-    const ignoreBtn = screen.getByText("✕ Ignore");
+    const ignoreBtn = screen.getByRole("button", { name: /Mark as false positive/i });
 
     fireEvent.mouseOver(ignoreBtn);
     expect(ignoreBtn).toHaveStyle({ background: "#fef2f2", color: "#dc2626" });
@@ -247,7 +249,7 @@ describe("findings/FindingsRow", () => {
   it("changes button style on mouse over for false positive finding", () => {
     const finding = { ...baseFinding, falsePositive: true };
     renderRow({ ...defaultProps, finding });
-    const restoreBtn = screen.getByText("↩ Restore");
+    const restoreBtn = screen.getByRole("button", { name: /Restore/ });
 
     fireEvent.mouseOver(restoreBtn);
     expect(restoreBtn).toHaveStyle({ background: "#f0fdf4", color: "#15803d" });

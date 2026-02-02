@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Competitor, CompetitorScan, BenchmarkData } from '../types';
 import { getApiBase } from '../utils/api';
-
-const STORAGE_KEY = 'allylab_competitors';
-const SCANS_KEY = 'allylab_competitor_scans';
+import { STORAGE_KEYS, DEFAULTS } from '../config';
+import { getScoreGrade } from '../utils/scoreUtils';
 
 export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
   const [competitors, setCompetitors] = useState<Competitor[]>([]);
@@ -13,12 +12,12 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
 
   // Load from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.COMPETITORS);
     if (stored) {
       setCompetitors(JSON.parse(stored));
     }
 
-    const storedScans = localStorage.getItem(SCANS_KEY);
+    const storedScans = localStorage.getItem(STORAGE_KEYS.COMPETITOR_SCANS);
     if (storedScans) {
       setScans(JSON.parse(storedScans));
     }
@@ -26,7 +25,7 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
 
   // Save competitors to localStorage
   const saveCompetitors = useCallback((updated: Competitor[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.COMPETITORS, JSON.stringify(updated));
     setCompetitors(updated);
   }, []);
 
@@ -34,7 +33,7 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
   const saveScans = useCallback((updater: (prev: CompetitorScan[]) => CompetitorScan[]) => {
     setScans(prev => {
       const updated = updater(prev);
-      localStorage.setItem(SCANS_KEY, JSON.stringify(updated));
+      localStorage.setItem(STORAGE_KEYS.COMPETITOR_SCANS, JSON.stringify(updated));
       return updated;
     });
   }, []);
@@ -76,8 +75,8 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: competitor.url,
-          standard: 'wcag21aa',
-          viewport: 'desktop',
+          standard: DEFAULTS.SCAN.STANDARD,
+          viewport: DEFAULTS.SCAN.VIEWPORT,
         }),
       });
 
@@ -158,7 +157,7 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
         url: yourSiteUrl,
         score: yourSiteScore,
         totalIssues: 0, // Would need to pass this in
-        grade: getGrade(yourSiteScore),
+        grade: getScoreGrade(yourSiteScore),
       },
       competitors: latestScans,
       summary: {
@@ -183,12 +182,4 @@ export function useCompetitors(yourSiteUrl?: string, yourSiteScore?: number) {
     scanAll,
     getBenchmarkData,
   };
-}
-
-function getGrade(score: number): string {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'F';
 }

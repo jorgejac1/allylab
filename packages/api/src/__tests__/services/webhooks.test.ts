@@ -7,8 +7,21 @@ import {
   deleteWebhook,
   triggerWebhooks,
   testWebhook,
+  DEFAULT_RETRY_CONFIG,
+  calculateBackoffDelay,
+  isRetryableError,
 } from "../../services/webhooks";
 import type { WebhookEvent } from "../../types/webhook";
+
+// Mock logger
+vi.mock("../../utils/logger.js", () => ({
+  webhookLogger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
 
 // Mock global fetch
 const mockFetch = vi.fn();
@@ -459,6 +472,7 @@ describe("services/webhooks", () => {
     });
 
     it("updates lastStatus to failed on HTTP error", async () => {
+      vi.useFakeTimers();
       mockFetch.mockResolvedValue({ ok: false, status: 500 });
 
       const webhook = createWebhook({
@@ -467,7 +481,7 @@ describe("services/webhooks", () => {
         events: ["scan.completed"],
       });
 
-      await triggerWebhooks("scan.completed", {
+      const triggerPromise = triggerWebhooks("scan.completed", {
         scanUrl: "https://test.com",
         score: 85,
         totalIssues: 10,
@@ -477,11 +491,16 @@ describe("services/webhooks", () => {
         minor: 5,
       });
 
+      await vi.runAllTimersAsync();
+      await triggerPromise;
+
       const updated = getWebhookById(webhook.id);
       expect(updated?.lastStatus).toBe("failed");
+      vi.useRealTimers();
     });
 
     it("updates lastStatus to failed on network error", async () => {
+      vi.useFakeTimers();
       mockFetch.mockRejectedValue(new Error("Network error"));
 
       const webhook = createWebhook({
@@ -490,7 +509,7 @@ describe("services/webhooks", () => {
         events: ["scan.completed"],
       });
 
-      await triggerWebhooks("scan.completed", {
+      const triggerPromise = triggerWebhooks("scan.completed", {
         scanUrl: "https://test.com",
         score: 85,
         totalIssues: 10,
@@ -500,8 +519,12 @@ describe("services/webhooks", () => {
         minor: 5,
       });
 
+      await vi.runAllTimersAsync();
+      await triggerPromise;
+
       const updated = getWebhookById(webhook.id);
       expect(updated?.lastStatus).toBe("failed");
+      vi.useRealTimers();
     });
 
     it("includes signature header for generic webhooks with secret", async () => {
@@ -1522,6 +1545,230 @@ describe("services/webhooks", () => {
         await triggerWebhooks(event, data);
 
         expect(mockFetch).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe("retry logic", () => {
+    describe("DEFAULT_RETRY_CONFIG", () => {
+      it("has expected default values", () => {
+        expect(DEFAULT_RETRY_CONFIG.maxRetries).toBe(5);
+        expect(DEFAULT_RETRY_CONFIG.baseDelayMs).toBe(1000);
+        expect(DEFAULT_RETRY_CONFIG.maxDelayMs).toBe(60000);
+        expect(DEFAULT_RETRY_CONFIG.backoffMultiplier).toBe(2);
+      });
+    });
+
+    describe("calculateBackoffDelay", () => {
+      it("calculates exponential delay for first retry", () => {
+        const delay = calculateBackoffDelay(0, DEFAULT_RETRY_CONFIG);
+        // Base delay is 1000ms, jitter adds ±10%
+        expect(delay).toBeGreaterThanOrEqual(900);
+        expect(delay).toBeLessThanOrEqual(1100);
+      });
+
+      it("calculates exponential delay for second retry", () => {
+        const delay = calculateBackoffDelay(1, DEFAULT_RETRY_CONFIG);
+        // 1000 * 2^1 = 2000ms, jitter adds ±10%
+        expect(delay).toBeGreaterThanOrEqual(1800);
+        expect(delay).toBeLessThanOrEqual(2200);
+      });
+
+      it("caps delay at maxDelayMs", () => {
+        const config = { ...DEFAULT_RETRY_CONFIG, maxDelayMs: 5000 };
+        const delay = calculateBackoffDelay(10, config);
+        // Should be capped at 5000ms + jitter
+        expect(delay).toBeLessThanOrEqual(5500);
+      });
+    });
+
+    describe("isRetryableError", () => {
+      it("returns true for 500 status codes", () => {
+        expect(isRetryableError(500)).toBe(true);
+        expect(isRetryableError(502)).toBe(true);
+        expect(isRetryableError(503)).toBe(true);
+        expect(isRetryableError(504)).toBe(true);
+      });
+
+      it("returns true for 429 (rate limited)", () => {
+        expect(isRetryableError(429)).toBe(true);
+      });
+
+      it("returns false for 4xx errors (except 429)", () => {
+        expect(isRetryableError(400)).toBe(false);
+        expect(isRetryableError(401)).toBe(false);
+        expect(isRetryableError(403)).toBe(false);
+        expect(isRetryableError(404)).toBe(false);
+      });
+
+      it("returns false for success codes", () => {
+        expect(isRetryableError(200)).toBe(false);
+        expect(isRetryableError(201)).toBe(false);
+        expect(isRetryableError(204)).toBe(false);
+      });
+    });
+
+    describe("retry behavior in triggerWebhooks", () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it("retries on 500 error and succeeds", async () => {
+        mockFetch
+          .mockResolvedValueOnce({ ok: false, status: 500 })
+          .mockResolvedValueOnce({ ok: false, status: 500 })
+          .mockResolvedValueOnce({ ok: true, status: 200 });
+
+        const webhook = createWebhook({
+          name: "Retry Webhook",
+          url: "https://example.com/webhook",
+          events: ["scan.completed"],
+        });
+
+        const triggerPromise = triggerWebhooks("scan.completed", {
+          scanUrl: "https://test.com",
+          score: 85,
+          totalIssues: 5,
+          critical: 0,
+          serious: 1,
+          moderate: 2,
+          minor: 2,
+        });
+
+        // Advance timers to process all retries
+        await vi.runAllTimersAsync();
+        await triggerPromise;
+
+        // Should have retried twice before success
+        expect(mockFetch).toHaveBeenCalledTimes(3);
+
+        const updated = getWebhookById(webhook.id);
+        expect(updated?.lastStatus).toBe("success");
+      });
+
+      it("does not retry on 404 error", async () => {
+        mockFetch.mockResolvedValue({ ok: false, status: 404 });
+
+        const webhook = createWebhook({
+          name: "No Retry Webhook",
+          url: "https://example.com/webhook",
+          events: ["scan.completed"],
+        });
+
+        const triggerPromise = triggerWebhooks("scan.completed", {
+          scanUrl: "https://test.com",
+          score: 85,
+          totalIssues: 5,
+          critical: 0,
+          serious: 1,
+          moderate: 2,
+          minor: 2,
+        });
+
+        await vi.runAllTimersAsync();
+        await triggerPromise;
+
+        // Should not retry on 404
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+
+        const updated = getWebhookById(webhook.id);
+        expect(updated?.lastStatus).toBe("failed");
+      });
+
+      it("fails after max retries on persistent 500 error", async () => {
+        // Always return 500
+        mockFetch.mockResolvedValue({ ok: false, status: 500 });
+
+        const webhook = createWebhook({
+          name: "Persistent Failure",
+          url: "https://example.com/webhook",
+          events: ["scan.completed"],
+        });
+
+        const triggerPromise = triggerWebhooks("scan.completed", {
+          scanUrl: "https://test.com",
+          score: 85,
+          totalIssues: 5,
+          critical: 0,
+          serious: 1,
+          moderate: 2,
+          minor: 2,
+        });
+
+        await vi.runAllTimersAsync();
+        await triggerPromise;
+
+        // Should have made 6 attempts (1 initial + 5 retries)
+        expect(mockFetch).toHaveBeenCalledTimes(6);
+
+        const updated = getWebhookById(webhook.id);
+        expect(updated?.lastStatus).toBe("failed");
+      });
+
+      it("retries on network errors", async () => {
+        mockFetch
+          .mockRejectedValueOnce(new Error("Network error"))
+          .mockRejectedValueOnce(new Error("Connection refused"))
+          .mockResolvedValueOnce({ ok: true, status: 200 });
+
+        const webhook = createWebhook({
+          name: "Network Error Retry",
+          url: "https://example.com/webhook",
+          events: ["scan.completed"],
+        });
+
+        const triggerPromise = triggerWebhooks("scan.completed", {
+          scanUrl: "https://test.com",
+          score: 85,
+          totalIssues: 5,
+          critical: 0,
+          serious: 1,
+          moderate: 2,
+          minor: 2,
+        });
+
+        await vi.runAllTimersAsync();
+        await triggerPromise;
+
+        // Should have retried twice before success
+        expect(mockFetch).toHaveBeenCalledTimes(3);
+
+        const updated = getWebhookById(webhook.id);
+        expect(updated?.lastStatus).toBe("success");
+      });
+
+      it("retries on 429 rate limit", async () => {
+        mockFetch
+          .mockResolvedValueOnce({ ok: false, status: 429 })
+          .mockResolvedValueOnce({ ok: true, status: 200 });
+
+        const webhook = createWebhook({
+          name: "Rate Limited Webhook",
+          url: "https://example.com/webhook",
+          events: ["scan.completed"],
+        });
+
+        const triggerPromise = triggerWebhooks("scan.completed", {
+          scanUrl: "https://test.com",
+          score: 85,
+          totalIssues: 5,
+          critical: 0,
+          serious: 1,
+          moderate: 2,
+          minor: 2,
+        });
+
+        await vi.runAllTimersAsync();
+        await triggerPromise;
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+
+        const updated = getWebhookById(webhook.id);
+        expect(updated?.lastStatus).toBe("success");
       });
     });
   });

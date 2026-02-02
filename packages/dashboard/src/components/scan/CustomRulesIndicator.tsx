@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../../utils/api';
+import { ClipboardList } from 'lucide-react';
 
 interface RulesStatus {
   total: number;
@@ -48,7 +49,7 @@ export function CustomRulesIndicator() {
         color: status.enabled > 0 ? '#1e40af' : '#64748b',
       }}
     >
-      <span>📋</span>
+      <ClipboardList size={14} />
       <span>
         {status.enabled} custom rule{status.enabled !== 1 ? 's' : ''} enabled
       </span>

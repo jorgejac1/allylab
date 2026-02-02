@@ -1,0 +1,57 @@
+[
+  {
+    "id": "user_admin",
+    "email": "admin@acme.com",
+    "name": "Alice Admin",
+    "role": "admin",
+    "organizationId": "org_acme",
+    "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=AA",
+    "createdAt": "2026-01-31T22:20:22.474Z",
+    "isActive": true,
+    "passwordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+  },
+  {
+    "id": "user_manager",
+    "email": "manager@acme.com",
+    "name": "Mike Manager",
+    "role": "manager",
+    "organizationId": "org_acme",
+    "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=MM",
+    "createdAt": "2026-01-31T22:20:22.474Z",
+    "isActive": true,
+    "passwordHash": "866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5"
+  },
+  {
+    "id": "user_dev",
+    "email": "dev@acme.com",
+    "name": "Dana Developer",
+    "role": "developer",
+    "organizationId": "org_acme",
+    "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=DD",
+    "createdAt": "2026-01-31T22:20:22.474Z",
+    "isActive": true,
+    "passwordHash": "87274af01876341455b32d805946f272871bb42effa6604dccf28bb027afa82b"
+  },
+  {
+    "id": "user_viewer",
+    "email": "viewer@acme.com",
+    "name": "Victor Viewer",
+    "role": "viewer",
+    "organizationId": "org_acme",
+    "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=VV",
+    "createdAt": "2026-01-31T22:20:22.474Z",
+    "isActive": true,
+    "passwordHash": "65375049b9e4d7cad6c9ba286fdeb9394b28135a3e84136404cfccfdcc438894"
+  },
+  {
+    "id": "user_compliance",
+    "email": "compliance@acme.com",
+    "name": "Carla Compliance",
+    "role": "compliance",
+    "organizationId": "org_acme",
+    "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=CC",
+    "createdAt": "2026-01-31T22:20:22.474Z",
+    "isActive": true,
+    "passwordHash": "53a962ecd68923f6543935bee766e0d4a4abd57b0d8ed0bd00187b267ee24491"
+  }
+]

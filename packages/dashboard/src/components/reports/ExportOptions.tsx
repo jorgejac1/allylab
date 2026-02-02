@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Card, Button, Modal } from '../ui';
 import type { SavedScan } from '../../types';
 import { exportToCSV, exportToJSON } from '../../utils/export';
+import { Upload, FileText, Book, BarChart3, Wrench } from 'lucide-react';
 
 interface ExportOptionsProps {
   scans: SavedScan[];
@@ -41,13 +43,13 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
   return (
     <>
       <Card>
-        <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          📤 Export Options
+        <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <Upload size={18} /> Export Options
         </h4>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <ExportButton
-            icon="📄"
+            icon={<FileText size={24} />}
             title="Export Current Scan"
             description="Download the selected scan results"
             disabled={!selectedScan}
@@ -58,7 +60,7 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
           />
 
           <ExportButton
-            icon="📚"
+            icon={<Book size={24} />}
             title="Export All Scans"
             description={`Download all ${scans.length} scan results`}
             disabled={scans.length === 0}
@@ -80,9 +82,9 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
           <Button
             variant="secondary"
             onClick={() => handleExport('csv')}
-            style={{ justifyContent: 'flex-start', padding: 16 }}
+            style={{ justifyContent: 'flex-start', padding: 16, display: 'flex', alignItems: 'center' }}
           >
-            <span style={{ marginRight: 12 }}>📊</span>
+            <span style={{ marginRight: 12 }}><BarChart3 size={20} /></span>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 600 }}>CSV Format</div>
               <div style={{ fontSize: 12, color: '#64748b' }}>
@@ -94,9 +96,9 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
           <Button
             variant="secondary"
             onClick={() => handleExport('json')}
-            style={{ justifyContent: 'flex-start', padding: 16 }}
+            style={{ justifyContent: 'flex-start', padding: 16, display: 'flex', alignItems: 'center' }}
           >
-            <span style={{ marginRight: 12 }}>🔧</span>
+            <span style={{ marginRight: 12 }}><Wrench size={20} /></span>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontWeight: 600 }}>JSON Format</div>
               <div style={{ fontSize: 12, color: '#64748b' }}>
@@ -117,7 +119,7 @@ function ExportButton({
   disabled,
   onClick,
 }: {
-  icon: string;
+  icon: ReactNode;
   title: string;
   description: string;
   disabled?: boolean;
@@ -141,7 +143,7 @@ function ExportButton({
         width: '100%',
       }}
     >
-      <span style={{ fontSize: 24 }}>{icon}</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
       <div>
         <div style={{ fontWeight: 600, color: '#0f172a' }}>{title}</div>
         <div style={{ fontSize: 12, color: '#64748b' }}>{description}</div>

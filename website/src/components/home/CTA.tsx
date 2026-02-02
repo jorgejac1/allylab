@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { Shield } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function CTA() {
   return (
@@ -21,15 +22,19 @@ export function CTA() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <Button size="lg">Start Free Trial</Button>
-          <Button variant="secondary" size="lg">
-            Schedule Demo
-          </Button>
+          <Link href="/contact">
+            <Button size="lg">Get Early Access</Button>
+          </Link>
+          <Link href="/contact">
+            <Button variant="secondary" size="lg">
+              Schedule Demo
+            </Button>
+          </Link>
         </div>
 
         <div className="inline-flex items-center gap-2 text-sm text-text-muted">
           <Shield size={16} className="text-primary" />
-          SOC 2 Type II Certified • GDPR Compliant • Enterprise Ready
+          Open Source • Self-Hostable • Enterprise Ready
         </div>
       </motion.div>
     </section>

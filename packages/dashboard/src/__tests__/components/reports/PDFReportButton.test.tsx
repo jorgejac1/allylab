@@ -85,14 +85,14 @@ describe("reports/PDFReportButton", () => {
     mockGenerateExec.mockResolvedValue(undefined);
     render(<PDFReportButton data={pdfData} sites={[site]} topIssues={[issue]} companyName="Acme" />);
 
-    const btn = screen.getAllByRole("button", { name: "📄 Export PDF" })[0];
+    const btn = screen.getAllByRole("button", { name: /Export PDF/ })[0];
     fireEvent.click(btn);
     expect(btn).toBeDisabled();
     await waitFor(() => expect(mockGenerateExec).toHaveBeenCalled());
     expect(mockToast.success).toHaveBeenCalledWith("PDF report generated successfully");
 
     mockGenerateExec.mockRejectedValue(new Error("boom"));
-    fireEvent.click(screen.getByRole("button", { name: "📄 Export PDF" }));
+    fireEvent.click(screen.getByRole("button", { name: /Export PDF/ }));
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("Failed to generate PDF. Please try again."));
   });
 

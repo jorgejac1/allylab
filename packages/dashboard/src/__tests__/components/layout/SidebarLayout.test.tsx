@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { SidebarLayout } from "../../../components/layout/SidebarLayout";
+import { Search, BarChart3 } from "lucide-react";
 
 vi.mock("../../../components/layout/Sidebar", () => ({
   Sidebar: ({
@@ -31,8 +32,8 @@ describe("layout/SidebarLayout", () => {
     {
       title: "Main",
       items: [
-        { id: "scan", label: "Scan", icon: "🔍" },
-        { id: "history", label: "History", icon: "📊" },
+        { id: "scan", label: "Scan", icon: <Search size={18} /> },
+        { id: "history", label: "History", icon: <BarChart3 size={18} /> },
       ],
     },
   ];
@@ -149,5 +150,55 @@ describe("layout/SidebarLayout", () => {
 
     expect(screen.getByTestId("sidebar")).toBeInTheDocument();
     expect(screen.getByText("Content")).toBeInTheDocument();
+  });
+
+  describe("Skip Links", () => {
+    it("renders skip to main content link", () => {
+      render(
+        <SidebarLayout
+          groups={groups}
+          activeItem="scan"
+          onItemClick={vi.fn()}
+        >
+          <div>Content</div>
+        </SidebarLayout>
+      );
+
+      const skipLink = screen.getByText("Skip to main content");
+      expect(skipLink).toBeInTheDocument();
+      expect(skipLink).toHaveAttribute("href", "#main-content");
+    });
+
+    it("renders skip to navigation link", () => {
+      render(
+        <SidebarLayout
+          groups={groups}
+          activeItem="scan"
+          onItemClick={vi.fn()}
+        >
+          <div>Content</div>
+        </SidebarLayout>
+      );
+
+      const skipLink = screen.getByText("Skip to navigation");
+      expect(skipLink).toBeInTheDocument();
+      expect(skipLink).toHaveAttribute("href", "#main-navigation");
+    });
+
+    it("main content has id for skip link target", () => {
+      render(
+        <SidebarLayout
+          groups={groups}
+          activeItem="scan"
+          onItemClick={vi.fn()}
+        >
+          <div>Content</div>
+        </SidebarLayout>
+      );
+
+      const mainContent = document.getElementById("main-content");
+      expect(mainContent).toBeInTheDocument();
+      expect(mainContent?.tagName.toLowerCase()).toBe("main");
+    });
   });
 });

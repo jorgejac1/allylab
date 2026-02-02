@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Modal, Button } from "../ui";
+import { Link2, PartyPopper } from "lucide-react";
 import { useGitHub } from "../../hooks/useGitHub";
 import { usePRTracking } from "../../hooks/usePRTracking";
 import { getApiBase } from "../../utils/api";
@@ -60,7 +61,6 @@ export function BatchPRModal({
   // Initialize findings ONCE when modal opens
   useEffect(() => {
     if (isOpen && findings.length > 0 && !isInitializedRef.current) {
-      console.log('[BatchPRModal] Initializing with', findings.length, 'findings');
       isInitializedRef.current = true;
       
       setFindingsWithFixes(
@@ -151,8 +151,6 @@ export function BatchPRModal({
     const unfixed = currentFindings
       .map((f, i) => ({ ...f, index: i }))
       .filter((f) => !f.fix && !f.isGenerating);
-
-    console.log('[BatchPRModal] Generating all fixes, count:', unfixed.length);
 
     for (const item of unfixed) {
       await generateFix(item.index);
@@ -322,7 +320,6 @@ export function BatchPRModal({
   };
 
   const handleClose = () => {
-    console.log('[BatchPRModal] Closing modal');
     setStep("fixes");
     setSelectedRepo(null);
     setSelectedBranch("");
@@ -349,7 +346,7 @@ export function BatchPRModal({
         title="Create Batch Pull Request"
       >
         <div style={{ textAlign: "center", padding: 20 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔗</div>
+          <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}><Link2 size={48} style={{ color: "#64748b" }} /></div>
           <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>
             GitHub Not Connected
           </h3>
@@ -371,7 +368,7 @@ export function BatchPRModal({
       case "files":
         return "Configure Files & PR";
       case "confirm":
-        return "🎉 Pull Request Created!";
+        return <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PartyPopper size={20} /> Pull Request Created!</span>;
     }
   };
 

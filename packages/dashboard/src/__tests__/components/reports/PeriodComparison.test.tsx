@@ -30,6 +30,49 @@ vi.mock("../../../components/charts", () => ({
   ScoreCircle: ({ score }: { score: number }) => <div data-testid="score-circle">{score}</div>,
 }));
 
+vi.mock("../../../components/reports/comparison", () => ({
+  DateRangeCard: ({ label, range }: { label: string; range: string }) => (
+    <div data-testid="date-range-card">{label}: {range}</div>
+  ),
+  PeriodCard: ({ label, score }: { label: string; score: number }) => (
+    <div data-testid="period-card">{label}: {score}</div>
+  ),
+  ChangeIndicator: ({ scoreChange, issueChange, scorePercent }: { scoreChange: number; issueChange: number; scorePercent: number }) => {
+    const isImproved = scoreChange > 0;
+    const isDeclined = scoreChange < 0;
+    const isNeutral = scoreChange === 0;
+    return (
+      <div data-testid="change-indicator">
+        <div style={{ color: isImproved ? '#10b981' : isDeclined ? '#ef4444' : '#64748b' }}>
+          {isImproved && <span className="lucide-trending-up" />}
+          {isDeclined && <span className="lucide-trending-down" />}
+          {isNeutral && <span className="lucide-minus" />}
+        </div>
+        <div style={{ color: isImproved ? '#10b981' : isDeclined ? '#ef4444' : '#64748b' }}>
+          {scoreChange > 0 ? '+' : ''}{scoreChange}
+        </div>
+        <div>({scorePercent > 0 ? '+' : ''}{scorePercent.toFixed(1)}%)</div>
+        <div style={{ color: issueChange < 0 ? '#10b981' : issueChange > 0 ? '#ef4444' : '#64748b' }}>
+          {issueChange < 0 ? '↓' : issueChange > 0 ? '↑' : ''} {Math.abs(issueChange).toFixed(1)} issues
+        </div>
+      </div>
+    );
+  },
+  SeverityChangeCard: ({ label, before, after }: { label: string; before: number; after: number }) => (
+    <div data-testid="severity-change-card">{label}: {before} → {after}</div>
+  ),
+  SummaryBanner: ({ comparison }: { comparison: { score: { change: number } } }) => (
+    <div data-testid="summary-banner">Score change: {comparison.score.change}</div>
+  ),
+}));
+
+vi.mock("../../../hooks", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as object),
+  };
+});
+
 const scans: SavedScan[] = [
   {
     id: "s1",
@@ -131,8 +174,8 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
 
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
-    await waitFor(() => expect(screen.getByText("⚠️ Failed to fetch comparison data")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
+    await waitFor(() => expect(screen.getByText(/Failed to fetch comparison data/)).toBeInTheDocument());
   });
 
   it("shows API error when success is false", async () => {
@@ -143,8 +186,8 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
 
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
-    await waitFor(() => expect(screen.getByText("⚠️ boom")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
+    await waitFor(() => expect(screen.getByText(/boom/)).toBeInTheDocument());
   });
 
   it("falls back to generic error on unknown rejection", async () => {
@@ -152,9 +195,9 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
 
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
     await waitFor(() =>
-      expect(screen.getByText("⚠️ Failed to compare periods")).toBeInTheDocument()
+      expect(screen.getByText(/Failed to compare periods/)).toBeInTheDocument()
     );
   });
 
@@ -177,15 +220,17 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
-    expect(screen.getByText("📉")).toBeInTheDocument();
+    // TrendingDown icon (lucide-react) for decline state
+    expect(document.querySelector(".lucide-trending-down")).toBeInTheDocument();
     const scoreChangeNode = screen.getByText("-5");
     expect(scoreChangeNode).toHaveStyle({ color: "#ef4444" });
     const issueChangeNode = screen.getByText(/2\.0 issues/);
     expect(issueChangeNode).toHaveStyle({ color: "#ef4444" });
-    expect(issueChangeNode.textContent?.trim().startsWith("↑")).toBe(true);
+    // Issue change still uses text character ↑ for increases
+    expect(issueChangeNode.textContent?.includes("↑")).toBe(true);
   });
 
   it("shows neutral change indicator when values are flat", async () => {
@@ -207,10 +252,10 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
-    const neutralIcon = document.querySelector('div[style*="font-size: 32px"][style*="line-height: 1"]');
+    const neutralIcon = document.querySelector(".lucide-minus");
     expect(neutralIcon).toBeInTheDocument();
     const scoreChangeNode = screen.getByText("0");
     expect(scoreChangeNode).toHaveStyle({ color: "#64748b" });
@@ -241,7 +286,7 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     useStateSpy.mockRestore();
   });
@@ -256,7 +301,7 @@ describe("reports/PeriodComparison", () => {
     // Render with initialPreset="custom" to hit the default case in the switch
     render(<PeriodComparison scans={scans} onClose={() => {}} initialPreset="custom" />);
 
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
     // Verify the default case was executed with 30-day range
@@ -279,7 +324,7 @@ describe("reports/PeriodComparison", () => {
     global.fetch = fetchMock as unknown as typeof fetch;
     render(<PeriodComparison scans={scans} onClose={() => {}} />);
 
-    fireEvent.click(screen.getAllByText("📊 Compare Periods")[0]);
-    await waitFor(() => expect(screen.getByText("⚠️ Unknown error")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Compare Periods/i }));
+    await waitFor(() => expect(screen.getByText(/Unknown error/)).toBeInTheDocument());
   });
 });

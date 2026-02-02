@@ -16,7 +16,8 @@ vi.mock("../../../components/ui", () => ({
 describe("charts/GoalProgress", () => {
   it("renders goal progress title", () => {
     render(<GoalProgress currentScore={75} goalScore={90} />);
-    expect(screen.getByText("🎯 Goal Progress")).toBeInTheDocument();
+    // Target icon is now used instead of emoji
+    expect(screen.getByText("Goal Progress")).toBeInTheDocument();
   });
 
   it("displays points to goal when not reached", () => {
@@ -27,7 +28,7 @@ describe("charts/GoalProgress", () => {
   it("displays Goal Reached when current >= goal", () => {
     render(<GoalProgress currentScore={95} goalScore={90} />);
     expect(screen.getByText("Goal Reached!")).toBeInTheDocument();
-    expect(screen.getByText("✓")).toBeInTheDocument();
+    // Check icon is now used instead of emoji - no longer checking for "✓" text
   });
 
   it("displays current score", () => {

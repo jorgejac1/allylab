@@ -3,36 +3,41 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { Sidebar } from "../../../components/layout/Sidebar";
+import { Search, BarChart3, Settings, X } from "lucide-react";
 
 describe("layout/Sidebar", () => {
   const groups = [
     {
       title: "Main",
       items: [
-        { id: "scan", label: "Scan", icon: "🔍" },
-        { id: "history", label: "History", icon: "📊", badge: 5 },
+        { id: "scan", label: "Scan", icon: <Search size={18} data-testid="icon-scan" /> },
+        { id: "history", label: "History", icon: <BarChart3 size={18} data-testid="icon-history" />, badge: 5 },
       ],
     },
     {
       items: [
-        { id: "settings", label: "Settings", icon: "⚙️" },
-        { id: "disabled", label: "Disabled", icon: "❌", disabled: true },
+        { id: "settings", label: "Settings", icon: <Settings size={18} data-testid="icon-settings" /> },
+        { id: "disabled", label: "Disabled", icon: <X size={18} data-testid="icon-disabled" />, disabled: true },
       ],
     },
   ];
 
   it("renders logo and app name when not collapsed", () => {
-    render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} />);
+    const { container } = render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} />);
 
-    expect(screen.getByText("🔬")).toBeInTheDocument();
+    // Logo is now a lucide-react Microscope icon (SVG)
+    const logoSvg = container.querySelector("svg.lucide-microscope");
+    expect(logoSvg).toBeInTheDocument();
     expect(screen.getByText("AllyLab")).toBeInTheDocument();
     expect(screen.getByText("Accessibility Scanner")).toBeInTheDocument();
   });
 
   it("hides app name when collapsed", () => {
-    render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} collapsed={true} />);
+    const { container } = render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} collapsed={true} />);
 
-    expect(screen.getByText("🔬")).toBeInTheDocument();
+    // Logo is now a lucide-react Microscope icon (SVG)
+    const logoSvg = container.querySelector("svg.lucide-microscope");
+    expect(logoSvg).toBeInTheDocument();
     expect(screen.queryByText("AllyLab")).not.toBeInTheDocument();
     expect(screen.queryByText("Accessibility Scanner")).not.toBeInTheDocument();
   });
@@ -168,7 +173,8 @@ describe("layout/Sidebar", () => {
   it("adds title attribute to items when collapsed", () => {
     render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} collapsed={true} />);
 
-    const scanButton = screen.getByText("🔍").closest("button");
+    // Use aria-label to find the button since icons are now React components
+    const scanButton = screen.getByRole("button", { name: "Scan" });
     expect(scanButton).toHaveAttribute("title", "Scan");
   });
 

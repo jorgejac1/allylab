@@ -1,13 +1,12 @@
 import type { FalsePositiveEntry, TrackedFinding } from '../types';
-
-const STORAGE_KEY = 'allylab_false_positives';
+import { STORAGE_KEYS } from '../config';
 
 /**
  * Load all false positive entries from localStorage
  */
 export function loadFalsePositives(): FalsePositiveEntry[] {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(STORAGE_KEYS.FALSE_POSITIVES);
     return data ? JSON.parse(data) : [];
   } catch {
     return [];
@@ -18,7 +17,7 @@ export function loadFalsePositives(): FalsePositiveEntry[] {
  * Save false positive entries to localStorage
  */
 function saveFalsePositives(entries: FalsePositiveEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(STORAGE_KEYS.FALSE_POSITIVES, JSON.stringify(entries));
 }
 
 /**
@@ -107,5 +106,5 @@ export function getFalsePositiveCount(): number {
  * Clear all false positives
  */
 export function clearAllFalsePositives(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEYS.FALSE_POSITIVES);
 }

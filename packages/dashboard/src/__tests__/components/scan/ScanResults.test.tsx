@@ -8,7 +8,6 @@ import { exportToCSV, exportToJSON } from "../../../utils/export";
 
 let lastDrawerProps: {
   finding?: TrackedFinding;
-  onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
   onFalsePositiveChange?: () => void;
   onClose?: () => void;
   isOpen?: boolean;
@@ -29,7 +28,6 @@ vi.mock("../../../components/findings", () => ({
   TrackingStats: (props: { stats: TrackingStatsType }) => <div data-testid="tracking-stats">{props.stats.total}</div>,
   FindingDetailsDrawer: (props: {
     finding?: TrackedFinding;
-    onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
     onFalsePositiveChange?: () => void;
     onClose?: () => void;
     isOpen?: boolean;
@@ -37,7 +35,6 @@ vi.mock("../../../components/findings", () => ({
     lastDrawerProps = props;
     return props.isOpen ? (
       <div data-testid="drawer">
-        <button onClick={() => props.onGenerateFix?.(props.finding as TrackedFinding)}>fix</button>
         <button onClick={props.onFalsePositiveChange}>fp</button>
         <button onClick={props.onClose}>close</button>
       </div>
@@ -103,12 +100,12 @@ describe("components/scan/ScanResults", () => {
     const onRescan = vi.fn();
     render(<ScanResults scan={scan} trackingStats={trackingStats} onRescan={onRescan} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "📤 Export CSV" }));
+    fireEvent.click(screen.getByRole("button", { name: /Export CSV/ }));
     expect(exportToCSV).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "📤 Export JSON" }));
+    fireEvent.click(screen.getByRole("button", { name: /Export JSON/ }));
     expect(exportToJSON).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "🔄 Rescan" }));
+    fireEvent.click(screen.getByRole("button", { name: /Rescan/ }));
     expect(onRescan).toHaveBeenCalled();
 
     // Details drawer open/close
@@ -118,49 +115,17 @@ describe("components/scan/ScanResults", () => {
     expect(screen.queryByTestId("drawer")).toBeNull();
   });
 
-  it("handles generate fix and false positive change flows", async () => {
+  it("handles false positive change flow", async () => {
     vi.useRealTimers();
-    const scan = makeScan();
-    const onGenerateFix = vi.fn().mockResolvedValue(undefined);
-    render(<ScanResults scan={scan} trackingStats={trackingStats} onGenerateFix={onGenerateFix} />);
-
-    fireEvent.click(screen.getAllByTestId("findings-table")[0]);
-    const drawer = await screen.findByTestId("drawer");
-    // Debug assertion to ensure handler is wired
-    expect(lastDrawerProps).toBeDefined();
-    expect(typeof lastDrawerProps?.onGenerateFix).toBe("function");
-    if (lastDrawerProps?.finding && lastDrawerProps?.onGenerateFix) {
-      await lastDrawerProps.onGenerateFix(lastDrawerProps.finding);
-    }
-
-    fireEvent.click(within(drawer).getByText("fp"));
-    await waitFor(() => expect(screen.queryByTestId("drawer")).toBeNull());
-  });
-
-  it("uses default generate fix handler when none provided", () => {
     const scan = makeScan();
     render(<ScanResults scan={scan} trackingStats={trackingStats} />);
 
     fireEvent.click(screen.getAllByTestId("findings-table")[0]);
-    const drawer = screen.getByTestId("drawer");
-    fireEvent.click(within(drawer).getByText("fix"));
-    expect(screen.getByTestId("drawer")).toBeInTheDocument();
-  });
-
-  it("falls back to Promise.resolve when onGenerateFix is nullish", async () => {
-    const scan = makeScan();
-    render(
-      <ScanResults
-        scan={scan}
-        trackingStats={trackingStats}
-        onGenerateFix={null as unknown as () => Promise<void>}
-      />
-    );
-
-    fireEvent.click(screen.getAllByTestId("findings-table")[0]);
     const drawer = await screen.findByTestId("drawer");
-    fireEvent.click(within(drawer).getByText("fix"));
-    expect(screen.getByTestId("drawer")).toBeInTheDocument();
+    expect(lastDrawerProps).toBeDefined();
+
+    fireEvent.click(within(drawer).getByText("fp"));
+    await waitFor(() => expect(screen.queryByTestId("drawer")).toBeNull());
   });
 
   it("falls back to empty arrays when trackedFindings is missing", () => {

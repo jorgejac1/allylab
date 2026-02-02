@@ -17,6 +17,21 @@ vi.mock("../../utils/sse", () => ({
   sendSSE: (...args: unknown[]) => mockSendSSE(...args),
   endSSE: (...args: unknown[]) => mockEndSSE(...args),
 }));
+vi.mock("../../utils/url-validator", () => ({
+  validateUrlWithConfig: (url: string) => {
+    if (!url || url === "invalid") {
+      return { valid: false, error: "Invalid URL" };
+    }
+    return { valid: true, url: new URL(url) };
+  },
+}));
+vi.mock("../../config/env", () => ({
+  config: {
+    enableRateLimiting: false,
+    scanRateLimitMax: 10,
+    scanRateLimitTimeWindow: "1 minute",
+  },
+}));
 
 type RouteHandler = (
   req: { body: Record<string, unknown> },
@@ -24,7 +39,7 @@ type RouteHandler = (
 ) => Promise<unknown> | unknown;
 
 type FastifyMock = {
-  post: (path: string, handler: RouteHandler) => FastifyMock;
+  post: (path: string, ...args: unknown[]) => FastifyMock;
   routes: Map<string, RouteHandler>;
 };
 
@@ -43,8 +58,10 @@ type ReplyMock = {
 function createFastifyMock(): FastifyMock {
   const routes = new Map<string, RouteHandler>();
   const fastify: FastifyMock = {
-    post: ((path: string, handler: RouteHandler) => {
-      routes.set(path, handler);
+    post: ((path: string, ...args: unknown[]) => {
+      // Handler can be second or third argument (with options)
+      const handler = args.length > 1 ? args[1] : args[0];
+      routes.set(path, handler as RouteHandler);
       return fastify;
     }) as FastifyMock["post"],
     routes,
@@ -92,9 +109,10 @@ describe("routes/scan", () => {
     await handler({ body: {} }, reply);
 
     expect(reply.status).toHaveBeenCalledWith(400);
-    expect(reply.payload as Record<string, string>).toEqual({
-      error: "URL is required",
-    });
+    // Zod validation returns structured error
+    const payload = reply.payload as Record<string, unknown>;
+    expect(payload.success).toBe(false);
+    expect(payload.error).toBe("Validation failed");
     expect(mockEndSSE).not.toHaveBeenCalled();
   });
 

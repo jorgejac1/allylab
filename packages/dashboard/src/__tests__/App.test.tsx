@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import App from "../App";
 
@@ -25,7 +25,7 @@ vi.mock("../components/layout", () => ({
     apiStatus,
   }: {
     children: React.ReactNode;
-    groups: Array<{ title: string; items: Array<{ id: string; label: string; icon: string }> }>;
+    groups: Array<{ title: string; items: Array<{ id: string; label: string; icon: React.ReactNode }> }>;
     activeItem: string;
     onItemClick: (id: string) => void;
     apiStatus: string;
@@ -53,10 +53,11 @@ vi.mock("../components/layout", () => ({
       <div data-testid="content">{children}</div>
     </div>
   ),
+  UserSwitcher: () => <div data-testid="user-switcher">User Switcher</div>,
 }));
 
-// Mock page components
-vi.mock("../pages", () => ({
+// Mock page components - each lazy loaded separately
+vi.mock("../pages/ScanPage", () => ({
   ScanPage: ({
     currentScan,
     onScanComplete,
@@ -72,8 +73,17 @@ vi.mock("../pages", () => ({
       <button onClick={() => onScanComplete({ id: "test-scan" })}>Complete Scan</button>
     </div>
   ),
+}));
+
+vi.mock("../pages/SiteScanPage", () => ({
   SiteScanPage: () => <div data-testid="site-scan-page">Site Scan Page</div>,
+}));
+
+vi.mock("../pages/ReportsPage", () => ({
   ReportsPage: () => <div data-testid="reports-page">Reports Page</div>,
+}));
+
+vi.mock("../pages/ExecutivePage", () => ({
   ExecutivePage: ({ onDrillDown }: { onDrillDown: (target: { type: string; url?: string; ruleId?: string }) => void }) => (
     <div data-testid="executive-page">
       <button
@@ -90,9 +100,24 @@ vi.mock("../pages", () => ({
       </button>
     </div>
   ),
+}));
+
+vi.mock("../pages/BenchmarkPage", () => ({
   BenchmarkPage: () => <div data-testid="benchmark-page">Benchmark Page</div>,
+}));
+
+vi.mock("../pages/SettingsPage", () => ({
   SettingsPage: () => <div data-testid="settings-page">Settings Page</div>,
 }));
+
+// Clear localStorage before tests to ensure consistent state
+beforeEach(() => {
+  localStorage.clear();
+});
+
+// Note: We don't mock ../context or ../utils/permissions so the real
+// AppProvider and AuthProvider work correctly for navigation and auth state.
+// AuthProvider uses DEFAULT_USER (admin) which has access to all pages.
 
 describe("App", () => {
   beforeEach(() => {
@@ -118,47 +143,47 @@ describe("App", () => {
     expect(screen.getByTestId("nav-settings")).toBeInTheDocument();
   });
 
-  it("defaults to scan page", () => {
+  it("defaults to scan page", async () => {
     render(<App />);
-    expect(screen.getByTestId("scan-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     expect(screen.getByTestId("sidebar-layout")).toHaveAttribute("data-active", "scan");
   });
 
-  it("navigates to site-scan page", () => {
+  it("navigates to site-scan page", async () => {
     render(<App />);
     fireEvent.click(screen.getByTestId("nav-site-scan"));
-    expect(screen.getByTestId("site-scan-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("site-scan-page")).toBeInTheDocument());
   });
 
-  it("navigates to reports page", () => {
+  it("navigates to reports page", async () => {
     render(<App />);
     fireEvent.click(screen.getByTestId("nav-reports"));
-    expect(screen.getByTestId("reports-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("reports-page")).toBeInTheDocument());
   });
 
-  it("navigates to executive page", () => {
+  it("navigates to executive page", async () => {
     render(<App />);
     fireEvent.click(screen.getByTestId("nav-executive"));
-    expect(screen.getByTestId("executive-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
   });
 
-  it("navigates to benchmark page", () => {
+  it("navigates to benchmark page", async () => {
     render(<App />);
     fireEvent.click(screen.getByTestId("nav-benchmark"));
-    expect(screen.getByTestId("benchmark-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("benchmark-page")).toBeInTheDocument());
   });
 
-  it("navigates to settings page", () => {
+  it("navigates to settings page", async () => {
     render(<App />);
     fireEvent.click(screen.getByTestId("nav-settings"));
-    expect(screen.getByTestId("settings-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("settings-page")).toBeInTheDocument());
   });
 
-  it("ignores invalid navigation ids", () => {
+  it("ignores invalid navigation ids", async () => {
     render(<App />);
     // Navigate to a valid page first
     fireEvent.click(screen.getByTestId("nav-reports"));
-    expect(screen.getByTestId("reports-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("reports-page")).toBeInTheDocument());
 
     // Try to navigate with an invalid id - should be ignored
     fireEvent.click(screen.getByTestId("nav-invalid"));
@@ -169,8 +194,9 @@ describe("App", () => {
   });
 
 
-  it("updates currentScan when scan completes", () => {
+  it("updates currentScan when scan completes", async () => {
     render(<App />);
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     fireEvent.click(screen.getByText("Complete Scan"));
     expect(screen.getByTestId("has-scan")).toHaveTextContent("yes");
   });
@@ -199,55 +225,63 @@ describe("App", () => {
     expect(screen.queryByText("API Disconnected:")).not.toBeInTheDocument();
   });
 
-  it("handles site drill down from executive page", () => {
+  it("handles site drill down from executive page", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down site button
     fireEvent.click(screen.getByTestId("drill-down-site"));
     // Should navigate to scan page with drill down context
-    expect(screen.getByTestId("scan-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     expect(screen.getByTestId("drill-down")).toHaveTextContent("https://example.com");
   });
 
-  it("handles rule drill down from executive page", () => {
+  it("handles rule drill down from executive page", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down rule button
     fireEvent.click(screen.getByTestId("drill-down-rule"));
     // Should navigate to scan page with drill down context
-    expect(screen.getByTestId("scan-page")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     expect(screen.getByTestId("drill-down")).toHaveTextContent("color-contrast");
   });
 
-  it("shows drill down context banner for site drill down", () => {
+  it("shows drill down context banner for site drill down", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down site button
     fireEvent.click(screen.getByTestId("drill-down-site"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Should show drill down banner
     expect(screen.getByText(/Viewing: https:\/\/example\.com/)).toBeInTheDocument();
     expect(screen.getByText("Clear filter")).toBeInTheDocument();
   });
 
-  it("shows drill down context banner for rule drill down", () => {
+  it("shows drill down context banner for rule drill down", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down rule button
     fireEvent.click(screen.getByTestId("drill-down-rule"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Should show drill down banner
     expect(screen.getByText(/Filtering by rule: color-contrast/)).toBeInTheDocument();
   });
 
-  it("clears drill down context when Clear filter is clicked", () => {
+  it("clears drill down context when Clear filter is clicked", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down site button
     fireEvent.click(screen.getByTestId("drill-down-site"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Click clear filter
     fireEvent.click(screen.getByText("Clear filter"));
     // Drill down context should be cleared
@@ -255,30 +289,37 @@ describe("App", () => {
     expect(screen.queryByText("Clear filter")).not.toBeInTheDocument();
   });
 
-  it("clears drill down context when navigating away", () => {
+  it("clears drill down context when navigating away", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down site button
     fireEvent.click(screen.getByTestId("drill-down-site"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Navigate to reports
     fireEvent.click(screen.getByTestId("nav-reports"));
+    await waitFor(() => expect(screen.getByTestId("reports-page")).toBeInTheDocument());
     // Navigate back to scan
     fireEvent.click(screen.getByTestId("nav-scan"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Drill down should be cleared
     expect(screen.getByTestId("drill-down")).toHaveTextContent("null");
   });
 
-  it("does not show drill down banner on non-scan pages", () => {
+  it("does not show drill down banner on non-scan pages", async () => {
     render(<App />);
     // Navigate to executive page
     fireEvent.click(screen.getByTestId("nav-executive"));
+    await waitFor(() => expect(screen.getByTestId("executive-page")).toBeInTheDocument());
     // Click drill down site button
     fireEvent.click(screen.getByTestId("drill-down-site"));
+    await waitFor(() => expect(screen.getByTestId("scan-page")).toBeInTheDocument());
     // Should be on scan page with banner
     expect(screen.getByText(/Viewing:/)).toBeInTheDocument();
     // Navigate away and back to executive
     fireEvent.click(screen.getByTestId("nav-reports"));
+    await waitFor(() => expect(screen.getByTestId("reports-page")).toBeInTheDocument());
     // No drill down banner on reports page
     expect(screen.queryByText(/Viewing:/)).not.toBeInTheDocument();
   });
@@ -305,11 +346,13 @@ describe("App - NAV_GROUPS structure", () => {
 
   it("has correct icons for navigation items", () => {
     render(<App />);
-    expect(screen.getByText(/♿/)).toBeInTheDocument();
-    expect(screen.getByText(/🌐/)).toBeInTheDocument();
-    expect(screen.getByText(/📊/)).toBeInTheDocument();
-    expect(screen.getByText(/📈/)).toBeInTheDocument();
-    expect(screen.getByText(/🏆/)).toBeInTheDocument();
-    expect(screen.getByText(/⚙️/)).toBeInTheDocument();
+    // Icons are now lucide-react components (SVGs), so we verify nav items exist by their test IDs
+    // The mock renders icons as React elements, which become SVG elements in the DOM
+    expect(screen.getByTestId("nav-scan")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-site-scan")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-reports")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-executive")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-benchmark")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-settings")).toBeInTheDocument();
   });
 });

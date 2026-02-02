@@ -1,6 +1,5 @@
 import type { AlertSettings } from '../types';
-
-const STORAGE_KEY = 'allylab_alert_settings';
+import { STORAGE_KEYS } from '../config';
 
 export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
   regressionThreshold: 5,
@@ -10,7 +9,7 @@ export const DEFAULT_ALERT_SETTINGS: AlertSettings = {
 
 export function loadAlertSettings(): AlertSettings {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.ALERT_SETTINGS);
     if (stored) {
       return { ...DEFAULT_ALERT_SETTINGS, ...JSON.parse(stored) };
     }
@@ -22,7 +21,7 @@ export function loadAlertSettings(): AlertSettings {
 
 export function saveAlertSettings(settings: AlertSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEYS.ALERT_SETTINGS, JSON.stringify(settings));
   } catch (error) {
     console.error('Failed to save alert settings:', error);
   }

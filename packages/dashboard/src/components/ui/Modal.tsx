@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useCallback, useId, type ReactNode, type KeyboardEvent } from 'react';
 import { Button } from './Button';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -17,21 +17,112 @@ const SIZES = {
   xl: 800,
 };
 
-export function Modal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
+// Get all focusable elements within a container
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const elements = container.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  return Array.from(elements).filter(el => !el.hasAttribute('disabled'));
+}
+
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
   footer,
-  size = 'md' 
+  size = 'md'
 }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+  const titleId = useId();
+
+  // Store the element that triggered the modal and focus the modal
+  useEffect(() => {
+    if (isOpen) {
+      // Store current active element to restore focus later
+      previousActiveElement.current = document.activeElement as HTMLElement;
+
+      // Focus the modal container after render
+      requestAnimationFrame(() => {
+        modalRef.current?.focus();
+      });
+
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Restore focus when modal closes
+  useEffect(() => {
+    if (!isOpen && previousActiveElement.current) {
+      previousActiveElement.current.focus();
+      previousActiveElement.current = null;
+    }
+  }, [isOpen]);
+
+  // Handle keyboard events (Escape to close, Tab for focus trap)
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    // Close on Escape
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    // Focus trap on Tab
+    if (event.key === 'Tab' && modalRef.current) {
+      const focusableElements = getFocusableElements(modalRef.current);
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey) {
+        // Shift + Tab: if on first element, wrap to last
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab: if on last element, wrap to first
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  }, [onClose]);
+
+  // Handle backdrop click
+  const handleBackdropClick = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  // Prevent clicks inside modal from closing it
+  const handleModalClick = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+  }, []);
+
   if (!isOpen) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleBackdropClick}
+        aria-hidden="true"
         style={{
           position: 'fixed',
           top: 0,
@@ -46,6 +137,13 @@ export function Modal({
 
       {/* Modal */}
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        onClick={handleModalClick}
         style={{
           position: 'fixed',
           top: '50%',
@@ -62,6 +160,7 @@ export function Modal({
           flexDirection: 'column',
           overflow: 'hidden',
           animation: 'scaleIn 0.2s ease-out',
+          outline: 'none',
         }}
       >
         <style>{`
@@ -85,9 +184,11 @@ export function Modal({
             borderBottom: '1px solid #e2e8f0',
           }}
         >
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{title}</h3>
+          <h3 id={titleId} style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{title}</h3>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close modal"
             style={{
               background: 'none',
               border: 'none',
@@ -162,8 +263,8 @@ export function ConfirmModal({
           <Button variant="secondary" onClick={onClose} disabled={isLoading}>
             {cancelLabel}
           </Button>
-          <Button 
-            variant={variant === 'danger' ? 'danger' : 'primary'} 
+          <Button
+            variant={variant === 'danger' ? 'danger' : 'primary'}
             onClick={onConfirm}
             disabled={isLoading}
           >

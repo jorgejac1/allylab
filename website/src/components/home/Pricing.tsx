@@ -9,14 +9,14 @@ import Link from "next/link";
 
 const plans = [
   {
-    name: "Starter",
+    name: "Free",
     price: "$0",
-    period: "/ month",
+    period: "forever",
     description: "Perfect for individuals",
     features: [
-      "100 page scans / month",
-      "WCAG 2.1 Level AA",
-      "Basic AI suggestions",
+      "100 scans / month",
+      "WCAG 2.1 AA testing",
+      "AI fix suggestions (10/mo)",
       "CSV export",
     ],
     cta: "Get Started Free",
@@ -24,15 +24,15 @@ const plans = [
     featured: false,
   },
   {
-    name: "Professional",
-    price: "$99",
+    name: "Pro",
+    price: "$49",
     period: "/ month",
     description: "For growing teams",
     features: [
-      "Unlimited page scans",
-      "WCAG 2.2 Level AAA",
-      "Full AI-powered fixes",
-      "GitHub PR integration",
+      "Unlimited scans",
+      "WCAG 2.2 AA testing",
+      "Unlimited AI fixes",
+      "GitHub & GitLab integration",
       "Scheduled scans",
       "Priority support",
     ],

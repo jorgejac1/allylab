@@ -3,6 +3,7 @@ import { Button, Toast } from '../ui';
 import { useToast } from '../../hooks';
 import { generateExecutiveReportPDF } from '../../utils/pdfExport';
 import type { PDFDashboardData, SiteStats, TopIssue } from '../../types/executive';
+import { Loader2, FileText } from 'lucide-react';
 
 interface PDFReportButtonProps {
   data: PDFDashboardData;
@@ -51,7 +52,7 @@ export function PDFReportButton({
         onClick={handleExport}
         disabled={isGenerating || sites.length === 0}
       >
-        {isGenerating ? '⏳ Generating...' : '📄 Export PDF'}
+        {isGenerating ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Generating...</> : <><FileText size={14} style={{ marginRight: 6 }} />Export PDF</>}
       </Button>
     </>
   );

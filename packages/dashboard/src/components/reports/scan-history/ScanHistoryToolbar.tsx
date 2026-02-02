@@ -3,6 +3,7 @@ import { DateRangePicker } from './DateRangePicker';
 import { FilterTag } from './FilterTag';
 import { formatDateRangeLabel } from '../../../utils/dateRange';
 import type { DateRange, DateRangeOption, SortOption } from '../../../types';
+import { BarChart3 } from 'lucide-react';
 
 interface ScanHistoryToolbarProps {
   // URL filter
@@ -98,11 +99,11 @@ export function ScanHistoryToolbar({
             value={dateRangeOption}
             onChange={e => onDateRangeOptionChange(e.target.value as DateRangeOption)}
             options={[
-              { value: 'all', label: '📅 All Time' },
-              { value: '7days', label: '📅 Last 7 Days' },
-              { value: '30days', label: '📅 Last 30 Days' },
-              { value: '90days', label: '📅 Last 90 Days' },
-              { value: 'custom', label: '📅 Custom Range' },
+              { value: 'all', label: 'All Time' },
+              { value: '7days', label: 'Last 7 Days' },
+              { value: '30days', label: 'Last 30 Days' },
+              { value: '90days', label: 'Last 90 Days' },
+              { value: 'custom', label: 'Custom Range' },
             ]}
             style={{ minWidth: 160 }}
           />
@@ -126,8 +127,8 @@ export function ScanHistoryToolbar({
                   </Button>
                 </>
               ) : (
-                <Button variant="secondary" size="sm" onClick={onCompareModeToggle}>
-                  📊 Compare Scans
+                <Button variant="secondary" size="sm" onClick={onCompareModeToggle} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <BarChart3 size={14} /> Compare Scans
                 </Button>
               )}
             </>

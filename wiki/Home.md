@@ -7,6 +7,8 @@ Welcome to the AllyLab documentation wiki! AllyLab is an enterprise-grade web ac
   <img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT License">
   <img src="https://img.shields.io/badge/TypeScript-5.3-blue" alt="TypeScript">
   <img src="https://img.shields.io/badge/React-19-blue" alt="React 19">
+  <img src="https://img.shields.io/badge/Tests-1960%2B-brightgreen" alt="1960+ Tests">
+  <img src="https://img.shields.io/badge/Coverage-95%25-brightgreen" alt="95% Coverage">
 </p>
 
 ---
@@ -23,8 +25,11 @@ Welcome to the AllyLab documentation wiki! AllyLab is an enterprise-grade web ac
 - [[Custom Rules]] - Create custom accessibility checks
 - [[Historical Trends]] - Track accessibility over time
 
+### Platform
+- [[User Roles & Permissions|User-Roles-Permissions]] - Pricing tiers, user types, and access control
+
 ### Integrations
-- [[Integrations]] - GitHub, JIRA, Slack, Teams
+- [[Integrations]] - GitHub, GitLab, JIRA, Slack, Teams
 - [[CI/CD Integration]] - GitHub Actions, GitLab CI, Harness
 
 ### Technical Reference
@@ -57,7 +62,7 @@ AllyLab is a comprehensive accessibility testing platform that helps development
 - **Track progress** with historical trends and analytics
 - **Automate testing** with CI/CD integration and scheduled scans
 - **Create custom rules** to extend built-in accessibility checks
-- **Integrate with tools** like GitHub, JIRA, Slack, and Teams
+- **Integrate with tools** like GitHub, GitLab, JIRA, Slack, and Teams
 
 ---
 
@@ -91,8 +96,8 @@ AllyLab is a comprehensive accessibility testing platform that helps development
 ### Fixes
 - AI-powered fix suggestions
 - Framework-specific code (React, Vue, Angular)
-- GitHub PR creation
-- Batch PR for multiple fixes
+- GitHub PR / GitLab MR creation
+- Batch PR/MR for multiple fixes
 
 ### Reporting
 - Executive dashboards

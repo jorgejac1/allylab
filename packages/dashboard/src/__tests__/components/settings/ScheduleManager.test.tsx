@@ -70,8 +70,8 @@ describe("settings/ScheduleManager", () => {
     render(<ScheduleManager />);
 
     fireEvent.change(screen.getAllByPlaceholderText("https://example.com")[0], { target: { value: "https://a.com" } });
-    fireEvent.click(screen.getAllByRole("button", { name: "+ Add Schedule" })[0]);
-    await waitFor(() => expect(scheduleFns.createSchedule).toHaveBeenCalledWith("https://a.com", "daily"));
+    fireEvent.click(screen.getAllByRole("button", { name: /Add Schedule/ })[0]);
+    await waitFor(() => expect(scheduleFns.createSchedule).toHaveBeenCalledWith("https://a.com", "daily", undefined));
     expect(screen.getAllByPlaceholderText("https://example.com")[0]).toHaveValue(""); // cleared after success
 
     fireEvent.click(screen.getAllByRole("checkbox")[0]);
@@ -84,7 +84,9 @@ describe("settings/ScheduleManager", () => {
     await waitFor(() => expect(scheduleFns.getHistory).toHaveBeenCalledWith("1"));
     expect(await screen.findByText(/Scan History/)).toBeInTheDocument();
     expect(await screen.findByText("fail")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("✕"));
+    // Close the modal by clicking the close button (X icon)
+    const closeButton = document.querySelector('button[style*="background: none"]') as HTMLElement;
+    fireEvent.click(closeButton);
 
     fireEvent.click(screen.getAllByTitle("Delete schedule")[0]);
     await waitFor(() => expect(scheduleFns.deleteSchedule).toHaveBeenCalledWith("1"));
@@ -94,7 +96,7 @@ describe("settings/ScheduleManager", () => {
     mockUseSchedules.mockReturnValueOnce({ ...makeReturn(), schedules: [] });
     render(<ScheduleManager />);
     expect(screen.getByText("No Scheduled Scans")).toBeInTheDocument();
-    const addButtons = screen.getAllByRole("button", { name: "+ Add Schedule" });
+    const addButtons = screen.getAllByRole("button", { name: /Add Schedule/ });
     expect(addButtons[0]).toBeDisabled();
   });
 
@@ -106,7 +108,7 @@ describe("settings/ScheduleManager", () => {
     const input = screen.getAllByPlaceholderText("https://example.com")[0];
     fireEvent.change(input, { target: { value: "https://test.com" } });
     fireEvent.keyDown(input, { key: "Enter" });
-    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://test.com", "daily"));
+    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://test.com", "daily", undefined));
   });
 
   it("ignores Enter when URL is only whitespace", async () => {
@@ -158,7 +160,7 @@ describe("settings/ScheduleManager", () => {
     render(<ScheduleManager />);
 
     const input = screen.getAllByPlaceholderText("https://example.com")[0];
-    const addButton = screen.getAllByRole("button", { name: "+ Add Schedule" })[0];
+    const addButton = screen.getAllByRole("button", { name: /Add Schedule/ })[0];
 
     // Test with empty URL
     fireEvent.change(input, { target: { value: "" } });
@@ -185,9 +187,9 @@ describe("settings/ScheduleManager", () => {
 
     // Test when createSchedule fails (returns null) - input should not be cleared
     fireEvent.change(input, { target: { value: "https://fail.com" } });
-    fireEvent.click(screen.getAllByRole("button", { name: "+ Add Schedule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Add Schedule/ })[0]);
 
-    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://fail.com", "daily"));
+    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://fail.com", "daily", undefined));
 
     // Input should still have the value since createSchedule returned null
     expect(input).toHaveValue("https://fail.com");
@@ -206,9 +208,9 @@ describe("settings/ScheduleManager", () => {
 
     // Add schedule with the selected frequency
     fireEvent.change(input, { target: { value: "https://weekly.com" } });
-    fireEvent.click(screen.getAllByRole("button", { name: "+ Add Schedule" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /Add Schedule/ })[0]);
 
-    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://weekly.com", "weekly"));
+    await waitFor(() => expect(createSchedule).toHaveBeenCalledWith("https://weekly.com", "weekly", undefined));
   });
 
   it("does not delete when confirmation is cancelled", async () => {

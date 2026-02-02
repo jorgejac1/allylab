@@ -1,6 +1,7 @@
 import { Card, SeverityBadge } from '../ui';
 import { analyzePatterns, calculateEfficiencyGain } from '../../utils/patterns';
 import type { Finding } from '../../types';
+import { Brain, RefreshCw, Globe, FileText, Sparkles } from 'lucide-react';
 
 interface IssuePatternsProps {
   findings: Finding[];
@@ -14,7 +15,7 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
   return (
     <Card>
       <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-        🧠 Smart Issue Analysis
+        <Brain size={18} /> Smart Issue Analysis
         <span style={{ fontSize: 12, fontWeight: 400, color: '#64748b' }}>Pattern detection & deduplication</span>
       </h3>
 
@@ -54,7 +55,7 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
                     background: pattern.type === 'template' ? '#dbeafe' : '#f1f5f9',
                     color: pattern.type === 'template' ? '#1d4ed8' : '#64748b',
                   }}>
-                    {pattern.type === 'template' ? '🔄 Template' : pattern.type === 'global' ? '🌐 Global' : '📄 Page'}
+                    {pattern.type === 'template' ? <><RefreshCw size={10} style={{ marginRight: 4 }} />Template</> : pattern.type === 'global' ? <><Globe size={10} style={{ marginRight: 4 }} />Global</> : <><FileText size={10} style={{ marginRight: 4 }} />Page</>}
                   </span>
                 </td>
                 <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, fontSize: 18 }}>
@@ -72,7 +73,7 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
 
       {/* Recommended Fix Order */}
       <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>✨ Recommended Fix Order</div>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Sparkles size={14} /> Recommended Fix Order</div>
         <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#1e40af', lineHeight: 1.8 }}>
           <li><strong>Component Issues ({templateIssues}):</strong> Highest ROI - fix {patterns.filter(p => p.type === 'template').length} issues to resolve {templateIssues} total occurrences</li>
           <li><strong>Global Issues ({patterns.filter(p => p.type === 'global').length}):</strong> Systematic fixes affecting all pages</li>

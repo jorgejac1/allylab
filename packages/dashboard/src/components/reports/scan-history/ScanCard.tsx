@@ -1,8 +1,10 @@
+import { memo } from 'react';
 import { Card, Button } from '../../ui';
 import { ScoreCircle, Sparkline } from '../../charts';
 import { SeverityPill } from './SeverityPill';
 import type { SavedScan } from '../../../types';
 import type { RegressionInfo } from '../../../hooks/useScans';
+import { TrendingDown, Trash2 } from 'lucide-react';
 
 interface ScanCardProps {
   scan: SavedScan;
@@ -11,12 +13,12 @@ interface ScanCardProps {
   compareMode?: boolean;
   scoreTrend: number[];
   regression?: RegressionInfo;
-  onSelect: () => void;
-  onCompareToggle?: () => void;
-  onDelete?: () => void;
+  onSelect: (scan: SavedScan) => void;
+  onCompareToggle?: (scan: SavedScan) => void;
+  onDelete?: (scanId: string) => void;
 }
 
-export function ScanCard({
+export const ScanCard = memo(function ScanCard({
   scan,
   isSelected,
   isCompareSelected,
@@ -29,9 +31,9 @@ export function ScanCard({
 }: ScanCardProps) {
   const handleClick = () => {
     if (compareMode && onCompareToggle) {
-      onCompareToggle();
+      onCompareToggle(scan);
     } else {
-      onSelect();
+      onSelect(scan);
     }
   };
 
@@ -64,7 +66,7 @@ export function ScanCard({
           <input
             type="checkbox"
             checked={!!isCompareSelected}
-            onChange={() => onCompareToggle?.()}
+            onChange={() => onCompareToggle?.(scan)}
             onClick={e => e.stopPropagation()}
             style={{ width: 18, height: 18 }}
           />
@@ -112,7 +114,7 @@ export function ScanCard({
                   fontWeight: 600,
                 }}
               >
-                🔻 -{regression.scoreDrop}
+                <TrendingDown size={12} />-{regression.scoreDrop}
               </span>
             )}
           </div>
@@ -143,14 +145,14 @@ export function ScanCard({
             size="sm"
             onClick={e => {
               e.stopPropagation();
-              onDelete();
+              onDelete(scan.id);
             }}
             style={{ color: '#ef4444' }}
           >
-            🗑️
+            <Trash2 size={16} />
           </Button>
         )}
       </div>
     </Card>
   );
-}
+});

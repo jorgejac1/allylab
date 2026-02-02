@@ -8,6 +8,7 @@ import { SiteRankings } from "./SiteRankings";
 import { PDFReportButton } from "../reports";
 import { useDashboardData } from "../../hooks";
 import type { DrillDownTarget } from "../../types";
+import { Target, Bug, AlertCircle, Globe, Flame, TrendingDown, BarChart3 } from "lucide-react";
 
 interface ExecutiveDashboardProps {
   onDrillDown?: (target: DrillDownTarget) => void;
@@ -54,7 +55,7 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
       {/* KPI Cards */}
       <KPIGrid>
         <KPICard
-          icon="🎯"
+          icon={<Target size={20} />}
           label="Average Score"
           value={data.avgScore}
           subValue={`Grade ${getScoreGrade(data.avgScore)}`}
@@ -62,13 +63,13 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
           trend={data.overallTrend}
         />
         <KPICard
-          icon="🐛"
+          icon={<Bug size={20} />}
           label="Total Issues"
           value={data.totalIssues.toLocaleString()}
           subValue="Across all sites"
         />
         <KPICard
-          icon="🚨"
+          icon={<AlertCircle size={20} />}
           label="Critical Issues"
           value={data.severityCounts.critical}
           subValue="Requires immediate attention"
@@ -76,7 +77,7 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
           trend={data.criticalTrend}
         />
         <KPICard
-          icon="🌐"
+          icon={<Globe size={20} />}
           label="Sites Monitored"
           value={data.totalSites}
           subValue={`${data.totalScans} total scans`}
@@ -113,9 +114,12 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
               fontWeight: 600,
               color: "#111827",
               margin: "0 0 16px 0",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            🔥 Top Issues by Frequency
+            <Flame size={18} />Top Issues by Frequency
           </h3>
           <TopIssuesTable
             issues={data.topIssues}
@@ -130,9 +134,12 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
               fontWeight: 600,
               color: "#111827",
               margin: "0 0 16px 0",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            📉 Sites Needing Attention
+            <TrendingDown size={18} />Sites Needing Attention
           </h3>
           <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 16 }}>
             Ranked by accessibility score (lowest first)
@@ -147,7 +154,7 @@ export function ExecutiveDashboard({ onDrillDown }: ExecutiveDashboardProps) {
 function EmptyDashboard() {
   return (
     <div style={{ padding: 40, textAlign: "center" }}>
-      <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "center", color: "#94a3b8" }}><BarChart3 size={48} /></div>
       <h2
         style={{
           fontSize: 20,

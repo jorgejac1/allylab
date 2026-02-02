@@ -24,11 +24,11 @@ const features = [
   },
   {
     icon: "🔗",
-    title: "GitHub Integration",
+    title: "GitHub & GitLab",
     description:
-      "Create pull requests directly from issues. Batch multiple fixes into single PRs and verify fixes after merge automatically.",
+      "Create PRs or MRs directly from issues. Batch multiple fixes into single requests and verify fixes after merge automatically.",
     color: "purple",
-    href: "/features#github",
+    href: "/features#git",
   },
   {
     icon: "📊",

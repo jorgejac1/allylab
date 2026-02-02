@@ -16,11 +16,11 @@ import type {
 } from "../../types";
 import { exportToCSV, exportToJSON } from "../../utils/export";
 import { applyFalsePositiveStatus } from "../../utils/falsePositives";
+import { Upload, RefreshCw, PartyPopper, CheckCircle } from "lucide-react";
 
 interface ScanResultsProps {
   scan: SavedScan;
   trackingStats?: TrackingStatsType;
-  onGenerateFix?: (finding: TrackedFinding) => Promise<void>;
   onRescan?: () => void;
 }
 
@@ -29,14 +29,12 @@ type TabId = "findings" | "patterns" | "impact" | "rules";
 export function ScanResults({
   scan,
   trackingStats,
-  onGenerateFix = async () => Promise.resolve(),
   onRescan,
 }: ScanResultsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("findings");
   const [selectedFinding, setSelectedFinding] = useState<TrackedFinding | null>(
     null
   );
-  const [isGeneratingFix, setIsGeneratingFix] = useState(false);
   const [fpRefreshKey, setFpRefreshKey] = useState(0);
 
   // Apply false positive status to findings
@@ -55,12 +53,14 @@ export function ScanResults({
   ];
 
   const handleExportCSV = () => {
+    // eslint-disable-next-line react-hooks/purity -- Date.now() is called at click time, not during render
     const filename = `allylab-${new URL(scan.url).hostname}-${Date.now()}.csv`;
     // Export only active findings (exclude false positives)
     exportToCSV(activeFindings, filename);
   };
 
   const handleExportJSON = () => {
+    // eslint-disable-next-line react-hooks/purity -- Date.now() is called at click time, not during render
     const filename = `allylab-${new URL(scan.url).hostname}-${Date.now()}.json`;
     // Export scan but with false positives filtered
     const exportScan = {
@@ -70,15 +70,6 @@ export function ScanResults({
       falsePositivesExcluded: fpCount,
     };
     exportToJSON(exportScan, filename);
-  };
-
-  const handleGenerateFix = async (finding: TrackedFinding) => {
-    setIsGeneratingFix(true);
-    try {
-      await (onGenerateFix ? onGenerateFix(finding) : Promise.resolve());
-    } finally {
-      setIsGeneratingFix(false);
-    }
   };
 
   const handleViewDetails = (finding: TrackedFinding) => {
@@ -160,14 +151,14 @@ export function ScanResults({
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <Button variant="secondary" size="sm" onClick={handleExportCSV}>
-            📤 Export CSV
+            <Upload size={14} style={{ marginRight: 6 }} />Export CSV
           </Button>
           <Button variant="secondary" size="sm" onClick={handleExportJSON}>
-            📤 Export JSON
+            <Upload size={14} style={{ marginRight: 6 }} />Export JSON
           </Button>
           {onRescan && (
             <Button size="sm" onClick={onRescan}>
-              🔄 Rescan
+              <RefreshCw size={14} style={{ marginRight: 6 }} />Rescan
             </Button>
           )}
         </div>
@@ -205,7 +196,7 @@ export function ScanResults({
           <>
             {findings.length === 0 ? (
               <EmptyState
-                icon="🎉"
+                icon={<PartyPopper size={32} />}
                 title="No Issues Found"
                 description="Great job! This page passed all accessibility checks."
               />
@@ -233,7 +224,7 @@ export function ScanResults({
             </div>
             {rulesArray.length === 0 ? (
               <EmptyState
-                icon="✅"
+                icon={<CheckCircle size={32} />}
                 title="All Rules Passed"
                 description="No accessibility violations were detected."
               />
@@ -255,8 +246,6 @@ export function ScanResults({
         isOpen={selectedFinding !== null}
         finding={selectedFinding}
         onClose={() => setSelectedFinding(null)}
-        onGenerateFix={handleGenerateFix}
-        isGeneratingFix={isGeneratingFix}
         onFalsePositiveChange={handleFalsePositiveChange}
       />
     </div>

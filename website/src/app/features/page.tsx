@@ -2,6 +2,7 @@ import { Section, SectionHeader } from "@/components/layout/Section";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ScannerDemo } from "@/components/demo/ScannerDemo";
 import Link from "next/link";
 import {
   Search,
@@ -30,12 +31,18 @@ import {
   Layers,
   FileJson,
   FileSpreadsheet,
+  FileCode,
+  Scan,
+  Lock,
+  KeyRound,
+  Chrome,
+  HeartPulse,
 } from "lucide-react";
 
 export const metadata = {
   title: "Features - AllyLab",
   description:
-    "Explore AllyLab's comprehensive accessibility scanning features including AI-powered fixes, GitHub integration, and WCAG compliance tools.",
+    "Explore AllyLab's comprehensive accessibility scanning features including AI-powered fixes, GitHub & GitLab integration, and WCAG compliance tools.",
 };
 
 const mainFeatures = [
@@ -53,10 +60,10 @@ const mainFeatures = [
         icon: Monitor,
         text: "Multi-viewport testing (Desktop, Tablet, Mobile)",
       },
+      { icon: Shield, text: "Authenticated scanning for protected pages" },
       { icon: Zap, text: "Real-time streaming results via SSE" },
       { icon: Settings, text: "Configurable crawl depth and page limits" },
       { icon: FileText, text: "Automatic sitemap detection" },
-      { icon: Shield, text: "Section 508 compliance support" },
     ],
   },
   {
@@ -77,20 +84,20 @@ const mainFeatures = [
     ],
   },
   {
-    id: "github",
+    id: "git",
     icon: GitBranch,
-    title: "GitHub Integration",
+    title: "GitHub & GitLab Integration",
     subtitle: "Streamlined Workflow",
     description:
-      "Connect your repositories and create pull requests with accessibility fixes directly from the dashboard. Supports batch fixes and automatic verification.",
+      "Connect your repositories and create pull requests or merge requests with accessibility fixes directly from the dashboard. Supports batch fixes and automatic verification.",
     color: "purple",
     features: [
-      { icon: GitPullRequest, text: "Automatic PR creation with fixes" },
-      { icon: Layers, text: "Batch multiple fixes in single PR" },
+      { icon: GitPullRequest, text: "Automatic PR/MR creation with fixes" },
+      { icon: Layers, text: "Batch multiple fixes in single PR/MR" },
       { icon: CheckCheck, text: "Fix verification after merge" },
-      { icon: Globe, text: "Works with any accessible repository" },
-      { icon: Shield, text: "GitHub Enterprise support" },
-      { icon: Clock, text: "PR status tracking" },
+      { icon: Globe, text: "GitHub.com and GitLab.com support" },
+      { icon: Shield, text: "Self-hosted Enterprise instances" },
+      { icon: Clock, text: "PR/MR status tracking" },
     ],
   },
   {
@@ -166,8 +173,8 @@ const additionalFeatures = [
     icon: Code,
     title: "CLI Tool",
     description:
-      "Command-line scanning for CI/CD pipelines. Single page and multi-page scans with multiple output formats.",
-    badges: ["npm", "npx", "JSON Output"],
+      "Full-featured command-line scanning with batch processing, watch mode, and multiple output formats including HTML and SARIF.",
+    badges: ["Batch Scan", "Watch Mode", "HTML", "SARIF"],
   },
   {
     id: "benchmarking",
@@ -176,6 +183,78 @@ const additionalFeatures = [
     description:
       "Compare your accessibility scores against competitors. Track relative position and improvements over time.",
     badges: ["Side-by-side", "Score Comparison", "Trends"],
+  },
+  {
+    id: "watch-mode",
+    icon: Clock,
+    title: "Watch Mode",
+    description:
+      "Continuously monitor URLs at configurable intervals. Get notified only when accessibility scores change.",
+    badges: ["Real-time", "Change Detection", "Alerts"],
+  },
+  {
+    id: "batch-scanning",
+    icon: Layers,
+    title: "Batch Scanning",
+    description:
+      "Scan multiple URLs from a file with configurable concurrency. Perfect for large sites and staging environments.",
+    badges: ["File Input", "Concurrency", "Progress"],
+  },
+  {
+    id: "config-system",
+    icon: Settings,
+    title: "Configuration System",
+    description:
+      "Flexible configuration via files, environment variables, or CLI flags. Share settings across your team.",
+    badges: [".allylabrc", "Env Vars", "CLI Flags"],
+  },
+  {
+    id: "html-reports",
+    icon: FileText,
+    title: "HTML Reports",
+    description:
+      "Generate standalone HTML reports that can be shared without any dependencies. Perfect for stakeholder reviews.",
+    badges: ["Standalone", "Shareable", "Branded"],
+  },
+  {
+    id: "authenticated-scanning",
+    icon: Lock,
+    title: "Authenticated Scanning",
+    description:
+      "Scan protected pages like dashboards and admin panels. Support for cookies, headers, storage state, and automated login flows.",
+    badges: ["Cookies", "Headers", "Login Flow", "Basic Auth"],
+  },
+  {
+    id: "browser-extension",
+    icon: Chrome,
+    title: "Cookie Capture Extension",
+    description:
+      "Chrome extension to easily capture session cookies from authenticated sites. One-click export in AllyLab format.",
+    badges: ["Chrome", "One-Click", "Subdomain Support"],
+  },
+  {
+    id: "credential-security",
+    icon: KeyRound,
+    title: "Credential Encryption",
+    description:
+      "Encrypt stored credentials with AES-256-GCM. Device-specific keys ensure credentials are protected at rest.",
+    badges: ["AES-256", "PBKDF2", "Auto-Migrate"],
+  },
+  {
+    id: "profile-health",
+    icon: HeartPulse,
+    title: "Profile Health Monitoring",
+    description:
+      "Track credential freshness with automatic health checks. Get warned when profiles need attention or re-testing.",
+    badges: ["Healthy", "Warning", "Expired", "Auto-Test"],
+  },
+  {
+    id: "team-auth",
+    icon: Users,
+    title: "Team Authentication",
+    description:
+      "Role-based access control with 5 built-in roles. SSO support for Enterprise. Seamless login between website and dashboard.",
+    badges: ["RBAC", "SSO", "5 Roles", "Clerk"],
   },
 ];
 
@@ -196,7 +275,7 @@ const frameworks = [
   { name: "HTML", description: "Clean, semantic markup" },
   { name: "React", description: "JSX with ARIA attributes" },
   { name: "Vue", description: "Template syntax bindings" },
-  { name: "Angular", description: "Coming soon" },
+  { name: "Svelte", description: "Component bindings" },
 ];
 
 const colorClasses = {
@@ -225,7 +304,7 @@ export default function FeaturesPage() {
             scale. From automated scanning to AI-powered remediation.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg">
                 Start Free Trial
                 <ArrowRight size={18} />
@@ -275,6 +354,21 @@ export default function FeaturesPage() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Demo */}
+      <Section>
+        <SectionHeader
+          label="Try It Now"
+          title="See AllyLab in Action"
+          description="Experience how AllyLab scans pages and generates AI-powered fixes"
+        />
+        <div className="max-w-5xl mx-auto">
+          <ScannerDemo />
+          <p className="text-center text-sm text-text-muted mt-4">
+            This is a simulated demo. Sign up to scan your own sites.
+          </p>
+        </div>
+      </Section>
 
       {/* Main Features - Detailed */}
       <Section>
@@ -405,14 +499,14 @@ export default function FeaturesPage() {
                   </div>
                 )}
 
-                {feature.id === "github" && (
+                {feature.id === "git" && (
                   <div className="bg-surface border border-border rounded-2xl p-6 glow">
                     <div className="flex items-center gap-3 mb-6">
                       <GitPullRequest className="text-primary" size={24} />
                       <div>
-                        <h4 className="font-semibold">Pull Request Created</h4>
+                        <h4 className="font-semibold">Fix Request Created</h4>
                         <p className="text-sm text-text-muted">
-                          #42 opened just now
+                          GitHub PR #42 or GitLab MR !42
                         </p>
                       </div>
                     </div>
@@ -585,18 +679,20 @@ jobs:
           <div className="bg-surface border border-border rounded-xl overflow-hidden">
             <div className="px-4 py-3 bg-surface-tertiary border-b border-border flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-accent-blue" />
-              <span className="text-sm font-medium">CLI</span>
+              <span className="text-sm font-medium">CLI v1.1</span>
             </div>
             <pre className="p-4 text-xs overflow-x-auto">
               <code className="text-text-secondary">{`# Install CLI
 npm i -g @allylab/cli
 
-# Scan single page
-allylab scan https://example.com
+# Scan with HTML report
+allylab scan example.com -f html
 
-# Scan entire site
-allylab site https://example.com
-  --max-pages 20`}</code>
+# Batch scan from file
+allylab batch urls.txt -c 3
+
+# Watch mode
+allylab watch example.com -i 30`}</code>
             </pre>
           </div>
         </div>
@@ -628,11 +724,19 @@ allylab site https://example.com
                   ["WCAG 2.2 Support", true, "Partial"],
                   ["AI-Powered Fix Suggestions", true, false],
                   ["Framework-Specific Code", true, false],
-                  ["One-Click GitHub PRs", true, false],
+                  ["One-Click GitHub PRs / GitLab MRs", true, false],
                   ["Batch Fix Creation", true, false],
                   ["Fix Verification", true, false],
+                  ["Authenticated Scanning", true, "Limited"],
+                  ["Cookie Capture Extension", true, false],
+                  ["Credential Encryption", true, false],
+                  ["Profile Health Monitoring", true, false],
                   ["Custom Rules Engine", true, "Limited"],
                   ["Real-time SSE Streaming", true, false],
+                  ["Watch Mode Monitoring", true, false],
+                  ["Batch URL Scanning", true, false],
+                  ["HTML Report Export", true, false],
+                  ["SARIF Output (GitHub)", true, false],
                   ["CI/CD Integration", true, true],
                   ["JIRA Integration", true, true],
                   ["Slack/Teams Notifications", true, true],
@@ -674,7 +778,7 @@ allylab site https://example.com
 
       {/* Export Formats */}
       <Section className="bg-surface-secondary">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-8">Export in Any Format</h2>
           <div className="flex flex-wrap justify-center gap-4">
             {[
@@ -683,14 +787,31 @@ allylab site https://example.com
                 label: "PDF Reports",
                 desc: "For stakeholders",
               },
+              {
+                icon: Scan,
+                label: "HTML",
+                desc: "Standalone reports",
+                isNew: true,
+              },
+              {
+                icon: FileCode,
+                label: "SARIF",
+                desc: "GitHub Code Scanning",
+                isNew: true,
+              },
               { icon: FileJson, label: "JSON", desc: "For integrations" },
               { icon: FileSpreadsheet, label: "Excel", desc: "For analysis" },
               { icon: FileText, label: "CSV", desc: "For spreadsheets" },
             ].map((format) => (
               <div
                 key={format.label}
-                className="flex items-center gap-3 px-6 py-4 bg-surface border border-border rounded-xl"
+                className="flex items-center gap-3 px-6 py-4 bg-surface border border-border rounded-xl relative"
               >
+                {"isNew" in format && format.isNew && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    NEW
+                  </span>
+                )}
                 <format.icon size={24} className="text-primary" />
                 <div className="text-left">
                   <p className="font-medium">{format.label}</p>
@@ -713,7 +834,7 @@ allylab site https://example.com
             minutes. No credit card required.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg">
                 Start Free Trial
                 <ArrowRight size={18} />

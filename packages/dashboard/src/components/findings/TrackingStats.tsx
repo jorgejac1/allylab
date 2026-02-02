@@ -1,10 +1,12 @@
+import { memo } from 'react';
 import type { TrackingStats as TrackingStatsType } from '../../types';
+import { BadgePlus, RefreshCw, CheckCircle } from 'lucide-react';
 
 interface TrackingStatsProps {
   stats: TrackingStatsType;
 }
 
-export function TrackingStats({ stats }: TrackingStatsProps) {
+export const TrackingStats = memo(function TrackingStats({ stats }: TrackingStatsProps) {
   return (
     <div style={{
       display: 'flex',
@@ -15,17 +17,17 @@ export function TrackingStats({ stats }: TrackingStatsProps) {
       border: '1px solid #e2e8f0',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 18 }}>🆕</span>
+        <BadgePlus size={18} style={{ color: '#1d4ed8' }} />
         <span style={{ fontWeight: 700, color: '#1d4ed8' }}>{stats.new}</span>
         <span style={{ fontSize: 13, color: '#64748b' }}>New</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 18 }}>🔄</span>
+        <RefreshCw size={18} style={{ color: '#b45309' }} />
         <span style={{ fontWeight: 700, color: '#b45309' }}>{stats.recurring}</span>
         <span style={{ fontSize: 13, color: '#64748b' }}>Recurring</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 18 }}>✅</span>
+        <CheckCircle size={18} style={{ color: '#15803d' }} />
         <span style={{ fontWeight: 700, color: '#15803d' }}>{stats.fixed}</span>
         <span style={{ fontSize: 13, color: '#64748b' }}>Fixed</span>
       </div>
@@ -35,4 +37,4 @@ export function TrackingStats({ stats }: TrackingStatsProps) {
       </div>
     </div>
   );
-}
+});

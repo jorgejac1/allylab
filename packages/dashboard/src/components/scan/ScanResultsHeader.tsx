@@ -1,6 +1,7 @@
 import { Button } from "../ui";
 import { ScoreCircle } from "../charts";
 import type { ScanResult } from "../../types";
+import { RefreshCw, Upload } from 'lucide-react';
 
 interface ScanResultsHeaderProps {
   result: ScanResult;
@@ -64,13 +65,13 @@ export function ScanResultsHeader({
       {/* Actions */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {onRescan && (
-          <Button size="sm" onClick={onRescan}>
-            🔄 Rescan
+          <Button size="sm" onClick={onRescan} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <RefreshCw size={14} /> Rescan
           </Button>
         )}
         {onExport && (
-          <Button variant="secondary" size="sm" onClick={onExport}>
-            📤 Export
+          <Button variant="secondary" size="sm" onClick={onExport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Upload size={14} /> Export
           </Button>
         )}
       </div>

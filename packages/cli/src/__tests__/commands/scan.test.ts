@@ -86,7 +86,7 @@ describe("cli/scan command", () => {
 
     await action("example.com", { standard: "wcag21aa", viewport: "desktop", format: "pretty", apiUrl: "http://api" });
 
-    expect(mockFetchScan).toHaveBeenCalledWith("http://api", "https://example.com", "wcag21aa", "desktop");
+    expect(mockFetchScan).toHaveBeenCalledWith("http://api", "https://example.com", "wcag21aa", "desktop", 60000, undefined);
     expect(mockFormatResults).toHaveBeenCalled();
     expect(spinner.succeed).toHaveBeenCalled();
     expect(mockExit).not.toHaveBeenCalled();

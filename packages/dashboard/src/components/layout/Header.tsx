@@ -1,3 +1,5 @@
+import { Microscope, Check, X } from 'lucide-react';
+
 interface HeaderProps {
   title?: string;
   subtitle?: string;
@@ -28,7 +30,7 @@ export function Header({
     >
       {/* Logo & Title */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ fontSize: 28 }}>🔬</span>
+        <Microscope size={28} style={{ color: '#2563eb' }} />
         <div>
           <h1
             style={{
@@ -69,13 +71,13 @@ export function Header({
               boxShadow: `0 0 6px ${statusColors[apiStatus]}`,
             }}
           />
-          <span style={{ fontSize: 12, fontWeight: 500, color: "#64748b" }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: "#64748b", display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             API{" "}
             {apiStatus === "connected"
-              ? "✓"
+              ? <Check size={12} />
               : apiStatus === "checking"
               ? "..."
-              : "✗"}
+              : <X size={12} />}
           </span>
         </div>
 

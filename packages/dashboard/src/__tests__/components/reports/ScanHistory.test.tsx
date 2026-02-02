@@ -78,15 +78,15 @@ vi.mock("../../../components/reports/scan-history", () => ({
     onDelete,
   }: {
     scan: SavedScan;
-    onSelect: () => void;
-    onCompareToggle: () => void;
-    onDelete?: () => void;
+    onSelect: (scan: SavedScan) => void;
+    onCompareToggle?: (scan: SavedScan) => void;
+    onDelete?: (scanId: string) => void;
   }) => (
     <div data-testid={`scan-${scan.id}`}>
       <span>{scan.url}</span>
-      <button onClick={onSelect}>Select</button>
-      <button onClick={onCompareToggle}>Toggle Compare</button>
-      {onDelete && <button onClick={onDelete}>Delete</button>}
+      <button onClick={() => onSelect(scan)}>Select</button>
+      <button onClick={() => onCompareToggle?.(scan)}>Toggle Compare</button>
+      {onDelete && <button onClick={() => onDelete(scan.id)}>Delete</button>}
     </div>
   ),
 }));
@@ -277,10 +277,11 @@ describe("reports/ScanHistory", () => {
     expect(onCompare).not.toHaveBeenCalled();
   });
 
-  it("calls onSelectScan from card", () => {
+  it("calls onSelectScan from card with scan object", () => {
     render(<ScanHistory scans={scans} onSelectScan={onSelectScan} onDeleteScan={onDeleteScan} />);
     fireEvent.click(screen.getAllByText("Select")[0]);
-    expect(onSelectScan).toHaveBeenCalled();
+    // With default "newest" sort, s3 (today's scan) is first
+    expect(onSelectScan).toHaveBeenCalledWith(expect.objectContaining({ id: "s3" }));
 
     fireEvent.click(screen.getAllByText("Delete")[0]);
     // first delete button corresponds to scan order in render (s3)

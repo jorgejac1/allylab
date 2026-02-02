@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, X, Link } from 'lucide-react';
 
 interface JiraCellProps {
   issueKey?: string;
@@ -48,6 +49,7 @@ export function JiraCell({
         />
         <button
           onClick={onSaveLink}
+          aria-label="Save JIRA link"
           style={{
             background: '#10b981',
             color: '#fff',
@@ -61,10 +63,11 @@ export function JiraCell({
           onMouseOver={e => (e.currentTarget.style.background = '#059669')}
           onMouseOut={e => (e.currentTarget.style.background = '#10b981')}
         >
-          ✓
+          <Check size={10} aria-hidden="true" />
         </button>
         <button
           onClick={onCancelLink}
+          aria-label="Cancel"
           style={{
             background: '#f1f5f9',
             color: '#64748b',
@@ -74,11 +77,13 @@ export function JiraCell({
             fontSize: 10,
             cursor: 'pointer',
             transition: 'background 0.15s',
+            display: 'inline-flex',
+            alignItems: 'center',
           }}
           onMouseOver={e => (e.currentTarget.style.background = '#e2e8f0')}
           onMouseOut={e => (e.currentTarget.style.background = '#f1f5f9')}
         >
-          ✕
+          <X size={10} aria-hidden="true" />
         </button>
       </div>
     );
@@ -114,10 +119,11 @@ export function JiraCell({
           }}
           title={`View ${issueKey} in JIRA`}
         >
-          🔗 {issueKey}
+          <Link size={12} /> {issueKey}
         </a>
         <button
           onClick={onRemoveLink}
+          aria-label="Remove JIRA link"
           style={{
             background: 'none',
             border: 'none',
@@ -138,7 +144,7 @@ export function JiraCell({
           }}
           title="Remove link"
         >
-          ✕
+          <X size={12} aria-hidden="true" />
         </button>
       </div>
     );

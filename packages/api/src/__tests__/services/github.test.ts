@@ -112,38 +112,21 @@ describe('services/github', () => {
       expect(connection.connected).toBe(false);
     });
 
-    it('handles non-Error thrown value as Unknown error in getConnection', async () => {
+    it('handles non-Error thrown value in getConnection', async () => {
       setGitHubToken('test-user', 'ghp_token');
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
       mockFetch.mockRejectedValue('network-down');
 
       const connection = await getConnection('test-user');
 
       expect(connection.connected).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[GitHub] Connection check failed:',
-        'Unknown error'
-      );
-
-      consoleSpy.mockRestore();
     });
 
-    it('handles non-Error thrown value as Unknown error in getFileContent', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+    it('handles non-Error thrown value in getFileContent', async () => {
       mockFetch.mockRejectedValue('random-failure');
 
       const file = await getFileContent('ghp_token', 'owner', 'repo', 'src/index.js');
 
       expect(file).toBeNull();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[GitHub] Failed to get file content:',
-        'Unknown error'
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -398,7 +381,7 @@ describe('services/github', () => {
           Promise.resolve({ ref: 'refs/heads/allylab/a11y-fixes-xyz' }),
       } as unknown as Response);
 
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      // Simulate file not found
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -430,12 +413,8 @@ describe('services/github', () => {
         ],
       });
 
+      // PR should still succeed, just skip the missing file
       expect(result.success).toBe(true);
-      expect(warnSpy).toHaveBeenCalledWith(
-        '[GitHub] File not found: src/ghost.html, skipping...'
-      );
-
-      warnSpy.mockRestore();
     });
 
     it('adds plural s in PR title when multiple fixes exist', async () => {
@@ -521,11 +500,9 @@ describe('services/github', () => {
       expect(body.title).toContain('2 issues');
     });
 
-    it('handles non-Error thrown value in PR creation as Unknown error', async () => {
+    it('handles non-Error thrown value in PR creation', async () => {
       mockFetch.mockReset();
       mockFetch.mockRejectedValue('something-bad');
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await createPullRequest('ghp_token', {
         owner: 'owner',
@@ -536,13 +513,6 @@ describe('services/github', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Unknown error');
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[GitHub] PR creation failed:',
-        'Unknown error'
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -651,19 +621,12 @@ describe('services/github', () => {
       expect(status).toBeNull();
     });
 
-    it('handles non-Error thrown value as Unknown error in getPRStatus', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('handles non-Error thrown value in getPRStatus', async () => {
       mockFetch.mockRejectedValue('pr-status-fail');
 
       const status = await getPRStatus('ghp_token', 'owner', 'repo', 42);
 
       expect(status).toBeNull();
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[GitHub] Failed to get PR status:',
-        'Unknown error'
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 });

@@ -55,7 +55,7 @@ describe("services/rule-evaluator", () => {
       $: vi.fn().mockResolvedValue(null),
     };
 
-    mockGetEnabledRules.mockReturnValue([]);
+    mockGetEnabledRules.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -64,7 +64,7 @@ describe("services/rule-evaluator", () => {
 
   describe("evaluateCustomRules", () => {
     it("returns empty array when no rules enabled", async () => {
-      mockGetEnabledRules.mockReturnValue([]);
+      mockGetEnabledRules.mockResolvedValue([]);
 
       const violations = await evaluateCustomRules({
         page: mockPage as unknown as Page,
@@ -87,7 +87,7 @@ describe("services/rule-evaluator", () => {
           wcagTags: ["wcag2a"],
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi.fn().mockResolvedValue('<div style="color:red">'),
@@ -117,7 +117,7 @@ describe("services/rule-evaluator", () => {
           wcagTags: ["wcag2a"],
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
         mockPage.$$.mockResolvedValue([]); // No elements found
 
         const violations = await evaluateCustomRules({
@@ -141,7 +141,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -173,7 +173,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -203,7 +203,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -237,7 +237,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -270,7 +270,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         mockPage.$$.mockResolvedValue([]); // elements.length === 0
 
@@ -299,7 +299,7 @@ describe("services/rule-evaluator", () => {
           wcagTags: ["wcag2a", "wcag111"],
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue(null),
@@ -331,7 +331,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue("_blank"),
@@ -362,7 +362,7 @@ describe("services/rule-evaluator", () => {
           severity: "serious",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue("javascript:void(0)"),
@@ -393,7 +393,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue("123-element"),
@@ -424,7 +424,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue("foobar"),
@@ -459,7 +459,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           getAttribute: vi.fn().mockResolvedValue("Submit"), // non-null → isViolation = true
@@ -497,7 +497,7 @@ describe("services/rule-evaluator", () => {
           severity: "moderate",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           textContent: vi.fn().mockResolvedValue("OK"),
@@ -526,7 +526,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           textContent: vi.fn().mockResolvedValue("A".repeat(150)),
@@ -555,7 +555,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           textContent: vi.fn().mockResolvedValue("Lorem ipsum dolor sit amet"),
@@ -584,7 +584,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           textContent: vi.fn().mockResolvedValue("Some regular text"),
@@ -618,7 +618,7 @@ describe("services/rule-evaluator", () => {
           severity: "minor",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           textContent: vi.fn().mockResolvedValue(null), // forces fallback ''
@@ -657,7 +657,7 @@ describe("services/rule-evaluator", () => {
           severity: "serious",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -688,7 +688,7 @@ describe("services/rule-evaluator", () => {
           severity: "moderate",
         });
 
-        mockGetEnabledRules.mockReturnValue([rule]);
+        mockGetEnabledRules.mockResolvedValue([rule]);
 
         const mockElement = {
           evaluate: vi
@@ -718,7 +718,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi.fn().mockResolvedValue("<div>"),
@@ -747,7 +747,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
       mockPage.$$.mockRejectedValue(new Error("Page closed"));
 
       // Should not throw
@@ -760,15 +760,15 @@ describe("services/rule-evaluator", () => {
   });
 
   describe("getEnabledRulesCount", () => {
-    it("returns 0 when no rules enabled", () => {
-      mockGetEnabledRules.mockReturnValue([]);
+    it("returns 0 when no rules enabled", async () => {
+      mockGetEnabledRules.mockResolvedValue([]);
 
-      const count = getEnabledRulesCount();
+      const count = await getEnabledRulesCount();
 
       expect(count).toBe(0);
     });
 
-    it("returns correct count of enabled rules", () => {
+    it("returns correct count of enabled rules", async () => {
       const rules = [
         createMockRule({
           id: "1",
@@ -799,9 +799,9 @@ describe("services/rule-evaluator", () => {
         }),
       ];
 
-      mockGetEnabledRules.mockReturnValue(rules);
+      mockGetEnabledRules.mockResolvedValue(rules);
 
-      const count = getEnabledRulesCount();
+      const count = await getEnabledRulesCount();
 
       expect(count).toBe(3);
     });
@@ -823,7 +823,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         getAttribute: vi.fn().mockResolvedValue("button"),
@@ -853,7 +853,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         getAttribute: vi.fn().mockResolvedValue("abc"),
@@ -888,7 +888,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         getAttribute: vi.fn().mockResolvedValue("ignored"),
@@ -920,7 +920,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         getAttribute: vi.fn().mockResolvedValue("foobar"),
@@ -956,7 +956,7 @@ describe("services/rule-evaluator", () => {
         severity: "serious",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi
@@ -986,7 +986,7 @@ describe("services/rule-evaluator", () => {
         severity: "serious",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi
@@ -1035,7 +1035,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi.fn().mockImplementation(async (cb, parentSelector) => {
@@ -1070,7 +1070,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi.fn().mockImplementation(async (cb, childSelector) => {
@@ -1106,7 +1106,7 @@ describe("services/rule-evaluator", () => {
         severity: "serious",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi.fn().mockImplementation(async (cb, siblingSelector) => {
@@ -1140,7 +1140,7 @@ describe("services/rule-evaluator", () => {
         severity: "serious",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const mockElement = {
         evaluate: vi.fn().mockImplementation(async (cb, siblingSelector) => {
@@ -1179,7 +1179,7 @@ describe("services/rule-evaluator", () => {
         severity: "minor",
       });
 
-      mockGetEnabledRules.mockReturnValue([rule]);
+      mockGetEnabledRules.mockResolvedValue([rule]);
 
       const violations = await evaluateCustomRules({
         page: mockPage as unknown as Page,

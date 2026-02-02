@@ -1,11 +1,9 @@
 import type { SavedScan } from '../types';
-
-const STORAGE_KEY = 'allylab_scans';
-const MAX_SCANS = 100;
+import { STORAGE_KEYS, UI } from '../config';
 
 export function loadAllScans(): SavedScan[] {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(STORAGE_KEYS.SCANS);
     if (!data) return [];
     return JSON.parse(data);
   } catch {
@@ -19,17 +17,17 @@ export function saveScan(scan: SavedScan): void {
   // Add new scan at beginning
   scans.unshift(scan);
   
-  // Limit to MAX_SCANS
-  if (scans.length > MAX_SCANS) {
-    scans.splice(MAX_SCANS);
+  // Limit to UI.MAX_SCANS
+  if (scans.length > UI.MAX_SCANS) {
+    scans.splice(UI.MAX_SCANS);
   }
   
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(scans));
+  localStorage.setItem(STORAGE_KEYS.SCANS, JSON.stringify(scans));
 }
 
 export function deleteScan(scanId: string): void {
   const scans = loadAllScans().filter(s => s.id !== scanId);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(scans));
+  localStorage.setItem(STORAGE_KEYS.SCANS, JSON.stringify(scans));
 }
 
 export function getScanById(scanId: string): SavedScan | undefined {

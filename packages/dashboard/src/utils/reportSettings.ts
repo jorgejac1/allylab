@@ -1,6 +1,5 @@
 import type { ReportSettings, ScoreGoalSettings, PdfExportSettings } from '../types';
-
-const STORAGE_KEY = 'allylab_report_settings';
+import { STORAGE_KEYS } from '../config';
 
 export const DEFAULT_SCORE_GOAL_SETTINGS: ScoreGoalSettings = {
   scoreGoal: 90,
@@ -25,7 +24,7 @@ export const DEFAULT_REPORT_SETTINGS: ReportSettings = {
 
 export function loadReportSettings(): ReportSettings {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.REPORT_SETTINGS);
     if (stored) {
       const parsed = JSON.parse(stored);
       return {
@@ -41,7 +40,7 @@ export function loadReportSettings(): ReportSettings {
 
 export function saveReportSettings(settings: ReportSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEYS.REPORT_SETTINGS, JSON.stringify(settings));
   } catch (error) {
     console.error('Failed to save report settings:', error);
   }

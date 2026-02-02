@@ -31,7 +31,18 @@ vi.mock("../../../components/ui", () => {
       {children}
     </button>
   );
-  return { Card, Button };
+  const StatCard = ({ label, value, prefix, color }: { label: string; value: number | string; prefix?: string; suffix?: string; color?: string }) => (
+    <div data-testid="stat-card">
+      <div>{label}</div>
+      <div style={{ color: color || '#0f172a' }}>
+        {prefix}{value}
+      </div>
+    </div>
+  );
+  const ProgressRow = ({ label, value }: { label: string; value: number | string }) => (
+    <div data-testid="progress-row">{label}: {value}</div>
+  );
+  return { Card, Button, StatCard, ProgressRow };
 });
 
 vi.mock("../../../components/charts", () => ({
@@ -51,6 +62,33 @@ vi.mock("../../../components/charts", () => ({
     mockGoal(props);
     return <div data-testid="goal" />;
   },
+  IssueChangeBadge: ({ label, change }: { label: string; change: number }) => (
+    <div data-testid="issue-change-badge">
+      <span>{label}</span>
+      <span style={{ color: change < 0 ? '#10b981' : change > 0 ? '#ef4444' : '#64748b' }}>
+        {change > 0 ? '+' : ''}{change}
+      </span>
+      {change < 0 && <span className="lucide-check" />}
+      {change > 0 && <span className="lucide-arrow-up" />}
+    </div>
+  ),
+}));
+
+vi.mock("../../../components/alerts", () => ({
+  RegressionAlertBanner: ({ regressions }: { regressions: Array<{ scanId: string; url: string; scoreDrop: number; previousScore: number; currentScore: number; timestamp: string }> }) => (
+    <div data-testid="regression-alert">
+      <h4 style={{ color: "#92400e" }}>Score Regression Detected</h4>
+      {regressions.slice(0, 3).map((r) => (
+        <div key={r.scanId}>
+          <span style={{ fontWeight: 500 }}>{r.url}</span>
+          <span style={{ fontWeight: 700, color: "#dc2626" }}>{r.scoreDrop} points</span>
+        </div>
+      ))}
+      {regressions.length > 3 && (
+        <div style={{ color: "#a16207" }}>+{regressions.length - 3} more regressions</div>
+      )}
+    </div>
+  ),
 }));
 
 vi.mock("../../../hooks", async (importOriginal) => {
@@ -165,10 +203,10 @@ describe("reports/TrendCharts", () => {
     render(<TrendCharts scans={scans} />);
 
     expect(screen.getAllByText("Critical")[0]).toBeInTheDocument();
-    // Negative change shows checkmark
-    expect(screen.getAllByText("✓")[0]).toBeInTheDocument();
-    // Positive change shows arrow
-    expect(screen.getAllByText("↑")[0]).toBeInTheDocument();
+    // Negative change shows Check icon (lucide-react)
+    expect(document.querySelector(".lucide-check")).toBeInTheDocument();
+    // Positive change shows ArrowUp icon (lucide-react)
+    expect(document.querySelector(".lucide-arrow-up")).toBeInTheDocument();
   });
 
   it("shows positive net issue change with red color and plus sign", () => {

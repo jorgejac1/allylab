@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import { Menu, X, Github } from "lucide-react";
+import { Menu, X, Github, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getSession, signOut, type MockUser } from "@/lib/auth/mock";
+
+const DASHBOARD_URL = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:5173'
+  : '/dashboard';
 
 const navLinks = [
   { href: "/features", label: "Features" },
-  { href: "/compare", label: "Compare" }, // Add this line
+  { href: "/compare", label: "Compare" },
   { href: "/pricing", label: "Pricing" },
   { href: "/docs", label: "Docs" },
   { href: "/blog", label: "Blog" },
@@ -18,6 +23,8 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<MockUser | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +33,32 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Check for session on mount and listen for changes
+  useEffect(() => {
+    const checkSession = () => {
+      const session = getSession();
+      setUser(session?.user ?? null);
+    };
+
+    checkSession();
+
+    // Listen for storage changes (cross-tab sync)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'allylab_session') {
+        checkSession();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const handleSignOut = () => {
+    signOut();
+    setUser(null);
+    setUserMenuOpen(false);
+  };
 
   return (
     <nav
@@ -69,10 +102,53 @@ export function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm">
-            Sign In
-          </Button>
-          <Button size="sm">Start Free Trial</Button>
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-secondary transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User size={16} className="text-primary" />
+                </div>
+                <span className="text-sm font-medium">{user.name}</span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-surface-secondary border border-border rounded-lg shadow-lg overflow-hidden">
+                  <div className="p-3 border-b border-border">
+                    <p className="text-xs text-text-muted">Signed in as</p>
+                    <p className="text-sm font-medium truncate">{user.email}</p>
+                  </div>
+                  <a
+                    href={DASHBOARD_URL}
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-surface-tertiary transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    Go to Dashboard
+                  </a>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-error hover:bg-surface-tertiary transition-colors"
+                  >
+                    <LogOut size={16} />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link href="/sign-in">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button size="sm">Start Free Trial</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -99,10 +175,44 @@ export function Navbar() {
             </Link>
           ))}
           <hr className="border-border" />
-          <Button variant="ghost" className="w-full">
-            Sign In
-          </Button>
-          <Button className="w-full">Start Free Trial</Button>
+          {user ? (
+            <>
+              <div className="flex items-center gap-3 py-2">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-text-muted">{user.email}</p>
+                </div>
+              </div>
+              <a href={DASHBOARD_URL} onClick={() => setIsOpen(false)}>
+                <Button className="w-full">Go to Dashboard</Button>
+              </a>
+              <Button
+                variant="ghost"
+                className="w-full text-error"
+                onClick={() => {
+                  handleSignOut();
+                  setIsOpen(false);
+                }}
+              >
+                <LogOut size={16} className="mr-2" />
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/sign-in" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/sign-up" onClick={() => setIsOpen(false)}>
+                <Button className="w-full">Start Free Trial</Button>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button, Card } from '../ui';
 import { useWebhooks } from '../../hooks/useWebhooks';
 import type { WebhookEvent, WebhookType } from '../../types/webhook';
+import { MessageSquare, Users, Link2, Lightbulb, Bell, FlaskConical, Trash2, BookOpen, Loader2, Check, X } from 'lucide-react';
 
 const EVENT_OPTIONS: { value: WebhookEvent; label: string; description: string }[] = [
   { value: 'scan.completed', label: 'Scan Completed', description: 'When a scan finishes successfully' },
@@ -10,25 +11,25 @@ const EVENT_OPTIONS: { value: WebhookEvent; label: string; description: string }
   { value: 'critical.found', label: 'Critical Found', description: 'When critical issues are detected' },
 ];
 
-const PLATFORM_OPTIONS: { value: WebhookType; label: string; icon: string; placeholder: string; help: string }[] = [
-  { 
-    value: 'slack', 
-    label: 'Slack', 
-    icon: '💬',
+const PLATFORM_OPTIONS: { value: WebhookType; label: string; icon: ReactNode; placeholder: string; help: string }[] = [
+  {
+    value: 'slack',
+    label: 'Slack',
+    icon: <MessageSquare size={24} />,
     placeholder: 'https://hooks.slack.com/services/...',
     help: 'Create an Incoming Webhook in Slack App settings'
   },
-  { 
-    value: 'teams', 
-    label: 'Microsoft Teams', 
-    icon: '👥',
+  {
+    value: 'teams',
+    label: 'Microsoft Teams',
+    icon: <Users size={24} />,
     placeholder: 'https://outlook.office.com/webhook/...',
     help: 'Add an Incoming Webhook connector to your Teams channel'
   },
-  { 
-    value: 'generic', 
-    label: 'Generic Webhook', 
-    icon: '🔗',
+  {
+    value: 'generic',
+    label: 'Generic Webhook',
+    icon: <Link2 size={24} />,
     placeholder: 'https://your-server.com/webhook',
     help: 'Custom endpoint receiving JSON payload with HMAC signature'
   },
@@ -81,7 +82,7 @@ export function WebhookManager() {
   };
 
   const getPlatformIcon = (type: WebhookType) => {
-    return PLATFORM_OPTIONS.find(p => p.value === type)?.icon || '🔗';
+    return PLATFORM_OPTIONS.find(p => p.value === type)?.icon || <Link2 size={20} />;
   };
 
   const getPlatformLabel = (type: WebhookType) => {
@@ -126,13 +127,13 @@ export function WebhookManager() {
                     gap: 4,
                   }}
                 >
-                  <span style={{ fontSize: 24 }}>{opt.icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{opt.icon}</span>
                   <span>{opt.label}</span>
                 </button>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>
-              💡 {currentPlatform.help}
+            <p style={{ fontSize: 12, color: '#64748b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Lightbulb size={14} />{currentPlatform.help}
             </p>
           </div>
 
@@ -214,7 +215,7 @@ export function WebhookManager() {
 
         {webhooks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '32px 16px' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🔔</div>
+            <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: '#94a3b8' }}><Bell size={48} /></div>
             <p style={{ color: '#64748b', fontSize: 14, margin: 0 }}>
               No notifications configured. Add Slack or Teams above to get alerted on scan results.
             </p>
@@ -263,7 +264,7 @@ export function WebhookManager() {
                   </button>
 
                   {/* Platform Icon */}
-                  <span style={{ fontSize: 20 }} title={getPlatformLabel(webhook.type)}>
+                  <span style={{ display: 'flex', alignItems: 'center', color: '#64748b' }} title={getPlatformLabel(webhook.type)}>
                     {getPlatformIcon(webhook.type)}
                   </span>
 
@@ -298,7 +299,7 @@ export function WebhookManager() {
                         color: webhook.lastStatus === 'success' ? '#15803d' : '#dc2626',
                       }}
                     >
-                      {webhook.lastStatus === 'success' ? '✓ Success' : '✕ Failed'}
+                      {webhook.lastStatus === 'success' ? <><Check size={10} style={{ marginRight: 4 }} />Success</> : <><X size={10} style={{ marginRight: 4 }} />Failed</>}
                     </span>
                   )}
 
@@ -306,8 +307,8 @@ export function WebhookManager() {
 
                   {/* Test Result */}
                   {testResult?.id === webhook.id && (
-                    <span style={{ fontSize: 12, color: testResult.success ? '#15803d' : '#dc2626' }}>
-                      {testResult.success ? '✓ Test passed' : `✕ ${testResult.error || 'Test failed'}`}
+                    <span style={{ fontSize: 12, color: testResult.success ? '#15803d' : '#dc2626', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {testResult.success ? <><Check size={12} />Test passed</> : <><X size={12} />{testResult.error || 'Test failed'}</>}
                     </span>
                   )}
 
@@ -318,7 +319,7 @@ export function WebhookManager() {
                     onClick={() => handleTest(webhook.id)}
                     disabled={testingId === webhook.id}
                   >
-                    {testingId === webhook.id ? 'Testing...' : '🧪 Test'}
+                    {testingId === webhook.id ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Testing...</> : <><FlaskConical size={14} style={{ marginRight: 6 }} />Test</>}
                   </Button>
                   <Button
                     variant="ghost"
@@ -326,7 +327,7 @@ export function WebhookManager() {
                     onClick={() => deleteWebhook(webhook.id)}
                     style={{ color: '#dc2626' }}
                   >
-                    🗑️
+                    <Trash2 size={14} />
                   </Button>
                 </div>
 
@@ -369,15 +370,15 @@ export function WebhookManager() {
 
       {/* Platform Setup Guides */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
-          📖 Setup Guides
+        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BookOpen size={18} />Setup Guides
         </h3>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Slack Setup */}
           <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0' }}>
-              💬 How to set up Slack notifications
+            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <MessageSquare size={16} />How to set up Slack notifications
             </summary>
             <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
               <ol style={{ margin: '8px 0', paddingLeft: 20 }}>
@@ -393,8 +394,8 @@ export function WebhookManager() {
 
           {/* Teams Setup */}
           <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0' }}>
-              👥 How to set up Microsoft Teams notifications
+            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Users size={16} />How to set up Microsoft Teams notifications
             </summary>
             <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
               <ol style={{ margin: '8px 0', paddingLeft: 20 }}>
@@ -410,8 +411,8 @@ export function WebhookManager() {
 
           {/* Generic Webhook */}
           <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0' }}>
-              🔗 Generic webhook payload format
+            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Link2 size={16} />Generic webhook payload format
             </summary>
             <div style={{ paddingLeft: 16, fontSize: 13 }}>
               <pre

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Card } from '../ui';
 import { useGitHub } from '../../hooks/useGitHub';
+import { Check, Link, Key, AlertTriangle } from 'lucide-react';
 
 export function GitHubSettings() {
   const { connection, isLoading, error, connect, disconnect } = useGitHub();
@@ -76,8 +77,11 @@ export function GitHubSettings() {
                 borderRadius: 20,
                 fontSize: 12,
                 fontWeight: 500,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
               }}>
-                ✓ Connected
+                <Check size={12} /> Connected
               </span>
             </div>
 
@@ -155,8 +159,8 @@ export function GitHubSettings() {
                 </div>
               </div>
             ) : (
-              <Button variant="primary" onClick={() => setShowTokenInput(true)}>
-                🔗 Connect GitHub
+              <Button variant="primary" onClick={() => setShowTokenInput(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Link size={14} /> Connect GitHub
               </Button>
             )}
           </div>
@@ -166,8 +170,8 @@ export function GitHubSettings() {
       {/* How to get a token */}
       <Card>
         <details style={{ cursor: 'pointer' }}>
-          <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0' }}>
-            🔑 How to create a GitHub Personal Access Token
+          <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Key size={16} /> How to create a GitHub Personal Access Token
           </summary>
           <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
             <ol style={{ margin: '12px 0', paddingLeft: 20 }}>
@@ -183,14 +187,17 @@ export function GitHubSettings() {
               </li>
               <li>Click "Generate token" and copy it</li>
             </ol>
-            <p style={{ 
-              padding: 12, 
-              background: '#fef3c7', 
-              borderRadius: 6, 
+            <p style={{
+              padding: 12,
+              background: '#fef3c7',
+              borderRadius: 6,
               color: '#92400e',
               margin: '12px 0 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}>
-              ⚠️ Your token is stored securely on the server and never exposed to the browser.
+              <AlertTriangle size={16} /> Your token is stored securely on the server and never exposed to the browser.
             </p>
           </div>
         </details>

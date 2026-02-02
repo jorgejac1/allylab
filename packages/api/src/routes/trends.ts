@@ -422,6 +422,12 @@ export async function trendsRoutes(fastify: FastifyInstance) {
 }
 
 // Helper functions
+
+/**
+ * Calculate statistics in a single pass through the scans array.
+ * This is more efficient than multiple reduce/map calls, reducing
+ * complexity from O(n * 8) to O(n).
+ */
 function calculateStats(scans: ScanInput[]) {
   if (scans.length === 0) {
     return {
@@ -438,18 +444,41 @@ function calculateStats(scans: ScanInput[]) {
     };
   }
 
+  // Single-pass accumulation
+  let sumScore = 0;
+  let sumIssues = 0;
+  let sumCritical = 0;
+  let sumSerious = 0;
+  let sumModerate = 0;
+  let sumMinor = 0;
+  let minScore = Infinity;
+  let maxScore = -Infinity;
+
+  for (const scan of scans) {
+    sumScore += scan.score;
+    sumIssues += scan.totalIssues;
+    sumCritical += scan.critical;
+    sumSerious += scan.serious;
+    sumModerate += scan.moderate;
+    sumMinor += scan.minor;
+
+    if (scan.score < minScore) minScore = scan.score;
+    if (scan.score > maxScore) maxScore = scan.score;
+  }
+
+  const count = scans.length;
   const first = scans[0];
-  const last = scans[scans.length - 1];
+  const last = scans[count - 1];
 
   return {
-    avgScore: Math.round(scans.reduce((sum, s) => sum + s.score, 0) / scans.length),
-    minScore: Math.min(...scans.map(s => s.score)),
-    maxScore: Math.max(...scans.map(s => s.score)),
-    avgIssues: Math.round(scans.reduce((sum, s) => sum + s.totalIssues, 0) / scans.length),
-    avgCritical: Math.round(scans.reduce((sum, s) => sum + s.critical, 0) / scans.length * 10) / 10,
-    avgSerious: Math.round(scans.reduce((sum, s) => sum + s.serious, 0) / scans.length * 10) / 10,
-    avgModerate: Math.round(scans.reduce((sum, s) => sum + s.moderate, 0) / scans.length * 10) / 10,
-    avgMinor: Math.round(scans.reduce((sum, s) => sum + s.minor, 0) / scans.length * 10) / 10,
+    avgScore: Math.round(sumScore / count),
+    minScore,
+    maxScore,
+    avgIssues: Math.round(sumIssues / count),
+    avgCritical: Math.round((sumCritical / count) * 10) / 10,
+    avgSerious: Math.round((sumSerious / count) * 10) / 10,
+    avgModerate: Math.round((sumModerate / count) * 10) / 10,
+    avgMinor: Math.round((sumMinor / count) * 10) / 10,
     totalIssuesFixed: Math.max(0, first.totalIssues - last.totalIssues),
     scoreImprovement: last.score - first.score,
   };

@@ -2,33 +2,46 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { CustomRule, CreateRuleRequest, UpdateRuleRequest } from '../types/rules';
 import { randomUUID } from 'crypto';
 import { JsonStorage } from '../utils/storage';
+import { getPaginationFromQuery, paginate } from '../utils/pagination.js';
 
 // File-based persistent storage
 const rulesStore = new JsonStorage<CustomRule>({ filename: 'rules.json' });
 
+interface RulesListQuery {
+  limit?: string;
+  offset?: string;
+  page?: string;
+}
+
 export async function rulesRoutes(fastify: FastifyInstance) {
-  // GET /rules - List all custom rules
-  fastify.get('/rules', async (_request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const rules = rulesStore.getAll();
-      
-      return reply.send({
-        success: true,
-        data: {
-          rules,
-          total: rules.length,
-          enabled: rules.filter(r => r.enabled).length,
-        },
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      fastify.log.error(`[Rules] List error: ${message}`);
-      return reply.status(500).send({
-        success: false,
-        error: message,
-      });
+  // GET /rules - List all custom rules with pagination
+  fastify.get<{ Querystring: RulesListQuery }>(
+    '/rules',
+    async (request: FastifyRequest<{ Querystring: RulesListQuery }>, reply: FastifyReply) => {
+      try {
+        const rules = await rulesStore.getAll();
+        const pagination = getPaginationFromQuery(request.query as Record<string, unknown>);
+        const result = paginate(rules, pagination);
+
+        return reply.send({
+          success: true,
+          data: {
+            rules: result.items,
+            total: rules.length,
+            enabled: rules.filter(r => r.enabled).length,
+            pagination: result.pagination,
+          },
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        fastify.log.error(`[Rules] List error: ${message}`);
+        return reply.status(500).send({
+          success: false,
+          error: message,
+        });
+      }
     }
-  });
+  );
 
   // GET /rules/:id - Get a single rule
   fastify.get<{ Params: { id: string } }>(
@@ -36,7 +49,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       try {
         const { id } = request.params;
-        const rule = rulesStore.get(id);
+        const rule = await rulesStore.get(id);
 
         if (!rule) {
           return reply.status(404).send({
@@ -100,7 +113,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
           updatedAt: now,
         };
 
-        rulesStore.set(rule.id, rule);
+        await rulesStore.set(rule.id, rule);
 
         fastify.log.info(`[Rules] Created rule: ${rule.id} - ${rule.name}`);
 
@@ -126,7 +139,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
       try {
         const { id } = request.params;
         const body = request.body;
-        const existing = rulesStore.get(id);
+        const existing = await rulesStore.get(id);
 
         if (!existing) {
           return reply.status(404).send({
@@ -150,7 +163,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
           updatedAt: new Date().toISOString(),
         };
 
-        rulesStore.set(id, updated);
+        await rulesStore.set(id, updated);
 
         fastify.log.info(`[Rules] Updated rule: ${id}`);
 
@@ -175,7 +188,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       try {
         const { id } = request.params;
-        const existing = rulesStore.get(id);
+        const existing = await rulesStore.get(id);
 
         if (!existing) {
           return reply.status(404).send({
@@ -184,7 +197,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
           });
         }
 
-        rulesStore.delete(id);
+        await rulesStore.delete(id);
 
         fastify.log.info(`[Rules] Deleted rule: ${id}`);
 
@@ -284,7 +297,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
             updatedAt: now,
           }));
 
-        const imported = rulesStore.import(normalizedRules, replace);
+        const imported = await rulesStore.import(normalizedRules, replace);
 
         fastify.log.info(`[Rules] Imported ${imported} rules (replace: ${replace})`);
 
@@ -292,7 +305,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
           success: true,
           data: {
             imported,
-            total: rulesStore.size(),
+            total: await rulesStore.size(),
           },
         });
       } catch (error) {
@@ -309,7 +322,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
   // GET /rules/export - Export all rules as JSON
   fastify.get('/rules/export', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const rules = rulesStore.getAll();
+      const rules = await rulesStore.getAll();
 
       return reply.send({
         success: true,
@@ -332,7 +345,7 @@ export async function rulesRoutes(fastify: FastifyInstance) {
   // GET /rules/enabled - Get only enabled rules (for scanner integration)
   fastify.get('/rules/enabled', async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const rules = rulesStore.getAll().filter(r => r.enabled);
+      const rules = (await rulesStore.getAll()).filter(r => r.enabled);
 
       return reply.send({
         success: true,
@@ -350,6 +363,6 @@ export async function rulesRoutes(fastify: FastifyInstance) {
 }
 
 // Export for use in scanner service
-export function getEnabledRules(): CustomRule[] {
-  return rulesStore.getAll().filter(r => r.enabled);
+export async function getEnabledRules(): Promise<CustomRule[]> {
+  return (await rulesStore.getAll()).filter(r => r.enabled);
 }

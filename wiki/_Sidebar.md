@@ -7,8 +7,13 @@
 
 **Features**
 - [[Features]]
+- [[Authenticated Scanning]]
 - [[Custom Rules]]
 - [[Historical Trends]]
+
+**Platform**
+- [[User Roles & Permissions|User-Roles-Permissions]]
+- [[Auth Setup|Auth-Setup]]
 
 **Integrations**
 - [[Integrations]]

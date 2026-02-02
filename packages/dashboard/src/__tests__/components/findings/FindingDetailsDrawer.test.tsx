@@ -39,6 +39,19 @@ vi.mock("../../../components/ui", () => ({
   ),
   SeverityBadge: ({ severity }: { severity: string }) => <span data-testid="severity-badge">{severity}</span>,
   StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
+  Section: ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
+    <div data-testid="section">
+      <h4>{title}</h4>
+      {children}
+    </div>
+  ),
+  Modal: ({ children, isOpen, onClose, title }: { children: React.ReactNode; isOpen: boolean; onClose: () => void; title?: string }) =>
+    isOpen ? (
+      <div data-testid="modal" data-title={title}>
+        <button onClick={onClose} data-testid="modal-close">×</button>
+        {children}
+      </div>
+    ) : null,
 }));
 
 // Mock FixCodePreview
@@ -50,12 +63,12 @@ vi.mock("../../../components/findings/FixCodePreview", () => ({
   ),
 }));
 
-// Mock CreatePRModal
-vi.mock("../../../components/findings/CreatePRModal", () => ({
-  CreatePRModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+// Mock ApplyFixModal
+vi.mock("../../../components/findings/ApplyFixModal", () => ({
+  ApplyFixModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
-      <div data-testid="create-pr-modal">
-        <button onClick={onClose} data-testid="close-pr-modal">Close PR Modal</button>
+      <div data-testid="apply-fix-modal">
+        <button onClick={onClose} data-testid="close-apply-fix-modal">Close Apply Fix Modal</button>
       </div>
     ) : null,
 }));
@@ -85,8 +98,6 @@ describe("components/findings/FindingDetailsDrawer", () => {
     onClose: vi.fn(),
     onFalsePositiveChange: vi.fn(),
     scanUrl: "https://test.com",
-    scanStandard: "WCAG2AA",
-    scanViewport: "desktop",
   };
 
   beforeEach(() => {
@@ -201,7 +212,9 @@ describe("components/findings/FindingDetailsDrawer", () => {
     const onClose = vi.fn();
     render(<FindingDetailsDrawer {...defaultProps} onClose={onClose} />);
 
-    const closeButton = screen.getByText("×");
+    // The close button is the X icon button in the header
+    const buttons = screen.getAllByRole("button");
+    const closeButton = buttons[0]; // First button is the close button in the header
     fireEvent.click(closeButton);
 
     expect(onClose).toHaveBeenCalled();
@@ -216,25 +229,25 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} finding={finding} />);
 
-    expect(screen.getByText(/🚫 Marked as False Positive/)).toBeInTheDocument();
+    expect(screen.getByText(/Marked as False Positive/)).toBeInTheDocument();
     expect(screen.getByText(/Reason: This is not an issue/)).toBeInTheDocument();
   });
 
   it("shows Mark as False Positive button for active findings", () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
-    expect(screen.getByText("🚫 Mark as False Positive")).toBeInTheDocument();
+    expect(screen.getByText(/Mark as False Positive/)).toBeInTheDocument();
   });
 
   it("shows Restore Issue button for false positive findings", () => {
     const finding = makeFinding({ falsePositive: true });
     render(<FindingDetailsDrawer {...defaultProps} finding={finding} />);
-    expect(screen.getByText("✓ Restore Issue")).toBeInTheDocument();
+    expect(screen.getByText("Restore Issue")).toBeInTheDocument();
   });
 
   it("displays false positive form when button clicked", () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const fpButton = screen.getByText("🚫 Mark as False Positive");
+    const fpButton = screen.getByText(/Mark as False Positive/);
     fireEvent.click(fpButton);
 
     expect(screen.getByPlaceholderText("Optional: Explain why this is a false positive...")).toBeInTheDocument();
@@ -247,7 +260,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} onFalsePositiveChange={onFalsePositiveChange} onClose={onClose} />);
 
-    const fpButton = screen.getByText("🚫 Mark as False Positive");
+    const fpButton = screen.getByText(/Mark as False Positive/);
     fireEvent.click(fpButton);
 
     const reasonInput = screen.getByPlaceholderText("Optional: Explain why this is a false positive...");
@@ -269,7 +282,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} finding={finding} onFalsePositiveChange={onFalsePositiveChange} onClose={onClose} />);
 
-    const restoreButton = screen.getByText("✓ Restore Issue");
+    const restoreButton = screen.getByText("Restore Issue");
     fireEvent.click(restoreButton);
 
     expect(fpUtils.unmarkFalsePositive).toHaveBeenCalledWith("fp1");
@@ -280,7 +293,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
   it("cancels false positive form", () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const fpButton = screen.getByText("🚫 Mark as False Positive");
+    const fpButton = screen.getByText(/Mark as False Positive/);
     fireEvent.click(fpButton);
 
     expect(screen.getByPlaceholderText("Optional: Explain why this is a false positive...")).toBeInTheDocument();
@@ -293,19 +306,19 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
   it("displays Generate AI Fix button", () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
-    expect(screen.getByText("✨ Generate AI Fix")).toBeInTheDocument();
+    expect(screen.getByText(/Generate AI Fix/)).toBeInTheDocument();
   });
 
   it("does not show generate fix button for false positives", () => {
     const finding = makeFinding({ falsePositive: true });
     render(<FindingDetailsDrawer {...defaultProps} finding={finding} />);
-    expect(screen.queryByText("✨ Generate AI Fix")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Generate AI Fix/)).not.toBeInTheDocument();
   });
 
   it("generates AI fix", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -324,7 +337,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -335,7 +348,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
   it("displays generated fix", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -344,46 +357,48 @@ describe("components/findings/FindingDetailsDrawer", () => {
     });
   });
 
-  it("displays Create PR button after fix generated", async () => {
+  it("displays Apply Fix button after fix generated", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      expect(screen.getByText("🚀 Create PR")).toBeInTheDocument();
+      expect(screen.getByText("Apply Fix")).toBeInTheDocument();
     });
   });
 
   it("displays Regenerate button after fix generated", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      expect(screen.getByText("🔄 Regenerate")).toBeInTheDocument();
+      expect(screen.getByText("Regenerate")).toBeInTheDocument();
     });
   });
 
-  it("opens PR modal when Create PR clicked", async () => {
+  it("opens Apply Fix modal when Apply Fix clicked", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      const createPRButton = screen.getByText("🚀 Create PR");
-      fireEvent.click(createPRButton);
+      expect(screen.getByText("Apply Fix")).toBeInTheDocument();
     });
 
-    expect(screen.getByTestId("create-pr-modal")).toBeInTheDocument();
+    const createPRButton = screen.getByText("Apply Fix");
+    fireEvent.click(createPRButton);
+
+    expect(screen.getByTestId("apply-fix-modal")).toBeInTheDocument();
   });
 
   it("regenerates fix when Regenerate clicked", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -392,7 +407,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     vi.clearAllMocks();
 
-    const regenerateButton = screen.getByText("🔄 Regenerate");
+    const regenerateButton = screen.getByText("Regenerate");
     fireEvent.click(regenerateButton);
 
     await waitFor(() => {
@@ -411,7 +426,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -424,7 +439,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -434,7 +449,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
   it("displays learn more link", () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
-    const link = screen.getByText(/📚 WCAG Documentation/);
+    const link = screen.getByText(/WCAG Documentation/);
     expect(link.closest("a")).toHaveAttribute("href", "https://dequeuniversity.com/rules/button-name");
     expect(link.closest("a")).toHaveAttribute("target", "_blank");
   });
@@ -449,7 +464,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
     const finding = makeFinding({ fixSuggestion: "Add an aria-label attribute" });
     render(<FindingDetailsDrawer {...defaultProps} finding={finding} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -457,23 +472,25 @@ describe("components/findings/FindingDetailsDrawer", () => {
     });
   });
 
-  it("closes PR modal", async () => {
+  it("closes Apply Fix modal", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      const createPRButton = screen.getByText("🚀 Create PR");
-      fireEvent.click(createPRButton);
+      expect(screen.getByText("Apply Fix")).toBeInTheDocument();
     });
 
-    expect(screen.getByTestId("create-pr-modal")).toBeInTheDocument();
+    const createPRButton = screen.getByText("Apply Fix");
+    fireEvent.click(createPRButton);
 
-    const closePRModalButton = screen.getByTestId("close-pr-modal");
+    expect(screen.getByTestId("apply-fix-modal")).toBeInTheDocument();
+
+    const closePRModalButton = screen.getByTestId("close-apply-fix-modal");
     fireEvent.click(closePRModalButton);
 
-    expect(screen.queryByTestId("create-pr-modal")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("apply-fix-modal")).not.toBeInTheDocument();
   });
 
   it("displays Close button in footer", () => {
@@ -482,18 +499,20 @@ describe("components/findings/FindingDetailsDrawer", () => {
     expect(closeButtons.length).toBeGreaterThan(0);
   });
 
-  it("passes scan settings to PR modal", async () => {
+  it("passes scan settings to Apply Fix modal", async () => {
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      const createPRButton = screen.getByText("🚀 Create PR");
-      fireEvent.click(createPRButton);
+      expect(screen.getByText("Apply Fix")).toBeInTheDocument();
     });
 
-    expect(screen.getByTestId("create-pr-modal")).toBeInTheDocument();
+    const createPRButton = screen.getByText("Apply Fix");
+    fireEvent.click(createPRButton);
+
+    expect(screen.getByTestId("apply-fix-modal")).toBeInTheDocument();
   });
 
   it("disables generate button while generating", async () => {
@@ -501,7 +520,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -516,7 +535,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
     expect(screen.getByText("WCAG Compliance")).toBeInTheDocument();
     expect(screen.getByText("CSS Selector")).toBeInTheDocument();
     expect(screen.getByText("HTML Element")).toBeInTheDocument();
-    expect(screen.getByText("🔧 AI-Powered Fix")).toBeInTheDocument();
+    expect(screen.getByText("AI-Powered Fix")).toBeInTheDocument();
     expect(screen.getByText("Learn More")).toBeInTheDocument();
   });
 
@@ -540,7 +559,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} onFalsePositiveChange={onFalsePositiveChange} onClose={onClose} />);
 
-    const fpButton = screen.getByText("🚫 Mark as False Positive");
+    const fpButton = screen.getByText(/Mark as False Positive/);
     fireEvent.click(fpButton);
 
     // Don't fill in any reason - leave it empty
@@ -565,7 +584,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -574,28 +593,28 @@ describe("components/findings/FindingDetailsDrawer", () => {
   });
 
   // Test for line 521: scanUrl || '' - when scanUrl is undefined
-  it("passes empty string for scanUrl when undefined and PR modal is opened", async () => {
+  it("passes empty string for scanUrl when undefined and Apply Fix modal is opened", async () => {
     render(
       <FindingDetailsDrawer
         isOpen={true}
         finding={makeFinding()}
         onClose={vi.fn()}
         scanUrl={undefined}
-        scanStandard="WCAG2AA"
-        scanViewport="desktop"
       />
     );
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
-      const createPRButton = screen.getByText("🚀 Create PR");
-      fireEvent.click(createPRButton);
+      expect(screen.getByText("Apply Fix")).toBeInTheDocument();
     });
 
-    // PR modal should be rendered (the component receives scanUrl || '' which is '')
-    expect(screen.getByTestId("create-pr-modal")).toBeInTheDocument();
+    const createPRButton = screen.getByText("Apply Fix");
+    fireEvent.click(createPRButton);
+
+    // Apply Fix modal should be rendered (the component receives scanUrl || '' which is '')
+    expect(screen.getByTestId("apply-fix-modal")).toBeInTheDocument();
   });
 
   // Test for line 114: catch block with non-Error thrown value
@@ -604,7 +623,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     render(<FindingDetailsDrawer {...defaultProps} />);
 
-    const generateButton = screen.getByText("✨ Generate AI Fix");
+    const generateButton = screen.getByText(/Generate AI Fix/);
     fireEvent.click(generateButton);
 
     await waitFor(() => {
@@ -622,9 +641,9 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     fireEvent.click(selectorCopyButton);
 
-    // After clicking, the button text should change to "✓ Copied!"
+    // After clicking, the button text should change to "Copied!"
     await waitFor(() => {
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
     });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("button.submit");
   });
@@ -637,9 +656,9 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
     fireEvent.click(htmlCopyButton);
 
-    // After clicking, the button text should change to "✓ Copied!"
+    // After clicking, the button text should change to "Copied!"
     await waitFor(() => {
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
     });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('<button class="submit">Click</button>');
   });
@@ -654,15 +673,15 @@ describe("components/findings/FindingDetailsDrawer", () => {
     // Click the button
     fireEvent.click(selectorCopyButton);
 
-    // After clicking, the button text should change to "✓ Copied!"
+    // After clicking, the button text should change to "Copied!"
     await waitFor(() => {
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
     });
 
     // Wait for 2000ms timeout to trigger the callback (line 54: setCopiedSelector(false))
     await waitFor(
       () => {
-        expect(screen.queryByText("✓ Copied!")).not.toBeInTheDocument();
+        expect(screen.queryByText("Copied!")).not.toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -678,15 +697,15 @@ describe("components/findings/FindingDetailsDrawer", () => {
     // Click the button
     fireEvent.click(htmlCopyButton);
 
-    // After clicking, the button text should change to "✓ Copied!"
+    // After clicking, the button text should change to "Copied!"
     await waitFor(() => {
-      expect(screen.getByText("✓ Copied!")).toBeInTheDocument();
+      expect(screen.getByText("Copied!")).toBeInTheDocument();
     });
 
     // Wait for 2000ms timeout to trigger the callback (line 57: setCopiedHtml(false))
     await waitFor(
       () => {
-        expect(screen.queryByText("✓ Copied!")).not.toBeInTheDocument();
+        expect(screen.queryByText("Copied!")).not.toBeInTheDocument();
       },
       { timeout: 3000 }
     );

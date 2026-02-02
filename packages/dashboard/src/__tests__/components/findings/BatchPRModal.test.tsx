@@ -14,6 +14,9 @@ const mockGetRepos = vi.fn();
 const mockGetBranches = vi.fn();
 const mockCreatePR = vi.fn();
 const mockTrackPR = vi.fn();
+const mockSearchCode = vi.fn();
+const mockGetRepoTree = vi.fn();
+const mockGetFileContent = vi.fn();
 
 vi.mock("../../../hooks/useGitHub", () => ({
   useGitHub: vi.fn(() => ({
@@ -26,6 +29,9 @@ vi.mock("../../../hooks/useGitHub", () => ({
     getRepos: mockGetRepos,
     getBranches: mockGetBranches,
     createPR: mockCreatePR,
+    searchCode: mockSearchCode,
+    getRepoTree: mockGetRepoTree,
+    getFileContent: mockGetFileContent,
   })),
 }));
 
@@ -43,6 +49,8 @@ vi.mock("../../../utils/api", () => ({
 // Mock batch PR description util
 vi.mock("../../../utils/batchPrDescription", () => ({
   generateBatchDescription: vi.fn(() => "Generated batch description"),
+  generateSmartTitle: vi.fn(() => "Fix accessibility issues"),
+  generateSmartBranchName: vi.fn(() => "fix/accessibility-issues"),
 }));
 
 // Mock UI components
@@ -185,6 +193,9 @@ describe("components/findings/BatchPRModal", () => {
       getRepos: mockGetRepos,
       getBranches: mockGetBranches,
       createPR: mockCreatePR,
+      searchCode: mockSearchCode,
+      getRepoTree: mockGetRepoTree,
+      getFileContent: mockGetFileContent,
     });
 
     mockGetRepos.mockResolvedValue(mockRepos);
@@ -230,11 +241,13 @@ describe("components/findings/BatchPRModal", () => {
       getRepos: mockGetRepos,
       getBranches: mockGetBranches,
       createPR: mockCreatePR,
+      searchCode: mockSearchCode,
+      getRepoTree: mockGetRepoTree,
+      getFileContent: mockGetFileContent,
     });
 
     render(<BatchPRModal {...defaultProps} />);
 
-    expect(screen.getByText("🔗")).toBeInTheDocument();
     expect(screen.getByText("GitHub Not Connected")).toBeInTheDocument();
   });
 
@@ -330,9 +343,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("modal-title")).toHaveTextContent("Configure Files & PR");
@@ -347,9 +362,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(mockGetBranches).toHaveBeenCalledWith("owner", "test-repo");
@@ -363,15 +380,19 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
 
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
+
     await waitFor(() => {
-      const fileInput = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput, { target: { value: "src/component.tsx" } });
-      expect(fileInput).toHaveValue("src/component.tsx");
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput, { target: { value: "src/component.tsx" } });
+    expect(fileInput).toHaveValue("src/component.tsx");
   });
 
   it("creates PR with fixes", async () => {
@@ -391,17 +412,21 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      const fileInput1 = screen.getByTestId("file-path-1");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
-      fireEvent.change(fileInput1, { target: { value: "src/file2.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    const fileInput1 = screen.getByTestId("file-path-1");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+    fireEvent.change(fileInput1, { target: { value: "src/file2.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -429,17 +454,21 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      const fileInput1 = screen.getByTestId("file-path-1");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
-      fireEvent.change(fileInput1, { target: { value: "src/file2.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    const fileInput1 = screen.getByTestId("file-path-1");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+    fireEvent.change(fileInput1, { target: { value: "src/file2.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -481,15 +510,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -524,9 +557,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("file-path-mapper")).toBeInTheDocument();
@@ -624,9 +659,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -646,9 +683,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("file-path-mapper")).toBeInTheDocument();
@@ -704,7 +743,8 @@ describe("components/findings/BatchPRModal", () => {
     });
 
     // Select the repo with empty default_branch
-    fireEvent.click(screen.getByTestId("repo-empty-branch-repo"));
+    const repoBtn = screen.getByTestId("repo-empty-branch-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("file-path-mapper")).toBeInTheDocument();
@@ -742,9 +782,11 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("file-path-mapper")).toBeInTheDocument();
@@ -781,15 +823,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -813,9 +859,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(screen.getByTestId("file-path-mapper")).toBeInTheDocument();
@@ -853,15 +901,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -898,15 +950,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -919,7 +975,8 @@ describe("components/findings/BatchPRModal", () => {
         expect.anything(),
         expect.anything(),
         expect.anything(),
-        "Generated batch description"
+        "Generated batch description",
+        expect.anything()
       );
     });
   });
@@ -1004,9 +1061,11 @@ describe("components/findings/BatchPRModal", () => {
     fireEvent.click(continueBtn);
 
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -1042,15 +1101,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -1090,15 +1153,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");
@@ -1135,15 +1202,19 @@ describe("components/findings/BatchPRModal", () => {
 
     // Select repo
     await waitFor(() => {
-      const repoBtn = screen.getByTestId("repo-test-repo");
-      fireEvent.click(repoBtn);
+      expect(screen.getByTestId("repo-test-repo")).toBeInTheDocument();
     });
+
+    const repoBtn = screen.getByTestId("repo-test-repo");
+    fireEvent.click(repoBtn);
 
     // Enter file paths
     await waitFor(() => {
-      const fileInput0 = screen.getByTestId("file-path-0");
-      fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
+      expect(screen.getByTestId("file-path-0")).toBeInTheDocument();
     });
+
+    const fileInput0 = screen.getByTestId("file-path-0");
+    fireEvent.change(fileInput0, { target: { value: "src/file1.tsx" } });
 
     // Submit
     const submitBtn = screen.getByTestId("submit");

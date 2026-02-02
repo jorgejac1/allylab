@@ -5,3 +5,4 @@ export { AppShell } from './AppShell';
 export { SectionHeader } from './SectionHeader';
 export { Sidebar } from './Sidebar';
 export { SidebarLayout } from './SidebarLayout';
+export { UserSwitcher } from './UserSwitcher';

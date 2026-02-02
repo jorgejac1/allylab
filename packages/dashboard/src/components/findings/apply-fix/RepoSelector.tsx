@@ -1,4 +1,5 @@
 import type { GitHubRepo } from '../../../types/github';
+import { FolderGit2, Check } from 'lucide-react';
 
 interface RepoSelectorProps {
   repos: GitHubRepo[];
@@ -25,8 +26,8 @@ export function RepoSelector({
         alignItems: 'center',
         marginBottom: 8,
       }}>
-        <label style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>
-          📁 Repository
+        <label style={{ fontSize: 13, fontWeight: 500, color: '#475569', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <FolderGit2 size={14} /> Repository
         </label>
         {selectedRepo && !showSelector && (
           <button
@@ -112,7 +113,7 @@ function RepoList({
           />
           <span style={{ flex: 1 }}>{repo.full_name}</span>
           {selectedRepo?.id === repo.id && (
-            <span style={{ color: '#3b82f6' }}>✓</span>
+            <Check size={14} style={{ color: '#3b82f6' }} />
           )}
         </button>
       ))}

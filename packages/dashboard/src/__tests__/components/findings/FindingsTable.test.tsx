@@ -67,38 +67,38 @@ vi.mock("../../../components/findings/FindingsRow", () => ({
     onRemoveJiraLink,
     renderPRStatus,
   }: {
-    finding: { id: string; ruleTitle: string; falsePositive?: boolean };
+    finding: TrackedFinding;
     isSelected: boolean;
     jiraIssueKey?: string;
     isLinkingJira: boolean;
     jiraLinkInput: string;
-    onToggleSelect: () => void;
-    onToggleFalsePositive: () => void;
-    onViewDetails: () => void;
+    onToggleSelect: (findingId: string) => void;
+    onToggleFalsePositive: (finding: TrackedFinding) => void;
+    onViewDetails: (finding: TrackedFinding) => void;
     onJiraLinkInputChange: (value: string) => void;
-    onStartJiraLink: () => void;
-    onSaveJiraLink: () => void;
+    onStartJiraLink: (findingId: string) => void;
+    onSaveJiraLink: (findingId: string) => void;
     onCancelJiraLink: () => void;
-    onRemoveJiraLink: () => void;
-    renderPRStatus: () => React.ReactNode;
+    onRemoveJiraLink: (findingId: string) => void;
+    renderPRStatus: (findingId: string) => React.ReactNode;
   }) => (
     <tr data-testid={`finding-row-${finding.id}`}>
       <td>
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={onToggleSelect}
+          onChange={() => onToggleSelect(finding.id)}
           data-testid={`checkbox-${finding.id}`}
         />
       </td>
       <td>{finding.ruleTitle}</td>
       <td>
-        <button onClick={onToggleFalsePositive} data-testid={`fp-toggle-${finding.id}`}>
+        <button onClick={() => onToggleFalsePositive(finding)} data-testid={`fp-toggle-${finding.id}`}>
           {finding.falsePositive ? "Restore" : "Ignore"}
         </button>
       </td>
       <td>
-        <button onClick={onViewDetails} data-testid={`view-${finding.id}`}>View</button>
+        <button onClick={() => onViewDetails(finding)} data-testid={`view-${finding.id}`}>View</button>
       </td>
       <td data-testid={`jira-cell-${finding.id}`}>
         {jiraIssueKey && <span data-testid={`jira-key-${finding.id}`}>{jiraIssueKey}</span>}
@@ -109,17 +109,17 @@ vi.mock("../../../components/findings/FindingsRow", () => ({
               value={jiraLinkInput}
               onChange={(e) => onJiraLinkInputChange(e.target.value)}
             />
-            <button data-testid={`jira-save-${finding.id}`} onClick={onSaveJiraLink}>Save</button>
+            <button data-testid={`jira-save-${finding.id}`} onClick={() => onSaveJiraLink(finding.id)}>Save</button>
             <button data-testid={`jira-cancel-${finding.id}`} onClick={onCancelJiraLink}>Cancel</button>
           </div>
         ) : (
-          <button data-testid={`jira-start-${finding.id}`} onClick={onStartJiraLink}>Link</button>
+          <button data-testid={`jira-start-${finding.id}`} onClick={() => onStartJiraLink(finding.id)}>Link</button>
         )}
         {jiraIssueKey && (
-          <button data-testid={`jira-remove-${finding.id}`} onClick={onRemoveJiraLink}>Remove</button>
+          <button data-testid={`jira-remove-${finding.id}`} onClick={() => onRemoveJiraLink(finding.id)}>Remove</button>
         )}
       </td>
-      <td data-testid={`pr-status-${finding.id}`}>{renderPRStatus()}</td>
+      <td data-testid={`pr-status-${finding.id}`}>{renderPRStatus(finding.id)}</td>
     </tr>
   ),
 }));
@@ -147,30 +147,62 @@ vi.mock("../../../components/findings/PRStatusBadge", () => ({
   ),
 }));
 
-// Use module-level variables to track mock state
-const mockJiraLinks: Record<string, string> = {};
-const mockSetJiraLinks = vi.fn((updater: (prev: Record<string, string>) => Record<string, string>) => {
-  const result = updater(mockJiraLinks);
-  Object.keys(mockJiraLinks).forEach(key => delete mockJiraLinks[key]);
-  Object.assign(mockJiraLinks, result);
+// Use vi.hoisted for module-level mocks
+const {
+  mockJiraLinks,
+  mockSetJiraLinks,
+  mockVerifyFixes,
+  mockGetPRsForFinding,
+} = vi.hoisted(() => {
+  const jiraLinks: Record<string, string> = {};
+  return {
+    mockJiraLinks: jiraLinks,
+    mockSetJiraLinks: vi.fn((updater: (prev: Record<string, string>) => Record<string, string>) => {
+      const result = updater(jiraLinks);
+      Object.keys(jiraLinks).forEach(key => delete jiraLinks[key]);
+      Object.assign(jiraLinks, result);
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockVerifyFixes: vi.fn((): any => Promise.resolve({ success: true, message: "Verified" })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockGetPRsForFinding: vi.fn((): any => []),
+  };
 });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockVerifyFixes = vi.fn((): any => Promise.resolve({ success: true, message: "Verified" }));
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockGetPRsForFinding = vi.fn((): any => []);
 
-vi.mock("../../../hooks", () => ({
+// Mock the usePRTracking module directly (used by useFindingsVerification)
+vi.mock("../../../hooks/usePRTracking", () => ({
+  usePRTracking: vi.fn(() => ({
+    getPRsForFinding: mockGetPRsForFinding,
+    verifyFixes: mockVerifyFixes,
+  })),
+}));
+
+// Mock useLocalStorage at its actual file path (used by useFindingsJira)
+vi.mock("../../../hooks/useLocalStorage", () => ({
   useLocalStorage: vi.fn(<T,>(key: string, defaultValue: T) => {
     if (key === "allylab_jira_links") {
       return [mockJiraLinks, mockSetJiraLinks];
     }
     return [defaultValue, vi.fn()];
   }),
-  usePRTracking: vi.fn(() => ({
-    getPRsForFinding: mockGetPRsForFinding,
-    verifyFixes: mockVerifyFixes,
-  })),
 }));
+
+vi.mock("../../../hooks", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../hooks")>();
+  return {
+    ...actual,
+    useLocalStorage: vi.fn(<T,>(key: string, defaultValue: T) => {
+      if (key === "allylab_jira_links") {
+        return [mockJiraLinks, mockSetJiraLinks];
+      }
+      return [defaultValue, vi.fn()];
+    }),
+    usePRTracking: vi.fn(() => ({
+      getPRsForFinding: mockGetPRsForFinding,
+      verifyFixes: mockVerifyFixes,
+    })),
+  };
+});
 
 vi.mock("../../../utils/falsePositives", () => ({
   markAsFalsePositive: vi.fn(),
@@ -829,23 +861,23 @@ describe("components/findings/FindingsTable", () => {
       makeFinding({ id: "f1", ruleTitle: "Rule 1" }),
     ];
 
-    render(<FindingsTable {...defaultProps} findings={findings} />);
+    const { container } = render(<FindingsTable {...defaultProps} findings={findings} />);
 
     // Switch to false-positive filter - should show empty state since no FPs
     fireEvent.click(screen.getByText("False Positives"));
 
-    // Should show checkmark icon and "No false positives marked" message
-    expect(screen.getByText("✓")).toBeInTheDocument();
+    // Should show icon and "No false positives marked" message
+    expect(container.querySelector("svg")).toBeInTheDocument();
     expect(screen.getByText("No false positives marked")).toBeInTheDocument();
   });
 
   // Direct test for empty state with default filter
   it("shows search icon and regular empty state message when no findings match", () => {
-    render(<FindingsTable {...defaultProps} findings={[]} />);
+    const { container } = render(<FindingsTable {...defaultProps} findings={[]} />);
 
     // With empty findings and default filter, shows the regular empty message
     expect(screen.getByText("No findings match the current filters")).toBeInTheDocument();
-    expect(screen.getByText("🔍")).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
   // Test for totalPages || 1 fallback (line 379)

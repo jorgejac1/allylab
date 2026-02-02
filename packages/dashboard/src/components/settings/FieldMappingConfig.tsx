@@ -1,5 +1,6 @@
 import { Card, Input, Select } from '../ui';
 import type { JiraFieldMapping, Severity } from '../../types';
+import { Map, ClipboardList } from 'lucide-react';
 
 interface FieldMappingConfigProps {
   mapping: JiraFieldMapping;
@@ -44,8 +45,8 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
 
   return (
     <Card>
-      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-        🗺️ Field Mapping
+      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <Map size={18} /> Field Mapping
       </h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -147,8 +148,8 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
             border: '1px solid #e2e8f0',
           }}
         >
-          <h4 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 8px', color: '#64748b' }}>
-            📋 Mapping Preview
+          <h4 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 8px', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <ClipboardList size={14} /> Mapping Preview
           </h4>
           <pre
             style={{

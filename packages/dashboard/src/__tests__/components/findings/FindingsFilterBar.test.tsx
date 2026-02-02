@@ -79,7 +79,7 @@ describe("findings/FindingsFilterBar", () => {
   it("renders false positive filter buttons", () => {
     render(<FindingsFilterBar {...defaultProps} />);
     expect(screen.getByText("Active (10)")).toBeInTheDocument();
-    expect(screen.getByText("🚫 False Positives (2)")).toBeInTheDocument();
+    expect(screen.getByText(/False Positives \(2\)/)).toBeInTheDocument();
     expect(screen.getByText("All (12)")).toBeInTheDocument();
   });
 
@@ -100,7 +100,7 @@ describe("findings/FindingsFilterBar", () => {
   it("calls onFpFilterChange for false-positive filter", () => {
     const onFpFilterChange = vi.fn();
     render(<FindingsFilterBar {...defaultProps} onFpFilterChange={onFpFilterChange} />);
-    fireEvent.click(screen.getByText("🚫 False Positives (2)"));
+    fireEvent.click(screen.getByText(/False Positives \(2\)/));
     expect(onFpFilterChange).toHaveBeenCalledWith("false-positive");
   });
 
@@ -128,28 +128,28 @@ describe("findings/FindingsFilterBar", () => {
 
   it("renders status filters with icons and counts", () => {
     render(<FindingsFilterBar {...defaultProps} />);
-    expect(screen.getByText(/🆕 5 New/)).toBeInTheDocument();
-    expect(screen.getByText(/🔄 3 Recurring/)).toBeInTheDocument();
-    expect(screen.getByText(/✅ 2 Fixed/)).toBeInTheDocument();
+    expect(screen.getByText(/5 New/)).toBeInTheDocument();
+    expect(screen.getByText(/3 Recurring/)).toBeInTheDocument();
+    expect(screen.getByText(/2 Fixed/)).toBeInTheDocument();
   });
 
   it("calls onStatusFilterChange when status button clicked", () => {
     const onStatusFilterChange = vi.fn();
     render(<FindingsFilterBar {...defaultProps} onStatusFilterChange={onStatusFilterChange} />);
-    fireEvent.click(screen.getByText(/🆕 5 New/));
+    fireEvent.click(screen.getByText(/5 New/));
     expect(onStatusFilterChange).toHaveBeenCalledWith("new");
   });
 
   it("toggles status filter when clicked twice", () => {
     const onStatusFilterChange = vi.fn();
     render(<FindingsFilterBar {...defaultProps} statusFilter="new" onStatusFilterChange={onStatusFilterChange} />);
-    fireEvent.click(screen.getByText(/🆕 5 New/));
+    fireEvent.click(screen.getByText(/5 New/));
     expect(onStatusFilterChange).toHaveBeenCalledWith("all");
   });
 
   it("renders JIRA linked count when present", () => {
     render(<FindingsFilterBar {...defaultProps} linkedCount={4} />);
-    expect(screen.getByText(/🔗 4 linked to JIRA/)).toBeInTheDocument();
+    expect(screen.getByText(/4 linked to JIRA/)).toBeInTheDocument();
   });
 
   it("does not render JIRA linked count when zero", () => {
@@ -164,18 +164,18 @@ describe("findings/FindingsFilterBar", () => {
 
   it("renders export to JIRA button", () => {
     render(<FindingsFilterBar {...defaultProps} />);
-    expect(screen.getByText(/📤 Export to JIRA/)).toBeInTheDocument();
+    expect(screen.getByText(/Export to JIRA/)).toBeInTheDocument();
   });
 
   it("shows selected count in export button when items selected", () => {
     render(<FindingsFilterBar {...defaultProps} selectedCount={5} />);
-    expect(screen.getByText(/📤 Export to JIRA \(5\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Export to JIRA \(5\)/)).toBeInTheDocument();
   });
 
   it("calls onExportToJira when button clicked", () => {
     const onExportToJira = vi.fn();
     render(<FindingsFilterBar {...defaultProps} onExportToJira={onExportToJira} />);
-    fireEvent.click(screen.getByText(/📤 Export to JIRA/));
+    fireEvent.click(screen.getByText(/Export to JIRA/));
     expect(onExportToJira).toHaveBeenCalledTimes(1);
   });
 

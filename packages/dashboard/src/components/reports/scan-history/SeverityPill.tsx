@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { SEVERITY_COLORS } from '../../../utils/constants';
 
 interface SeverityPillProps {
@@ -5,7 +6,7 @@ interface SeverityPillProps {
   count: number;
 }
 
-export function SeverityPill({ severity, count }: SeverityPillProps) {
+export const SeverityPill = memo(function SeverityPill({ severity, count }: SeverityPillProps) {
   if (count === 0) return null;
 
   const color = SEVERITY_COLORS[severity];
@@ -34,4 +35,4 @@ export function SeverityPill({ severity, count }: SeverityPillProps) {
       <span style={{ fontSize: 12, fontWeight: 600, color }}>{count}</span>
     </div>
   );
-}
+});

@@ -80,7 +80,9 @@ describe("scan-history components", () => {
         <FilterTag label="Site: allylab.com" onRemove={remove} />
       </div>
     );
-    fireEvent.click(screen.getByText("×"));
+    // Click the close button (uses X icon now)
+    const closeBtn = screen.getAllByRole("button")[0];
+    fireEvent.click(closeBtn);
     expect(remove).toHaveBeenCalled();
     expect(parent).not.toHaveBeenCalled();
   });
@@ -104,7 +106,7 @@ describe("scan-history components", () => {
     expect(onDateChange).toHaveBeenCalledWith("start", "2024-02-01");
     expect(onDateChange).toHaveBeenCalledWith("end", "2024-02-10");
 
-    fireEvent.click(screen.getByText("✕ Clear"));
+    fireEvent.click(screen.getByRole("button", { name: /Clear/i }));
     expect(onClear).toHaveBeenCalled();
   });
 
@@ -134,7 +136,7 @@ describe("scan-history components", () => {
       />
     );
     fireEvent.click(screen.getByTestId("card"));
-    expect(onSelect).toHaveBeenCalled();
+    expect(onSelect).toHaveBeenCalledWith(baseScan);
     expect(screen.getByTitle(/Score dropped 30 points/)).toBeInTheDocument();
     expect(screen.getByTestId("sparkline")).toBeInTheDocument();
 
@@ -150,7 +152,7 @@ describe("scan-history components", () => {
       />
     );
     fireEvent.click(screen.getByTestId("card"));
-    expect(onToggle).toHaveBeenCalled();
+    expect(onToggle).toHaveBeenCalledWith(baseScan);
     const checkbox = screen.getByRole("checkbox");
     fireEvent.click(checkbox);
     expect(onToggle).toHaveBeenCalledTimes(2);
@@ -164,8 +166,11 @@ describe("scan-history components", () => {
         onDelete={onDelete}
       />
     );
-    fireEvent.click(screen.getByText("🗑️"));
-    expect(onDelete).toHaveBeenCalled();
+    // Delete button now uses Trash2 icon (lucide-react)
+    const deleteButton = document.querySelector(".lucide-trash-2")?.closest("button");
+    expect(deleteButton).toBeInTheDocument();
+    fireEvent.click(deleteButton as HTMLButtonElement);
+    expect(onDelete).toHaveBeenCalledWith("s1");
   });
 
   it("applies regression border style when regression exists and not selected", () => {
@@ -221,7 +226,7 @@ describe("scan-history components", () => {
         onClearAll={onClearAll}
       />
     );
-    fireEvent.click(screen.getByRole("button", { name: "📊 Compare Scans" }));
+    fireEvent.click(screen.getByRole("button", { name: /Compare Scans/i }));
     expect(onCompareModeToggle).toHaveBeenCalled();
 
     // Compare mode active, custom picker visible, active filters summary

@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Button, Toast } from '../ui';
 import { useToast } from '../../hooks';
 import type { TrackedFinding } from '../../types';
 import { getApiBase } from '../../utils/api';
+import { Download, FileText, BarChart3, Braces } from 'lucide-react';
 
 interface ExportDropdownProps {
   findings: TrackedFinding[];
@@ -79,7 +81,7 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
         onClick={() => setIsOpen(!isOpen)}
         disabled={isExporting || findings.length === 0}
       >
-        {isExporting ? 'Exporting...' : '📥 Export'}
+        {isExporting ? 'Exporting...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Download size={12} /> Export</span>}
       </Button>
 
       {isOpen && (
@@ -110,20 +112,20 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
               overflow: 'hidden',
             }}
           >
-            <DropdownItem 
-              icon="📄" 
-              label="Export as CSV" 
-              onClick={() => handleExport('csv')} 
+            <DropdownItem
+              icon={<FileText size={14} />}
+              label="Export as CSV"
+              onClick={() => handleExport('csv')}
             />
-            <DropdownItem 
-              icon="📊" 
-              label="Export as Excel" 
-              onClick={() => handleExport('excel')} 
+            <DropdownItem
+              icon={<BarChart3 size={14} />}
+              label="Export as Excel"
+              onClick={() => handleExport('excel')}
             />
-            <DropdownItem 
-              icon="{ }" 
-              label="Export as JSON" 
-              onClick={() => handleExport('json')} 
+            <DropdownItem
+              icon={<Braces size={14} />}
+              label="Export as JSON"
+              onClick={() => handleExport('json')}
               isLast
             />
           </div>
@@ -133,15 +135,15 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
   );
 }
 
-function DropdownItem({ 
-  icon, 
-  label, 
-  onClick, 
-  isLast = false 
-}: { 
-  icon: string; 
-  label: string; 
-  onClick: () => void; 
+function DropdownItem({
+  icon,
+  label,
+  onClick,
+  isLast = false
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
   isLast?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);

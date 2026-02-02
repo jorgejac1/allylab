@@ -8,18 +8,35 @@ import {
   testWebhook,
 } from '../services/webhooks';
 import type { WebhookCreateRequest, WebhookUpdateRequest } from '../types/webhook';
+import { getPaginationFromQuery, paginate } from '../utils/pagination.js';
+
+interface WebhookListQuery {
+  limit?: string;
+  offset?: string;
+  page?: string;
+}
 
 export async function webhookRoutes(fastify: FastifyInstance) {
-  // List all webhooks
-  fastify.get('/webhooks', async (_request: FastifyRequest, reply: FastifyReply) => {
-    const webhooks = getAllWebhooks();
-    // Don't expose secrets
-    const safeWebhooks = webhooks.map(wh => ({
-      ...wh,
-      secret: wh.secret ? '••••••••' : undefined,
-    }));
-    return reply.send(safeWebhooks);
-  });
+  // List all webhooks with pagination
+  fastify.get<{ Querystring: WebhookListQuery }>(
+    '/webhooks',
+    async (request: FastifyRequest<{ Querystring: WebhookListQuery }>, reply: FastifyReply) => {
+      const webhooks = getAllWebhooks();
+      // Don't expose secrets
+      const safeWebhooks = webhooks.map(wh => ({
+        ...wh,
+        secret: wh.secret ? '••••••••' : undefined,
+      }));
+
+      const pagination = getPaginationFromQuery(request.query as Record<string, unknown>);
+      const result = paginate(safeWebhooks, pagination);
+
+      return reply.send({
+        webhooks: result.items,
+        pagination: result.pagination,
+      });
+    }
+  );
 
   // Get single webhook
   fastify.get<{ Params: { id: string } }>(

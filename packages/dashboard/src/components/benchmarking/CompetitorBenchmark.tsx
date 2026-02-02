@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Card, Button, Input, EmptyState, Toast } from '../ui';
 import { useCompetitors, useToast } from '../../hooks';
 import type { BenchmarkData } from '../../types';
+import { Plus, Trophy, RefreshCw, Loader2, BarChart3, Trash2 } from 'lucide-react';
+import { getScoreColor, getScoreGrade } from '../../utils/scoreUtils';
 
 interface CompetitorBenchmarkProps {
   yourSiteUrl?: string;
@@ -92,8 +94,8 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
 
       {/* Add Competitor */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-          ➕ Add Competitor
+        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Plus size={18} />Add Competitor
         </h3>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -122,8 +124,8 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
       {/* Competitors List */}
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>
-            🏆 Competitor Comparison ({competitors.length})
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Trophy size={18} />Competitor Comparison ({competitors.length})
           </h3>
           {competitors.length > 0 && (
             <Button
@@ -131,14 +133,14 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
               onClick={handleScanAll}
               disabled={isScanning}
             >
-              {isScanning ? '⏳ Scanning...' : '🔄 Scan All'}
+              {isScanning ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Scanning...</> : <><RefreshCw size={14} style={{ marginRight: 6 }} />Scan All</>}
             </Button>
           )}
         </div>
 
         {competitors.length === 0 ? (
           <EmptyState
-            icon="🏆"
+            icon={<Trophy size={32} />}
             title="No Competitors Added"
             description="Add competitor URLs above to compare accessibility scores"
           />
@@ -176,8 +178,8 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
       {/* Score Comparison Chart */}
       {benchmarkData && benchmarkData.competitors.length > 0 && (
         <Card>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
-            📊 Score Comparison
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BarChart3 size={18} />Score Comparison
           </h3>
           <ScoreBarChart data={benchmarkData} />
         </Card>
@@ -299,7 +301,7 @@ function CompetitorRow({
                 color: getScoreColor(score),
               }}
             >
-              {getGrade(score)}
+              {getScoreGrade(score)}
             </div>
           </>
         ) : (
@@ -316,7 +318,7 @@ function CompetitorRow({
             onClick={onScan}
             disabled={isScanning}
           >
-            {isScanning ? '⏳' : '🔄'}
+            {isScanning ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={14} />}
           </Button>
           <Button
             variant="ghost"
@@ -324,7 +326,7 @@ function CompetitorRow({
             onClick={onDelete}
             style={{ color: '#ef4444' }}
           >
-            🗑️
+            <Trash2 size={14} />
           </Button>
         </div>
       )}
@@ -378,23 +380,4 @@ function ScoreBarChart({ data }: ScoreBarChartProps) {
       ))}
     </div>
   );
-}
-
-// ============================================
-// Helper Functions
-// ============================================
-
-function getScoreColor(score: number): string {
-  if (score >= 90) return '#10b981';
-  if (score >= 70) return '#f59e0b';
-  if (score >= 50) return '#ea580c';
-  return '#dc2626';
-}
-
-function getGrade(score: number): string {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'F';
 }

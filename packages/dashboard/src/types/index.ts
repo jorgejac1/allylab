@@ -240,3 +240,5 @@ export * from './jira';
 export * from './schedule';
 export * from './competitor';
 export * from './batch-pr';
+export * from './auth';
+export * from './gitlab';
