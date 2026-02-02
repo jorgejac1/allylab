@@ -70,9 +70,9 @@ export function TrendLine({
             padding: "8px 12px",
           }}
           labelStyle={{ fontWeight: 600, marginBottom: 4 }}
-          formatter={(value: number, name: string) => {
-            if (name === "score") return [`${value}/100`, "Score"];
-            return [value, name];
+          formatter={(value, name) => {
+            if (name === "score" && typeof value === "number") return [`${value}/100`, "Score"];
+            return [value ?? 0, name];
           }}
           labelFormatter={(label, payload) => {
             const item = payload?.[0]?.payload;

@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "exceljs": "^4.4.0",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
