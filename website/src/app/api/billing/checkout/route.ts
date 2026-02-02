@@ -17,7 +17,7 @@ interface CheckoutRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, orgId } = await auth();
+    const { userId } = await auth();
     const user = await currentUser();
 
     if (!userId || !user) {

@@ -163,7 +163,8 @@ export function registerUser(
     return { success: false, error: 'Failed to save user' };
   }
 
-  const { password: _, ...userWithoutPassword } = newUser;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _p1, ...userWithoutPassword } = newUser;
   return { success: true, user: userWithoutPassword };
 }
 
@@ -195,7 +196,8 @@ export function authenticateUser(
     : 24 * 60 * 60 * 1000;      // 24 hours
 
   // Create session
-  const { password: _, ...userWithoutPassword } = user;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _p2, ...userWithoutPassword } = user;
   const session: MockSession = {
     user: {
       ...userWithoutPassword,
@@ -271,7 +273,8 @@ export function updateSessionUser(userId: string): boolean {
   const user = allUsers.find(u => u.id === userId);
   if (!user) return false;
 
-  const { password: _, ...userWithoutPassword } = user;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _p3, ...userWithoutPassword } = user;
   const updatedSession: MockSession = {
     ...session,
     user: userWithoutPassword,

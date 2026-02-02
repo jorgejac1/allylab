@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const prNumber = prCounter++;
-    const [owner, repoName] = repo.split('/');
 
     const result = {
       id: `pr-${Date.now()}`,

@@ -16,7 +16,6 @@ import {
   authenticateUser,
   registerUser,
   signOut as mockSignOut,
-  isAuthenticated as checkIsAuthenticated,
   AUTH_STORAGE_KEY,
 } from './mock';
 
@@ -37,16 +36,18 @@ interface MockAuthProviderProps {
 }
 
 export function MockAuthProvider({ children }: MockAuthProviderProps) {
-  const [session, setSession] = useState<MockSession | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use lazy initialization to avoid the set-state-in-effect lint warning
+  const [session, setSession] = useState<MockSession | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getSession();
+  });
+  const [isLoading] = useState(() => {
+    // Start as not loading if we can read from localStorage
+    return typeof window === 'undefined';
+  });
 
-  // Initialize from localStorage
+  // Listen for storage changes (for cross-tab sync)
   useEffect(() => {
-    const stored = getSession();
-    setSession(stored);
-    setIsLoading(false);
-
-    // Listen for storage changes (for cross-tab sync)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === AUTH_STORAGE_KEY) {
         const newSession = getSession();

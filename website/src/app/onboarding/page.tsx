@@ -1,18 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Check, Building2, CreditCard, Rocket, ArrowRight, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import type { Plan } from '@/lib/auth/types';
 
 type BillingInterval = 'monthly' | 'yearly';
-
-// Check if Clerk is configured
-const isClerkConfigured = () => {
-  return !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-};
 
 interface PlanOption {
   id: Plan;
@@ -73,7 +67,6 @@ const steps = [
 
 // Mock mode component (when Clerk is not configured)
 function MockOnboarding() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -368,7 +361,6 @@ function MockOnboarding() {
 
 // Production component (with Clerk)
 function ClerkOnboarding() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -379,10 +371,10 @@ function ClerkOnboarding() {
   const [selectedPlan, setSelectedPlan] = useState<Plan>('free');
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
 
-  // Dynamically import Clerk hook
+  // Dynamically import Clerk to check availability
   useEffect(() => {
-    import('@clerk/nextjs').then(({ useUser }) => {
-      // This is a workaround - in production, you'd use the hook directly
+    import('@clerk/nextjs').then(() => {
+      // Clerk is available
       setIsReady(true);
     }).catch(() => {
       // Clerk not available, redirect to mock
@@ -712,21 +704,12 @@ function ClerkOnboarding() {
 
 // Main export - choose based on Clerk configuration
 export default function OnboardingPage() {
-  const [useMock, setUseMock] = useState<boolean | null>(null);
-
-  useEffect(() => {
+  // Use lazy initialization to determine if mock mode should be used
+  const [useMock] = useState<boolean>(() => {
     // Check if Clerk is configured (client-side check)
     const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-    setUseMock(!clerkKey);
-  }, []);
-
-  if (useMock === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+    return !clerkKey;
+  });
 
   return useMock ? <MockOnboarding /> : <ClerkOnboarding />;
 }

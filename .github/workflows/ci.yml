@@ -87,7 +87,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: cd website && npm ci --legacy-peer-deps
+        run: cd website && npm ci --legacy-peer-deps --ignore-scripts
 
       - name: Run tests
         run: cd website && npm test

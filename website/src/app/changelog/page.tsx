@@ -1,7 +1,7 @@
 import { Section } from "@/components/layout/Section";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { GitBranch, Package, Zap, Bug, Sparkles, Lock } from "lucide-react";
+import { GitBranch, Package, Zap, Bug, Sparkles } from "lucide-react";
 
 export const metadata = {
   title: "Changelog - AllyLab",

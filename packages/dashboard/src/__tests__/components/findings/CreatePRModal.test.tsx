@@ -649,16 +649,20 @@ describe("components/findings/CreatePRModal", () => {
 
     const repoButtons = screen.getAllByRole("button");
     const testRepoBtn = repoButtons.find(btn => btn.textContent?.includes("owner/test-repo"));
-    fireEvent.click(testRepoBtn!);
+    if (testRepoBtn) fireEvent.click(testRepoBtn);
 
     await waitFor(() => {
       const fileInput = screen.getByPlaceholderText("src/components/Header.tsx");
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
-    const createPRButtons = screen.getAllByRole("button");
-    const createBtn = createPRButtons.find(btn => btn.textContent?.includes("Create Pull Request"));
-    fireEvent.click(createBtn!);
+    // Wait for the Create PR button to be available and click it
+    await waitFor(() => {
+      const createPRButtons = screen.getAllByRole("button");
+      const createBtn = createPRButtons.find(btn => btn.textContent?.includes("Create Pull Request"));
+      expect(createBtn).toBeTruthy();
+      if (createBtn) fireEvent.click(createBtn);
+    });
 
     await waitFor(() => {
       const link = screen.getByText("View on GitHub →");

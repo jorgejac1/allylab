@@ -44,7 +44,8 @@ export async function GET() {
   const exportData = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    rules: MOCK_RULES.map(({ id, ...rule }) => rule), // Remove IDs for export
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rules: MOCK_RULES.map(({ id: _id, ...rule }) => rule), // Remove IDs for export
   };
 
   return new NextResponse(JSON.stringify(exportData, null, 2), {
