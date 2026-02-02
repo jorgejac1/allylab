@@ -179,14 +179,14 @@ test.describe('Benchmark Page - Add Competitor Flow', () => {
     const addButton = page.getByRole('button', { name: /add/i }).first();
 
     // Verify the form is working by checking page state
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
 
     // Type a valid URL and check if button state changes
     await urlInput.fill('https://valid-competitor.com');
     await page.waitForTimeout(500);
 
     // The page should handle the URL input without crashing
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 });
 

@@ -1,5 +1,6 @@
 /**
  * Tests for Mock Auth Utilities
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -174,15 +175,26 @@ describe('Mock Auth Utilities', () => {
       );
     });
 
-    it('session expires in 7 days', () => {
+    it('session expires in 24 hours by default', () => {
       const result = authenticateUser('admin@acme.com', 'admin123');
+
+      const expiresAt = new Date(result.session!.expiresAt);
+      const now = new Date();
+      const diff = expiresAt.getTime() - now.getTime();
+      const hours = diff / (1000 * 60 * 60);
+
+      expect(hours).toBeCloseTo(24, 0);
+    });
+
+    it('session expires in 30 days with rememberMe', () => {
+      const result = authenticateUser('admin@acme.com', 'admin123', true);
 
       const expiresAt = new Date(result.session!.expiresAt);
       const now = new Date();
       const diff = expiresAt.getTime() - now.getTime();
       const days = diff / (1000 * 60 * 60 * 24);
 
-      expect(days).toBeCloseTo(7, 0);
+      expect(days).toBeCloseTo(30, 0);
     });
   });
 

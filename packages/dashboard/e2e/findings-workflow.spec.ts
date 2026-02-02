@@ -166,7 +166,7 @@ test.describe('Findings Table Workflow', () => {
     await page.waitForTimeout(500);
 
     // Page should still be responsive after click
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 });
 
@@ -195,10 +195,11 @@ test.describe('False Positive Workflow', () => {
     await clickScanCard(page);
     await page.waitForTimeout(500);
 
-    // Look for false positive filter
-    const fpFilter = page.getByRole('button', { name: /false positive/i });
-    if (await fpFilter.isVisible()) {
-      await fpFilter.click();
+    // Look for false positive filter button (contains count like "False Positives (0)")
+    const fpFilter = page.getByRole('button', { name: /false positives \(\d+\)/i });
+    const fpFilterCount = await fpFilter.count();
+    if (fpFilterCount > 0 && await fpFilter.first().isVisible()) {
+      await fpFilter.first().click();
 
       // With no false positives marked, should show empty state
       await expect(page.getByText(/no false positives/i)).toBeVisible({ timeout: 5000 });
@@ -230,7 +231,7 @@ test.describe('Scan Comparison Workflow', () => {
     // Should show scan cards - check for the stats area which shows scan count
     await expect(page.getByText('Total Scans')).toBeVisible({ timeout: 10000 });
     // The page should have loaded with scan data visible
-    await expect(page.locator('main')).toContainText(/example\.com/);
+    await expect(page.locator('#main-content')).toContainText(/example\.com/);
   });
 
   test('should enable compare mode', async ({ page }) => {
@@ -242,6 +243,6 @@ test.describe('Scan Comparison Workflow', () => {
 
     // After clicking compare, the UI should change - either show checkboxes or a different view
     // Just verify the page responded to the click
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 });

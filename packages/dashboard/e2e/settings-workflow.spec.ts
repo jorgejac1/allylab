@@ -14,7 +14,7 @@ test.describe('Settings Page - Tabs Navigation', () => {
 
   test('should display all settings tabs', async ({ page }) => {
     // Check for tab buttons in the settings page (not sidebar nav)
-    const tabContainer = page.locator('main');
+    const tabContainer = page.locator('#main-content');
     await expect(tabContainer.getByRole('button', { name: 'General', exact: true })).toBeVisible({ timeout: 10000 });
     await expect(tabContainer.getByRole('button', { name: 'Rules', exact: true })).toBeVisible();
     await expect(tabContainer.getByRole('button', { name: 'Reports', exact: true })).toBeVisible();

@@ -1052,9 +1052,12 @@ describe("components/findings/CreatePRModal", () => {
       fireEvent.change(fileInput, { target: { value: "src/components/Button.tsx" } });
     });
 
-    const createPRButtons = screen.getAllByRole("button");
-    const createBtn = createPRButtons.find(btn => btn.textContent?.includes("Create Pull Request"));
-    fireEvent.click(createBtn!);
+    await waitFor(() => {
+      const createPRButtons = screen.getAllByRole("button");
+      const createBtn = createPRButtons.find(btn => btn.textContent?.includes("Create Pull Request"));
+      expect(createBtn).toBeTruthy();
+      if (createBtn) fireEvent.click(createBtn);
+    });
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(

@@ -69,7 +69,7 @@ test.describe('Scan Workflow', () => {
     await page.waitForTimeout(1000);
 
     // The scan page should still be responsive - either showing progress, error, or ready state
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test('should display scan options', async ({ page }) => {
@@ -102,7 +102,7 @@ test.describe('Scan Workflow', () => {
     await page.waitForTimeout(2000);
 
     // Page should still be responsive
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test('should validate URL input', async ({ page }) => {
@@ -118,6 +118,6 @@ test.describe('Scan Workflow', () => {
 
     // After clearing, the button may or may not be disabled depending on implementation
     // Just verify the page is functional
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 });

@@ -29,7 +29,7 @@
     "test:e2e": "npm run test:e2e --workspace=@allylab/dashboard",
     "test:e2e:ui": "npm run test:e2e:ui --workspace=@allylab/dashboard",
     "clean": "rm -rf packages/*/dist packages/*/.turbo node_modules/.cache packages/*/coverage",
-    "prepare": "husky"
+    "prepare": "node -e \"try { require('husky').default() } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e }\""
   },
   "lint-staged": {
     "packages/api/src/**/*.{ts,tsx}": [

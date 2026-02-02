@@ -79,7 +79,7 @@ test.describe('Executive Dashboard', () => {
 
   test('should display KPI cards with aggregated data', async ({ page }) => {
     // Should show the executive dashboard page
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
 
     // The page should either show dashboard content or be in loading/error state
     // Check for any heading that indicates we're on the right page
@@ -89,7 +89,7 @@ test.describe('Executive Dashboard', () => {
 
   test('should display trend charts', async ({ page }) => {
     // Page should be visible
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
 
     // Look for chart elements or canvas - may or may not exist depending on data
     const charts = page.locator('canvas, svg, [role="img"]');
@@ -101,7 +101,7 @@ test.describe('Executive Dashboard', () => {
 
   test('should show score improvement/decline indicators', async ({ page }) => {
     // Should show the executive dashboard page
-    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
 
     // Page should render without crashing
     const pageContent = await page.textContent('body');
