@@ -40,7 +40,7 @@ export default defineConfig({
       // Only preload critical chunks, not lazy-loaded ones
       resolveDependencies: (filename, deps) => {
         // Don't preload vendor chunks that are lazy loaded
-        const lazyChunks = ['vendor-pdf', 'vendor-excel', 'vendor-charts', 'vendor-sanitize', 'vendor-icons'];
+        const lazyChunks = ['vendor-pdf', 'vendor-excel', 'vendor-charts', 'vendor-icons'];
         return deps.filter(dep => !lazyChunks.some(chunk => dep.includes(chunk)));
       },
     },
@@ -57,8 +57,6 @@ export default defineConfig({
           'vendor-excel': ['exceljs'],
           // Charting library - lazy loaded with TrendCharts
           'vendor-charts': ['recharts'],
-          // HTML sanitization - loaded on demand
-          'vendor-sanitize': ['dompurify'],
         },
       },
     },
