@@ -19,6 +19,15 @@ export default defineConfig({
       },
     },
   },
+  customLogger: {
+    ...console,
+    error: (msg: string) => {
+      // Suppress proxy connection errors (API not running during E2E tests)
+      if (!msg.includes('http proxy error')) {
+        console.error(msg);
+      }
+    },
+  },
   build: {
     // Target modern browsers for smaller bundles
     target: 'es2020',

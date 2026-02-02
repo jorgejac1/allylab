@@ -22,14 +22,14 @@ test.describe('Settings Page - Tabs Navigation', () => {
     await expect(tabContainer.getByRole('button', { name: 'Scheduled Scans', exact: true })).toBeVisible();
     await expect(tabContainer.getByRole('button', { name: 'Notifications', exact: true })).toBeVisible();
     await expect(tabContainer.getByRole('button', { name: 'JIRA', exact: true })).toBeVisible();
-    await expect(tabContainer.getByRole('button', { name: 'GitHub', exact: true })).toBeVisible();
+    await expect(tabContainer.getByRole('button', { name: 'Git', exact: true })).toBeVisible();
     await expect(tabContainer.getByRole('button', { name: 'CI/CD', exact: true })).toBeVisible();
     await expect(tabContainer.getByRole('button', { name: 'API', exact: true })).toBeVisible();
   });
 
   test('should switch between tabs and load content', async ({ page }) => {
     // Test each tab navigation (using actual tab names)
-    const tabs = ['Rules', 'Reports', 'Alerts', 'Scheduled Scans', 'Notifications', 'JIRA', 'GitHub', 'CI/CD', 'API'];
+    const tabs = ['Rules', 'Reports', 'Alerts', 'Scheduled Scans', 'Notifications', 'JIRA', 'Git', 'CI/CD', 'API'];
 
     for (const tab of tabs) {
       await page.getByRole('button', { name: tab, exact: true }).click();
@@ -40,16 +40,16 @@ test.describe('Settings Page - Tabs Navigation', () => {
   });
 });
 
-test.describe('Settings Page - GitHub Integration', () => {
+test.describe('Settings Page - Git Integration', () => {
   test.beforeEach(async ({ page }) => {
     await navigateToSettings(page);
-    await page.getByRole('button', { name: 'GitHub', exact: true }).click();
+    await page.getByRole('button', { name: 'Git', exact: true }).click();
     await page.waitForTimeout(500);
   });
 
-  test('should display GitHub settings form', async ({ page }) => {
-    // Should show GitHub-related content
-    await expect(page.locator('body')).toContainText(/github|connect|token/i);
+  test('should display Git settings form', async ({ page }) => {
+    // Should show Git-related content (GitHub/GitLab)
+    await expect(page.locator('body')).toContainText(/github|gitlab|connect|token/i);
   });
 
   test('should show connect button when not authenticated', async ({ page }) => {

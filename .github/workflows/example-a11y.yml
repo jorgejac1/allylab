@@ -27,6 +27,7 @@ jobs:
       - name: Run AllyLab Scan
         id: allylab
         uses: jorgejac1/allylab/action@main
+        continue-on-error: true  # TODO: Remove after action image is rebuilt
         with:
           url: ${{ github.event.inputs.url || 'https://example.com' }}
           standard: wcag22aa
@@ -86,6 +87,7 @@ jobs:
 
       - name: Run Site Scan
         uses: jorgejac1/allylab/action@main
+        continue-on-error: true  # TODO: Remove after action image is rebuilt
         with:
           url: ${{ github.event.inputs.url }}
           max-pages: 10
