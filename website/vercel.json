@@ -71,7 +71,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://allylab-api.vercel.app/:path*"
+      "destination": "https://allylab-api.onrender.com/:path*"
     }
   ]
 }
