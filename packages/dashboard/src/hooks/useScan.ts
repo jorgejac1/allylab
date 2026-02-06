@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ScanResult } from '../types';
+import { getApiBase } from '../utils/api';
 
 export function useScan() {
   const [isScanning, setIsScanning] = useState(false);
@@ -10,7 +11,7 @@ export function useScan() {
     setError(null);
 
     try {
-      const response = await fetch('/api/scan/json', {
+      const response = await fetch(`${getApiBase()}/scan/json`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),

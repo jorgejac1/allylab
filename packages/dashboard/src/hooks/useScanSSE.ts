@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import type { ScanResult, Finding, WCAGStandard, Viewport } from "../types";
+import { getApiBase } from "../utils/api";
 
 interface ScanProgress {
   status:
@@ -143,7 +144,7 @@ export function useScanSSE(options: UseScanSSEOptions = {}) {
       }
 
       try {
-        const response = await fetch("/api/scan", {
+        const response = await fetch(`${getApiBase()}/scan`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
