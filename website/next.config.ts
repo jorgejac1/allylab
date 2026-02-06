@@ -25,8 +25,8 @@ const nextConfig: NextConfig = {
   // Environment variables exposed to the browser
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "https://allylab.io",
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.vercel.app",
-    NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://app.allylab.io",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.onrender.com",
+    NEXT_PUBLIC_DASHBOARD_URL: process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://allylab-dashboard.vercel.app",
   },
 
   // Experimental features
@@ -116,34 +116,8 @@ const nextConfig: NextConfig = {
       },
     ];
 
-    // Only redirect to external app in production
-    const productionRedirects = isProduction ? [
-      {
-        source: "/signup",
-        destination: "https://app.allylab.io/signup",
-        permanent: false,
-      },
-      {
-        source: "/login",
-        destination: "https://app.allylab.io/login",
-        permanent: false,
-      },
-      {
-        source: "/signin",
-        destination: "https://app.allylab.io/login",
-        permanent: false,
-      },
-      {
-        source: "/dashboard",
-        destination: "https://app.allylab.io",
-        permanent: false,
-      },
-      {
-        source: "/app",
-        destination: "https://app.allylab.io",
-        permanent: false,
-      },
-    ] : [];
+    // Dashboard redirects handled by /dashboard page component using env vars
+    const productionRedirects: { source: string; destination: string; permanent: boolean }[] = [];
 
     return [...baseRedirects, ...productionRedirects];
   },
@@ -153,7 +127,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/v1/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.vercel.app"}/v1/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || "https://allylab-api.onrender.com"}/v1/:path*`,
       },
     ];
   },
