@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import type { 
-  CustomRule, 
-  CreateRuleRequest, 
+import { getApiBase } from '../utils/api';
+import type {
+  CustomRule,
+  CreateRuleRequest,
   UpdateRuleRequest,
   RulesListResponse,
   RuleResponse,
@@ -28,7 +28,7 @@ interface UseCustomRulesReturn {
 }
 
 export function useCustomRules(): UseCustomRulesReturn {
-  const [apiUrl] = useLocalStorage('allylab_api_url', 'http://localhost:3001');
+  const apiUrl = getApiBase();
   const [rules, setRules] = useState<CustomRule[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

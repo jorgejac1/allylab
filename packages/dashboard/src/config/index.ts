@@ -7,9 +7,11 @@
 // API Configuration
 // ============================================
 
+const isDev = import.meta.env.DEV;
+
 export const API = {
   /** Default API base URL (can be overridden via localStorage) */
-  DEFAULT_BASE_URL: 'http://localhost:3001',
+  DEFAULT_BASE_URL: import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:3001' : 'https://allylab-api.onrender.com'),
 
   /** Storage key for custom API URL override */
   STORAGE_KEY: 'allylab_api_url',
