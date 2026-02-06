@@ -13,7 +13,7 @@ export const authConfig = {
   clerkPublishableKey: import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
 
   // API URL for backend requests
-  apiUrl: import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:3001' : 'https://allylab-api.vercel.app'),
+  apiUrl: import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:3001' : 'https://allylab-api.onrender.com'),
 
   // Website URL for redirects
   websiteUrl: import.meta.env.VITE_WEBSITE_URL || (isDev ? 'http://localhost:3000' : 'https://allylab.io'),
