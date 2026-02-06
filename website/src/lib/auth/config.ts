@@ -13,7 +13,6 @@ export const authConfig = {
   // Clerk URLs
   signInUrl: '/sign-in',
   signUpUrl: '/sign-up',
-  afterSignInUrl: '/dashboard',
   afterSignUpUrl: '/onboarding',
 
   // Stripe
@@ -29,7 +28,7 @@ export const authConfig = {
     team_yearly: process.env.STRIPE_PRICE_TEAM_YEARLY!,
   },
 
-  // Dashboard URL
+  // Dashboard URL (for post-login redirect)
   dashboardUrl: process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:5173',
 
   // API URL
