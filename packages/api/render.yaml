@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: allylab-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd ../.. && npm install && npm run build --workspace=@allylab/api
+    startCommand: node packages/api/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        sync: false  # Set manually in Render dashboard
+      - key: CLERK_SECRET_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Set manually in Render dashboard
+    healthCheckPath: /health
+    autoDeploy: true
