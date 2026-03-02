@@ -116,7 +116,7 @@ jobs:
         run: npm run build --workspace=@allylab/dashboard
 
       - name: Upload Dashboard build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dashboard-dist
           path: packages/dashboard/dist
@@ -149,7 +149,7 @@ jobs:
           CI: true
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report
