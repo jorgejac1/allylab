@@ -168,7 +168,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build API Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./packages/api
           push: false
@@ -177,7 +177,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build Dashboard Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./packages/dashboard
           push: false
