@@ -84,12 +84,12 @@ test.describe('Dashboard Customization', () => {
     await page.waitForTimeout(500);
 
     // Verify widget labels are visible as toggles
-    await expect(page.getByText('KPI Cards')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Severity Breakdown')).toBeVisible();
-    await expect(page.getByText('Top Issues')).toBeVisible();
-    await expect(page.getByText('Site Rankings')).toBeVisible();
-    await expect(page.getByText('Goal Progress')).toBeVisible();
-    await expect(page.getByText('Score Trend')).toBeVisible();
+    await expect(page.getByText('KPI Cards').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Severity Breakdown').first()).toBeVisible();
+    await expect(page.getByText('Top Issues').first()).toBeVisible();
+    await expect(page.getByText('Site Rankings').first()).toBeVisible();
+    await expect(page.getByText('Goal Progress').first()).toBeVisible();
+    await expect(page.getByText('Score Trend').first()).toBeVisible();
 
     // Checkboxes should be present for each widget
     const checkboxes = page.locator('input[type="checkbox"]');

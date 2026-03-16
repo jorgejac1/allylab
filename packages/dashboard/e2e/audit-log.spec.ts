@@ -70,11 +70,11 @@ test.describe('Audit Log', () => {
 
   test('should display audit table with correct headers', async ({ page }) => {
     // Verify the table headers are visible
-    await expect(page.getByText('Time')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Event')).toBeVisible();
-    await expect(page.getByText('Action')).toBeVisible();
-    await expect(page.getByText('Severity')).toBeVisible();
-    await expect(page.getByText('Status')).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Time' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: 'Event' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Action' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Severity' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Status' })).toBeVisible();
   });
 
   test('should display audit entries from localStorage', async ({ page }) => {

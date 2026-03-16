@@ -59,7 +59,7 @@ test.describe('Scan Workflow', () => {
     await urlInput.fill('https://example.com');
 
     // Start scan - the button should be enabled now
-    const scanButton = page.getByRole('button', { name: /scan.*page/i });
+    const scanButton = page.locator('#main-content').getByRole('button', { name: /^Scan$/i });
     await expect(scanButton).toBeEnabled();
 
     // Click scan to initiate (will fail without backend but tests interactivity)
@@ -95,7 +95,7 @@ test.describe('Scan Workflow', () => {
     const urlInput = page.getByPlaceholder(/example\.com/i);
     await urlInput.fill('https://example.com');
 
-    const scanButton = page.getByRole('button', { name: /scan.*page/i });
+    const scanButton = page.locator('#main-content').getByRole('button', { name: /^Scan$/i });
     await scanButton.click();
 
     // Wait for the scan to complete/fail
@@ -109,7 +109,7 @@ test.describe('Scan Workflow', () => {
     const urlInput = page.getByPlaceholder(/example\.com/i);
 
     // The scan button should exist
-    const scanButton = page.getByRole('button', { name: /scan.*page/i });
+    const scanButton = page.locator('#main-content').getByRole('button', { name: /^Scan$/i });
     await expect(scanButton).toBeVisible();
 
     // Clear URL and verify button state
