@@ -6,14 +6,7 @@ export function ErrorMessage({ message }: ErrorMessageProps) {
   return (
     <div
       role="alert"
-      style={{
-        padding: 12,
-        background: '#fef2f2',
-        border: '1px solid #fecaca',
-        borderRadius: 8,
-        color: '#dc2626',
-        fontSize: 13,
-      }}
+      className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-[13px]"
     >
       {message}
     </div>

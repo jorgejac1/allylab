@@ -15,19 +15,10 @@ export function ChangeIndicator({
   const isDeclined = scoreChange < 0;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 12,
-        padding: 16,
-        minWidth: 120,
-      }}
-    >
+    <div className="flex flex-col items-center gap-3 p-4 min-w-[120px]">
       <div
+        className="leading-none"
         style={{
-          lineHeight: 1,
           color: isImproved ? '#10b981' : isDeclined ? '#ef4444' : '#64748b',
         }}
       >
@@ -40,22 +31,21 @@ export function ChangeIndicator({
         )}
       </div>
       <div
+        className="text-xl font-bold"
         style={{
-          fontSize: 20,
-          fontWeight: 700,
           color: isImproved ? '#10b981' : isDeclined ? '#ef4444' : '#64748b',
         }}
       >
         {scoreChange > 0 ? '+' : ''}
         {scoreChange}
       </div>
-      <div style={{ fontSize: 11, color: '#64748b' }}>
+      <div className="text-xs text-slate-500">
         ({scorePercent > 0 ? '+' : ''}
         {scorePercent.toFixed(1)}%)
       </div>
       <div
+        className="text-xs"
         style={{
-          fontSize: 12,
           color:
             issueChange < 0
               ? '#10b981'
@@ -64,7 +54,7 @@ export function ChangeIndicator({
                 : '#64748b',
         }}
       >
-        {issueChange < 0 ? '↓' : issueChange > 0 ? '↑' : ''}{' '}
+        {issueChange < 0 ? '\u2193' : issueChange > 0 ? '\u2191' : ''}{' '}
         {Math.abs(issueChange).toFixed(1)} issues
       </div>
     </div>

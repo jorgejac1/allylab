@@ -1,23 +1,29 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { Card, Pagination } from "../ui";
 import { Check, Search } from 'lucide-react';
 import { PRStatusBadge } from "./PRStatusBadge";
+import { MRStatusBadge } from "./MRStatusBadge";
 import { VerificationModal } from "./VerificationModal";
-import { BatchPRModal } from "./BatchPRModal";
+
+const BatchPRModal = lazy(() => import("./BatchPRModal").then(m => ({ default: m.BatchPRModal })));
 import { FindingsFilterBar, type FalsePositiveFilter } from "./FindingsFilterBar";
 import { FindingsSelectionBar } from "./FindingsSelectionBar";
 import { FindingsRow } from "./FindingsRow";
 import { JiraExportModal } from "./JiraExportModal";
+import { PresetBar } from "./filter-presets/PresetBar";
 import {
   useFindingsFilters,
   useFindingsSelection,
   useFindingsPagination,
   useFindingsJira,
   useFindingsVerification,
+  useFilterPresets,
+  useGitLabMR,
 } from "../../hooks";
 import type { TrackedFinding, Severity, IssueStatus } from "../../types";
 import type { SourceFilterValue } from "./SourceFilter";
 import { markAsFalsePositive, unmarkFalsePositive } from "../../utils/falsePositives";
+import { getMRForFinding } from "../../utils/gitlabTracking";
 
 interface FindingsTableProps {
   findings: TrackedFinding[];
@@ -42,6 +48,8 @@ export function FindingsTable({
   const pagination = useFindingsPagination(filters.filteredFindings);
   const jira = useFindingsJira();
   const verification = useFindingsVerification();
+  const presets = useFilterPresets();
+  const gitlabMR = useGitLabMR();
 
   // Modal state
   const [jiraModalOpen, setJiraModalOpen] = useState(false);
@@ -99,16 +107,32 @@ export function FindingsTable({
     selection.selectAllPage(pagination.paginatedFindings);
   }, [selection, pagination.paginatedFindings]);
 
-  // Render PR Status cell for a finding
+  const handleApplyPreset = useCallback((id: string) => {
+    const preset = presets.applyPreset(id);
+    if (preset) {
+      filters.setSeverityFilter(preset.filters.severityFilter);
+      filters.setStatusFilter(preset.filters.statusFilter);
+      filters.setSourceFilter(preset.filters.sourceFilter);
+      filters.setFpFilter(preset.filters.fpFilter);
+      pagination.setCurrentPage(1);
+    }
+  }, [presets, filters, pagination]);
+
+  const handleSavePreset = useCallback((name: string, color?: string) => {
+    presets.saveCurrentAsPreset(name, color);
+  }, [presets]);
+
+  // Render PR/MR Status cell for a finding
   const renderPRStatusCell = useCallback((findingId: string) => {
     const findingPRs = verification.getPRsForFinding(findingId);
+    const mrTracking = getMRForFinding(findingId);
 
-    if (findingPRs.length === 0) {
-      return <span style={{ color: "#94a3b8", fontSize: 12 }}>—</span>;
+    if (findingPRs.length === 0 && !mrTracking) {
+      return <span className="text-slate-400 text-xs">—</span>;
     }
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <div className="flex flex-col gap-1">
         {findingPRs.map((pr) => (
           <PRStatusBadge
             key={pr.id}
@@ -117,13 +141,30 @@ export function FindingsTable({
             isVerifying={verification.verifyingPRId === pr.id}
           />
         ))}
+        {mrTracking && (
+          <MRStatusBadge
+            mrUrl={mrTracking.mrUrl}
+            status={mrTracking.status}
+            verificationStatus={mrTracking.verificationStatus}
+            onVerify={() => gitlabMR.verifyFixes(mrTracking.id)}
+            isVerifying={gitlabMR.verifyingMRId === mrTracking.id}
+          />
+        )}
       </div>
     );
-  }, [verification]);
+  }, [verification, gitlabMR]);
 
   return (
     <>
       <Card padding="none">
+        <PresetBar
+          presets={presets.presets}
+          activePresetId={presets.activePreset?.id ?? null}
+          onApply={handleApplyPreset}
+          onDelete={presets.deletePreset}
+          onSave={handleSavePreset}
+        />
+
         <FindingsFilterBar
           activeCount={filters.activeFindings.length}
           fpCount={filters.fpCount}
@@ -157,11 +198,11 @@ export function FindingsTable({
         />
 
         {/* Table */}
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
             <thead>
-              <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                <th style={{ ...thStyle, width: 40 }}>
+              <tr className="bg-slate-50 border-b-2 border-slate-200">
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-10">
                   <input
                     type="checkbox"
                     checked={
@@ -169,17 +210,17 @@ export function FindingsTable({
                       pagination.paginatedFindings.every((f) => selection.isSelected(f.id))
                     }
                     onChange={handleSelectAllPage}
-                    style={{ cursor: "pointer", width: 16, height: 16 }}
+                    className="cursor-pointer w-4 h-4"
                   />
                 </th>
-                <th style={{ ...thStyle, width: 100 }}>Severity</th>
-                <th style={{ ...thStyle, width: 100 }}>Status</th>
-                <th style={thStyle}>Issue</th>
-                <th style={{ ...thStyle, width: 80 }}>Source</th>
-                <th style={{ ...thStyle, width: 100 }}>WCAG</th>
-                <th style={{ ...thStyle, width: 110 }}>JIRA</th>
-                <th style={{ ...thStyle, width: 150 }}>PR Status</th>
-                <th style={{ ...thStyle, width: 150 }}>Actions</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[100px]">Severity</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[100px]">Status</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Issue</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-20">Source</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[100px]">WCAG</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[110px]">JIRA</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[150px]">PR Status</th>
+                <th className="p-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-[150px]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -208,11 +249,11 @@ export function FindingsTable({
 
         {/* Empty State */}
         {pagination.paginatedFindings.length === 0 && (
-          <div style={{ padding: 48, textAlign: "center", color: "#64748b" }}>
-            <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
+          <div className="p-12 text-center text-slate-500">
+            <div className="mb-2 flex justify-center">
               {filters.fpFilter === "false-positive" ? <Check size={32} /> : <Search size={32} />}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>
+            <div className="text-sm font-medium">
               {filters.fpFilter === "false-positive"
                 ? "No false positives marked"
                 : "No findings match the current filters"}
@@ -222,7 +263,7 @@ export function FindingsTable({
 
         {/* Pagination */}
         {pagination.paginatedFindings.length > 0 && (
-          <div style={{ padding: "12px 16px", borderTop: "1px solid #f1f5f9" }}>
+          <div className="py-3 px-4 border-t border-slate-100">
             <Pagination
               currentPage={pagination.currentPage}
               totalPages={pagination.totalPages}
@@ -244,14 +285,18 @@ export function FindingsTable({
         pageUrl={pageUrl}
       />
 
-      <BatchPRModal
-        isOpen={batchPRModalOpen}
-        onClose={() => setBatchPRModalOpen(false)}
-        findings={selection.selectedFindings.length > 0 ? selection.selectedFindings : []}
-        scanUrl={pageUrl}
-        scanStandard={scanStandard}
-        scanViewport={scanViewport}
-      />
+      {batchPRModalOpen && (
+        <Suspense fallback={null}>
+          <BatchPRModal
+            isOpen={batchPRModalOpen}
+            onClose={() => setBatchPRModalOpen(false)}
+            findings={selection.selectedFindings.length > 0 ? selection.selectedFindings : []}
+            scanUrl={pageUrl}
+            scanStandard={scanStandard}
+            scanViewport={scanViewport}
+          />
+        </Suspense>
+      )}
 
       {/* Fix Verification Modal */}
       <VerificationModal
@@ -264,13 +309,3 @@ export function FindingsTable({
     </>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  padding: "12px",
-  textAlign: "left",
-  fontSize: 11,
-  fontWeight: 600,
-  color: "#64748b",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-};

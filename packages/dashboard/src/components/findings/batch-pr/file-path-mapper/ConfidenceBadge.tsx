@@ -31,17 +31,10 @@ export function ConfidenceBadge({ confidence }: ConfidenceBadgeProps) {
   const Icon = config.icon;
 
   return (
-    <span style={{
-      fontSize: 10,
-      fontWeight: 500,
-      padding: '2px 6px',
-      borderRadius: 4,
-      background: config.bg,
-      color: config.color,
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 3,
-    }}>
+    <span
+      className="text-[10px] font-medium py-0.5 px-1.5 rounded inline-flex items-center gap-[3px]"
+      style={{ background: config.bg, color: config.color }}
+    >
       <Icon size={10} aria-hidden="true" /> {config.label}
     </span>
   );

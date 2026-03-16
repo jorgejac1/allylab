@@ -27,7 +27,7 @@ export interface FindingsFiltersResult extends FindingsFiltersState, FindingsFil
   fpCount: number;
   severityCounts: Record<Severity, number>;
   statusCounts: Record<IssueStatus, number>;
-  sourceCounts: { axeCore: number; customRule: number; total: number };
+  sourceCounts: { axeCore: number; customRule: number; tvRule: number; total: number };
   triggerFpRefresh: () => void;
 }
 
@@ -49,7 +49,8 @@ export function useFindingsFilters(findings: TrackedFinding[]): FindingsFiltersR
   const sourceCounts = useMemo(() => {
     const axeCore = findingsWithFpStatus.filter(f => !f.source || f.source === 'axe-core').length;
     const customRule = findingsWithFpStatus.filter(f => f.source === 'custom-rule').length;
-    return { axeCore, customRule, total: findingsWithFpStatus.length };
+    const tvRule = findingsWithFpStatus.filter(f => f.source === 'tv-rule').length;
+    return { axeCore, customRule, tvRule, total: findingsWithFpStatus.length };
   }, [findingsWithFpStatus]);
 
   // Filter findings

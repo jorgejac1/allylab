@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { calculateMatchConfidence, extractAllClasses } from '../utils';
 import { SearchOptions } from './SearchOptions';
 import { SearchResults } from './SearchResults';
@@ -28,6 +28,16 @@ export function FileFinder({
   const [customQuery, setCustomQuery] = useState('');
   const [filter, setFilter] = useState('');
   const [lastSearchType, setLastSearchType] = useState<SearchType | null>(null);
+  const autoSelectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up auto-select timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSelectTimerRef.current) {
+        clearTimeout(autoSelectTimerRef.current);
+      }
+    };
+  }, []);
 
   // Get domain for remembering search type
   const domain = scanUrl ? new URL(scanUrl).hostname : repoName;
@@ -149,7 +159,8 @@ export function FileFinder({
           saveSearchType(domain, searchType);
 
           // Auto-select after a brief delay so user sees what happened
-          setTimeout(() => {
+          autoSelectTimerRef.current = setTimeout(() => {
+            autoSelectTimerRef.current = null;
             if (onAutoSelect) {
               onAutoSelect(highConfidenceResults[0].path);
             } else {

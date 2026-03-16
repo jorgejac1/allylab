@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Card } from '../ui';
 import { GitHubSettings } from './GitHubSettings';
 import { GitLabSettings } from './GitLabSettings';
+import { PermissionGuard } from '../guards/RoleGuard';
 import { useGitHub } from '../../hooks/useGitHub';
 import { useGitLab } from '../../hooks/useGitLab';
 
@@ -24,17 +25,17 @@ export function GitIntegrationSettings() {
   const gitlabConnected = gitlab.connection.connected;
 
   return (
-    <div data-testid="git-integration-settings" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div data-testid="git-integration-settings" className="flex flex-col gap-6">
       {/* Provider Selector */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold">
           Git Provider
         </h3>
-        <p style={{ margin: '0 0 16px', fontSize: 14, color: '#64748b' }}>
+        <p className="mt-0 mb-4 text-sm text-slate-500">
           Connect your preferred Git provider to create pull/merge requests with accessibility fixes.
         </p>
 
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div className="flex gap-3">
           <ProviderCard
             provider="github"
             name="GitHub"
@@ -55,14 +56,7 @@ export function GitIntegrationSettings() {
 
         {/* Connection status summary */}
         {(githubConnected || gitlabConnected) && (
-          <div style={{
-            marginTop: 16,
-            padding: 12,
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: 8,
-            fontSize: 13,
-          }}>
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
             {githubConnected && gitlabConnected ? (
               <span>Both GitHub and GitLab are connected. You can use either for creating fixes.</span>
             ) : githubConnected ? (
@@ -75,17 +69,19 @@ export function GitIntegrationSettings() {
       </Card>
 
       {/* Provider-specific settings */}
-      {selectedProvider === 'github' ? (
-        <GitHubSettings />
-      ) : (
-        <GitLabSettings
-          connection={gitlab.connection}
-          isLoading={gitlab.isLoading}
-          error={gitlab.error}
-          onConnect={gitlab.connect}
-          onDisconnect={gitlab.disconnect}
-        />
-      )}
+      <PermissionGuard permission="github:connect">
+        {selectedProvider === 'github' ? (
+          <GitHubSettings />
+        ) : (
+          <GitLabSettings
+            connection={gitlab.connection}
+            isLoading={gitlab.isLoading}
+            error={gitlab.error}
+            onConnect={gitlab.connect}
+            onDisconnect={gitlab.disconnect}
+          />
+        )}
+      </PermissionGuard>
     </div>
   );
 }
@@ -103,33 +99,16 @@ function ProviderCard({ name, icon, connected, selected, onClick }: ProviderCard
   return (
     <button
       onClick={onClick}
+      className="flex-1 flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer transition-all duration-150 relative"
       style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 8,
-        padding: 16,
         background: selected ? '#f8fafc' : 'white',
         border: selected ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-        borderRadius: 12,
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        position: 'relative',
       }}
     >
-      <div style={{ width: 40, height: 40 }}>{icon}</div>
-      <span style={{ fontWeight: 500, fontSize: 14 }}>{name}</span>
+      <div className="w-10 h-10">{icon}</div>
+      <span className="font-medium text-sm">{name}</span>
       {connected && (
-        <span style={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          width: 8,
-          height: 8,
-          background: '#22c55e',
-          borderRadius: '50%',
-        }} />
+        <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full" />
       )}
     </button>
   );
@@ -137,7 +116,7 @@ function ProviderCard({ name, icon, connected, selected, onClick }: ProviderCard
 
 function GitHubIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '100%', height: '100%' }}>
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
@@ -145,7 +124,7 @@ function GitHubIcon() {
 
 function GitLabIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '100%', height: '100%' }}>
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M23.955 13.587l-1.342-4.135-2.664-8.189a.455.455 0 00-.867 0L16.418 9.45H7.582L4.918 1.263a.455.455 0 00-.867 0L1.386 9.452.044 13.587a.924.924 0 00.331 1.023L12 23.054l11.625-8.443a.92.92 0 00.33-1.024" fill="#E24329"/>
       <path d="M12 23.054L16.418 9.45H7.582L12 23.054z" fill="#FC6D26"/>
       <path d="M12 23.054l-4.418-13.6H1.386L12 23.054z" fill="#FCA326"/>

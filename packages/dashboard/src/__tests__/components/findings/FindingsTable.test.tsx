@@ -147,6 +147,58 @@ vi.mock("../../../components/findings/PRStatusBadge", () => ({
   ),
 }));
 
+vi.mock("../../../components/findings/MRStatusBadge", () => ({
+  MRStatusBadge: () => <span data-testid="mr-badge" />,
+}));
+
+vi.mock("../../../components/findings/filter-presets/PresetBar", () => ({
+  PresetBar: () => <div data-testid="preset-bar" />,
+}));
+
+vi.mock("../../../utils/gitlabTracking", () => ({
+  getMRForFinding: vi.fn(() => undefined),
+  getTrackedMRs: vi.fn(() => []),
+  updateMRVerification: vi.fn(),
+}));
+
+vi.mock('../../../hooks/useGitLabMR', () => ({
+  useGitLabMR: () => ({
+    connection: { connected: false },
+    isLoading: false,
+    error: null,
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    getProjects: vi.fn(),
+    getBranches: vi.fn(),
+    searchCode: vi.fn(),
+    getProjectTree: vi.fn(),
+    getFileContent: vi.fn(),
+    createTrackedMR: vi.fn(),
+    trackedMRs: [],
+    getMRForFinding: vi.fn(),
+    refreshTracking: vi.fn(),
+    verifyFixes: vi.fn(),
+    checkMRStatus: vi.fn(),
+    refreshAllStatuses: vi.fn(),
+    isVerifying: false,
+    verifyingMRId: null,
+  }),
+}));
+
+vi.mock('../../../contexts', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', email: 'admin@test.com', name: 'Admin', role: 'admin' },
+      organization: { id: 'org1', name: 'Test', plan: 'enterprise', settings: { maxScansPerMonth: -1, maxAiFixesPerMonth: -1, maxGitHubPRsPerMonth: -1, scheduledScans: true, maxCustomRules: -1, jiraIntegration: true, exportFormats: ['csv', 'pdf', 'json'] } },
+      isAuthenticated: true,
+      can: () => true,
+      hasRole: () => true,
+    }),
+  };
+});
+
 // Use vi.hoisted for module-level mocks
 const {
   mockJiraLinks,
@@ -200,6 +252,15 @@ vi.mock("../../../hooks", async (importOriginal) => {
     usePRTracking: vi.fn(() => ({
       getPRsForFinding: mockGetPRsForFinding,
       verifyFixes: mockVerifyFixes,
+    })),
+    useFilterPresets: vi.fn(() => ({
+      presets: [],
+      activePreset: null,
+      saveCurrentAsPreset: vi.fn(),
+      applyPreset: vi.fn(),
+      deletePreset: vi.fn(),
+      setAsDefault: vi.fn(),
+      clearActivePreset: vi.fn(),
     })),
   };
 });
@@ -393,7 +454,7 @@ describe("components/findings/FindingsTable", () => {
     expect(screen.queryByTestId("jira-modal")).not.toBeInTheDocument();
   });
 
-  it("opens batch PR modal", () => {
+  it("opens batch PR modal", async () => {
     render(<FindingsTable {...defaultProps} />);
 
     // First select some findings
@@ -403,7 +464,7 @@ describe("components/findings/FindingsTable", () => {
     const createPRBtn = screen.getByText("Create PR");
     fireEvent.click(createPRBtn);
 
-    expect(screen.getByTestId("batch-pr-modal")).toBeInTheDocument();
+    expect(await screen.findByTestId("batch-pr-modal")).toBeInTheDocument();
   });
 
   it("handles select all filtered", () => {
@@ -694,7 +755,7 @@ describe("components/findings/FindingsTable", () => {
   });
 
   // Tests for modal onClose handlers (lines 404-418)
-  it("closes batch PR modal and resets state", () => {
+  it("closes batch PR modal and resets state", async () => {
     render(<FindingsTable {...defaultProps} />);
 
     // Select a finding first
@@ -702,7 +763,7 @@ describe("components/findings/FindingsTable", () => {
 
     // Open batch PR modal
     fireEvent.click(screen.getByText("Create PR"));
-    expect(screen.getByTestId("batch-pr-modal")).toBeInTheDocument();
+    expect(await screen.findByTestId("batch-pr-modal")).toBeInTheDocument();
 
     // Close the modal
     fireEvent.click(screen.getByText("Close"));

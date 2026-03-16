@@ -36,12 +36,12 @@ describe("findings/apply-fix/CodePreview", () => {
       <CodePreview original="<div>A</div>" fixed="<div>B</div>" />
     );
 
-    // Red dot for original
-    const redDot = container.querySelector('span[style*="background: rgb(220, 38, 38)"]');
+    // Red dot for original (Tailwind class)
+    const redDot = container.querySelector('span.bg-red-600');
     expect(redDot).toBeInTheDocument();
 
-    // Green dot for fixed
-    const greenDot = container.querySelector('span[style*="background: rgb(22, 163, 74)"]');
+    // Green dot for fixed (Tailwind class)
+    const greenDot = container.querySelector('span.bg-green-600');
     expect(greenDot).toBeInTheDocument();
   });
 
@@ -53,11 +53,11 @@ describe("findings/apply-fix/CodePreview", () => {
     const preElements = container.querySelectorAll("pre");
     expect(preElements).toHaveLength(2);
 
-    // First pre (original) should have red background
-    expect(preElements[0]).toHaveStyle({ background: "#fef2f2" });
+    // First pre (original) should have red background (Tailwind class)
+    expect(preElements[0]).toHaveClass("bg-red-50");
 
-    // Second pre (fixed) should have green background
-    expect(preElements[1]).toHaveStyle({ background: "#f0fdf4" });
+    // Second pre (fixed) should have green background (Tailwind class)
+    expect(preElements[1]).toHaveClass("bg-green-50");
   });
 
   it("handles empty strings", () => {
@@ -80,9 +80,9 @@ describe("findings/apply-fix/CodePreview", () => {
 
     const preElements = container.querySelectorAll("pre");
     preElements.forEach(pre => {
-      expect(pre).toHaveStyle({ overflow: "auto" });
-      expect(pre).toHaveStyle({ maxHeight: "150px" });
-      expect(pre).toHaveStyle({ whiteSpace: "pre-wrap" });
+      expect(pre).toHaveClass("overflow-auto");
+      expect(pre).toHaveClass("max-h-[150px]");
+      expect(pre).toHaveClass("whitespace-pre-wrap");
     });
   });
 
@@ -92,7 +92,7 @@ describe("findings/apply-fix/CodePreview", () => {
     );
 
     const gridContainer = container.firstChild as HTMLElement;
-    expect(gridContainer).toHaveStyle({ display: "grid" });
-    expect(gridContainer).toHaveStyle({ gridTemplateColumns: "1fr 1fr" });
+    expect(gridContainer).toHaveClass("grid");
+    expect(gridContainer).toHaveClass("grid-cols-2");
   });
 });

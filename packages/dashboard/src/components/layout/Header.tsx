@@ -18,60 +18,32 @@ export function Header({
   };
 
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "16px 24px",
-        background: "#fff",
-        borderBottom: "1px solid #e2e8f0",
-      }}
-    >
+    <header className="flex justify-between items-center px-4 py-4 sm:px-6 bg-white border-b border-slate-200">
       {/* Logo & Title */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Microscope size={28} style={{ color: '#2563eb' }} />
+      <div className="flex items-center gap-3">
+        <Microscope size={28} className="text-blue-600" />
         <div>
-          <h1
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              margin: 0,
-              color: "#0f172a",
-            }}
-          >
+          <h1 className="text-xl/[normal] font-bold m-0 text-slate-900">
             {title}
           </h1>
-          <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+          <p className="text-[13px]/[normal] text-slate-500 m-0">
             {subtitle}
           </p>
         </div>
       </div>
 
       {/* Right side */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="flex items-center gap-4">
         {/* API Status */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 12px",
-            background: "#f8fafc",
-            borderRadius: 20,
-            border: "1px solid #e2e8f0",
-          }}
-        >
+        <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-50 rounded-full border border-slate-200">
           <div
+            className="w-2 h-2 rounded-full"
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
               background: statusColors[apiStatus],
               boxShadow: `0 0 6px ${statusColors[apiStatus]}`,
             }}
           />
-          <span style={{ fontSize: 12, fontWeight: 500, color: "#64748b", display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <span className="text-xs/[normal] font-medium text-slate-500 inline-flex items-center gap-1">
             API{" "}
             {apiStatus === "connected"
               ? <Check size={12} />
@@ -86,18 +58,7 @@ export function Header({
           href="https://github.com/jorgejac1/allylab"
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 12px",
-            background: "#0f172a",
-            color: "#fff",
-            borderRadius: 6,
-            fontSize: 13,
-            fontWeight: 500,
-            textDecoration: "none",
-          }}
+          className="hidden sm:flex items-center gap-1.5 py-1.5 px-3 bg-slate-900 text-white rounded-md text-[13px]/[normal] font-medium no-underline"
         >
           <GitHubIcon size={16} />
           GitHub

@@ -9,42 +9,21 @@ export function EndpointRow({
   onCopy,
 }: EndpointRowProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '10px 12px',
-        background: '#f8fafc',
-        borderRadius: 6,
-      }}
-    >
+    <div className="flex items-center gap-3 py-2.5 px-3 bg-slate-50 rounded-md">
       <span
+        className="px-2 py-0.5 rounded text-xs font-semibold font-mono"
         style={{
-          padding: '2px 8px',
-          borderRadius: 4,
-          fontSize: 11,
-          fontWeight: 600,
           background: `${METHOD_COLORS[method]}20`,
           color: METHOD_COLORS[method],
-          fontFamily: 'monospace',
         }}
       >
         {method}
       </span>
-      <code style={{ flex: 1, fontSize: 13, color: '#334155' }}>{path}</code>
-      <span style={{ fontSize: 13, color: '#64748b' }}>{description}</span>
+      <code className="flex-1 text-sm text-slate-700">{path}</code>
+      <span className="text-sm text-slate-500">{description}</span>
       <button
         onClick={() => onCopy(path)}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 4,
-          color: '#64748b',
-          display: 'flex',
-          alignItems: 'center',
-        }}
+        className="bg-transparent border-none cursor-pointer p-1 text-slate-500 flex items-center hover:text-slate-700"
         title="Copy path"
         aria-label={`Copy ${path}`}
       >

@@ -38,20 +38,8 @@ export function FindingDetails({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: 520,
-        background: '#fff',
-        boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        animation: 'slideIn 0.2s ease-out',
-      }}
+      className="fixed top-0 right-0 bottom-0 w-[520px] bg-white shadow-[-4px_0_20px_rgba(0,0,0,0.15)] z-[1000] flex flex-col overflow-hidden"
+      style={{ animation: 'slideIn 0.2s ease-out' }}
     >
       <style>{`
         @keyframes slideIn {
@@ -65,35 +53,25 @@ export function FindingDetails({
       `}</style>
 
       {/* Header */}
-      <div style={{ padding: 24, borderBottom: '1px solid #e2e8f0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 600, margin: 0, paddingRight: 40, lineHeight: 1.3 }}>
+      <div className="p-6 border-b border-slate-200">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="text-xl font-semibold m-0 pr-10 leading-tight">
             {finding.ruleTitle}
           </h3>
           <button
             onClick={onClose}
             aria-label="Close drawer"
-            style={{
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              background: 'none',
-              border: 'none',
-              fontSize: 28,
-              cursor: 'pointer',
-              color: '#94a3b8',
-              lineHeight: 1,
-            }}
+            className="absolute top-5 right-5 bg-none border-none text-[28px] cursor-pointer text-slate-400 leading-none"
           >
             ×
           </button>
         </div>
-        <p style={{ fontSize: 14, color: '#64748b', margin: '0 0 16px', lineHeight: 1.5 }}>
+        <p className="text-sm text-slate-500 m-0 mb-4 leading-normal">
           {finding.description}
         </p>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant="primary"
             size="sm"
@@ -103,12 +81,12 @@ export function FindingDetails({
           >
             {copiedSelector ? (
               <>
-                <Check size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                <Check size={14} aria-hidden="true" className="mr-1.5" />
                 Copied!
               </>
             ) : (
               <>
-                <Clipboard size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                <Clipboard size={14} aria-hidden="true" className="mr-1.5" />
                 Copy Selector
               </>
             )}
@@ -123,12 +101,12 @@ export function FindingDetails({
             >
               {copiedFix ? (
                 <>
-                  <Check size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                  <Check size={14} aria-hidden="true" className="mr-1.5" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Clipboard size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                  <Clipboard size={14} aria-hidden="true" className="mr-1.5" />
                   Copy Fix
                 </>
               )}
@@ -143,7 +121,7 @@ export function FindingDetails({
       </div>
 
       {/* Scrollable Content */}
-      <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>
+      <div className="flex-1 overflow-auto p-6">
         {/* Impact Level */}
         <Section title="IMPACT LEVEL">
           <SeverityBadge severity={finding.impact} />
@@ -152,23 +130,19 @@ export function FindingDetails({
 
         {/* Fix Difficulty */}
         <Section title="FIX DIFFICULTY">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-2">
               <span
                 aria-hidden="true"
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  background: difficulty.color,
-                }}
+                className="w-3 h-3 rounded-full"
+                style={{ background: difficulty.color }}
               />
-              <span style={{ fontWeight: 600, color: difficulty.color }}>
+              <span className="font-semibold" style={{ color: difficulty.color }}>
                 {difficulty.label}
               </span>
-              <span style={{ color: '#64748b' }}>≈ {difficulty.time}</span>
+              <span className="text-slate-500">≈ {difficulty.time}</span>
             </div>
-            <span style={{ fontSize: 13, color: '#64748b' }}>
+            <span className="text-[13px] text-slate-500">
               ~5,000 users affected
             </span>
           </div>
@@ -177,18 +151,11 @@ export function FindingDetails({
         {/* WCAG Compliance */}
         {finding.wcagTags.length > 0 && (
           <Section title="WCAG COMPLIANCE">
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
               {finding.wcagTags.map(tag => (
                 <span
                   key={tag}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#eff6ff',
-                    color: '#2563eb',
-                    borderRadius: 6,
-                    fontSize: 13,
-                    fontWeight: 500,
-                  }}
+                  className="py-1.5 px-3 bg-blue-50 text-blue-600 rounded-md text-[13px] font-medium"
                 >
                   {tag}
                 </span>
@@ -199,40 +166,18 @@ export function FindingDetails({
 
         {/* CSS Selector */}
         <Section title="CSS SELECTOR">
-          <code
-            style={{
-              display: 'block',
-              padding: 16,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 8,
-              fontSize: 13,
-              color: '#374151',
-              wordBreak: 'break-all',
-              fontFamily: 'Monaco, Consolas, monospace',
-              width: '100%',
-            }}
-          >
+          <code className="block p-4 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-gray-700 break-all font-mono w-full">
             {finding.selector}
           </code>
         </Section>
 
         {/* Visual Location Placeholder */}
         <Section title="VISUAL LOCATION">
-          <div
-            style={{
-              padding: 32,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 8,
-              textAlign: 'center',
-              width: '100%',
-            }}
-          >
-            <div style={{ color: '#94a3b8', display: 'flex', justifyContent: 'center' }}>
+          <div className="p-8 bg-slate-50 border border-slate-200 rounded-lg text-center w-full">
+            <div className="text-slate-400 flex justify-center">
               <Image size={24} aria-hidden="true" />
             </div>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>
+            <div className="text-xs text-slate-400 mt-2">
               Screenshot preview
             </div>
           </div>
@@ -244,34 +189,15 @@ export function FindingDetails({
           action={
             <button
               onClick={() => setShowContext(!showContext)}
-              style={{
-                background: 'none',
-                border: '1px solid #e2e8f0',
-                borderRadius: 6,
-                padding: '4px 12px',
-                fontSize: 12,
-                color: '#64748b',
-                cursor: 'pointer',
-              }}
+              className="bg-none border border-slate-200 rounded-md py-1 px-3 text-xs text-slate-500 cursor-pointer"
             >
               {showContext ? 'Hide Context' : 'Show Context'}
             </button>
           }
         >
           <pre
-            style={{
-              padding: 16,
-              background: '#1e293b',
-              color: '#e2e8f0',
-              borderRadius: 8,
-              fontSize: 12,
-              overflow: 'auto',
-              maxHeight: showContext ? 300 : 100,
-              margin: 0,
-              fontFamily: 'Monaco, Consolas, monospace',
-              transition: 'max-height 0.2s ease',
-              width: '100%',
-            }}
+            className="p-4 bg-slate-800 text-slate-200 rounded-lg text-xs overflow-auto m-0 font-mono w-full transition-[max-height] duration-200 ease-in-out"
+            style={{ maxHeight: showContext ? 300 : 100 }}
           >
             {finding.html}
           </pre>
@@ -279,22 +205,9 @@ export function FindingDetails({
 
         {/* Suggested Fix */}
         {finding.fixSuggestion && (
-          <Section title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Lightbulb size={14} aria-hidden="true" />SUGGESTED FIX</span>}>
-            <div style={{ width: '100%' }}>
-              <pre
-                style={{
-                  padding: 16,
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  color: '#166534',
-                  borderRadius: 8,
-                  fontSize: 12,
-                  overflow: 'auto',
-                  maxHeight: 150,
-                  margin: 0,
-                  fontFamily: 'Monaco, Consolas, monospace',
-                }}
-              >
+          <Section title={<span className="flex items-center gap-1.5"><Lightbulb size={14} aria-hidden="true" />SUGGESTED FIX</span>}>
+            <div className="w-full">
+              <pre className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-xs overflow-auto max-h-[150px] m-0 font-mono">
                 {finding.fixSuggestion}
               </pre>
               <Button
@@ -306,12 +219,12 @@ export function FindingDetails({
               >
                 {copiedFix ? (
                   <>
-                    <Check size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                    <Check size={14} aria-hidden="true" className="mr-1.5" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Clipboard size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                    <Clipboard size={14} aria-hidden="true" className="mr-1.5" />
                     Copy Fix
                   </>
                 )}
@@ -322,10 +235,10 @@ export function FindingDetails({
 
         {/* AI-Powered Suggestions */}
         <Section
-          title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Bot size={14} aria-hidden="true" />AI-POWERED SUGGESTIONS</span>}
+          title={<span className="flex items-center gap-1.5"><Bot size={14} aria-hidden="true" />AI-POWERED SUGGESTIONS</span>}
           subtitle="Powered by Claude AI"
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+          <div className="flex flex-col gap-3 w-full">
             <AISuggestion
               rank={1}
               type="RECOMMENDED"
@@ -365,18 +278,7 @@ export function FindingDetails({
             href={finding.helpUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '12px 20px',
-              background: '#eff6ff',
-              color: '#2563eb',
-              borderRadius: 8,
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
+            className="inline-flex items-center gap-2 py-3 px-5 bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold no-underline"
           >
             <BookOpen size={16} aria-hidden="true" />WCAG Documentation →
           </a>
@@ -385,7 +287,7 @@ export function FindingDetails({
         {/* Tracking History */}
         {(finding.firstSeen || finding.lastSeen) && (
           <Section title="TRACKING HISTORY">
-            <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.8 }}>
+            <div className="text-[13px] text-slate-500 leading-relaxed">
               {finding.firstSeen && (
                 <div>
                   <strong>First seen:</strong> {new Date(finding.firstSeen).toLocaleString()}
@@ -402,14 +304,7 @@ export function FindingDetails({
       </div>
 
       {/* Footer */}
-      <div
-        style={{
-          padding: 20,
-          borderTop: '1px solid #e2e8f0',
-          display: 'flex',
-          gap: 12,
-        }}
-      >
+      <div className="p-5 border-t border-slate-200 flex gap-3">
         <Button variant="secondary" style={{ flex: 1 }} onClick={onClose}>
           Close
         </Button>
@@ -421,12 +316,12 @@ export function FindingDetails({
           >
             {isGeneratingFix ? (
               <>
-                <Loader2 size={14} aria-hidden="true" style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={14} aria-hidden="true" className="mr-1.5" style={{ animation: 'spin 1s linear infinite' }} />
                 Generating...
               </>
             ) : (
               <>
-                <Bot size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+                <Bot size={14} aria-hidden="true" className="mr-1.5" />
                 Generate AI Fix
               </>
             )}

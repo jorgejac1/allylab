@@ -234,69 +234,63 @@ describe("executive/SiteRankings", () => {
     const handleClick = vi.fn();
     render(<SiteRankings sites={mockSites} onClickSite={handleClick} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="cursor"]');
-    expect(siteRow).toHaveStyle({ cursor: "pointer" });
+    const siteRow = screen.getByText("example.com").closest("div.cursor-pointer");
+    expect(siteRow).toHaveClass("cursor-pointer");
   });
 
   it("applies default cursor when not clickable", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="cursor"]');
-    expect(siteRow).toHaveStyle({ cursor: "default" });
+    const siteRow = screen.getByText("example.com").closest("div.cursor-default");
+    expect(siteRow).toHaveClass("cursor-default");
   });
 
   it("applies hover effect on mouse enter when clickable", () => {
     const handleClick = vi.fn();
     render(<SiteRankings sites={mockSites} onClickSite={handleClick} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]');
-    fireEvent.mouseEnter(siteRow!);
-
-    expect(siteRow).toHaveStyle({ background: "#f0f9ff" });
-    expect(siteRow).toHaveStyle({ borderColor: "#93c5fd" });
+    const siteRow = screen.getByText("example.com").closest("div.border");
+    expect(siteRow).toHaveClass("hover:bg-blue-50");
+    expect(siteRow).toHaveClass("hover:border-blue-300");
   });
 
   it("resets hover effect on mouse leave when clickable", () => {
     const handleClick = vi.fn();
     render(<SiteRankings sites={mockSites} onClickSite={handleClick} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]');
-    fireEvent.mouseEnter(siteRow!);
-    fireEvent.mouseLeave(siteRow!);
-
-    // First site (worst) should have red background
-    expect(siteRow).toHaveStyle({ background: "#fef2f2" });
-    expect(siteRow).toHaveStyle({ borderColor: "#fecaca" });
+    const siteRow = screen.getByText("example.com").closest("div.border");
+    // First site (worst) should have red background via Tailwind classes
+    expect(siteRow).toHaveClass("bg-red-50");
+    expect(siteRow).toHaveClass("border-red-200");
   });
 
   it("does not apply hover effect when not clickable", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]') as HTMLElement;
-    const initialBackground = siteRow.style.background;
+    const siteRow = screen.getByText("example.com").closest("div.border") as HTMLElement;
     fireEvent.mouseEnter(siteRow);
-
-    expect(siteRow).toHaveStyle({ background: initialBackground });
+    // Not clickable, so no hover classes
+    expect(siteRow).not.toHaveClass("hover:bg-blue-50");
   });
 
   it("applies worst site styling (first site)", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const worstSiteRow = screen.getByText("example.com").closest('[style*="border"]');
-    expect(worstSiteRow).toHaveStyle({ background: "#fef2f2" });
+    const worstSiteRow = screen.getByText("example.com").closest("div.border");
+    expect(worstSiteRow).toHaveClass("bg-red-50");
   });
 
   it("applies normal styling for non-worst sites", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const normalSiteRow = screen.getByText("test.com").closest('[style*="border"]');
-    expect(normalSiteRow).toHaveStyle({ background: "#fff" });
+    const normalSiteRow = screen.getByText("test.com").closest("div.border");
+    expect(normalSiteRow).toHaveClass("bg-white");
   });
 
   it("handles click when onClickSite is undefined", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]');
+    const siteRow = screen.getByText("example.com").closest("div.border");
     // Should not throw
     fireEvent.click(siteRow!);
   });
@@ -304,19 +298,19 @@ describe("executive/SiteRankings", () => {
   it("handles mouse enter when not clickable", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]');
+    const siteRow = screen.getByText("example.com").closest("div.border");
     fireEvent.mouseEnter(siteRow!);
-    // Should not change style
-    expect(siteRow).toHaveStyle({ background: "#fef2f2" });
+    // Should still have worst-site styling
+    expect(siteRow).toHaveClass("bg-red-50");
   });
 
   it("handles mouse leave when not clickable", () => {
     render(<SiteRankings sites={mockSites} />);
 
-    const siteRow = screen.getByText("example.com").closest('[style*="border"]');
+    const siteRow = screen.getByText("example.com").closest("div.border");
     fireEvent.mouseLeave(siteRow!);
-    // Should not throw
-    expect(siteRow).toHaveStyle({ background: "#fef2f2" });
+    // Should still have worst-site styling
+    expect(siteRow).toHaveClass("bg-red-50");
   });
 
   it("styles rank badge for rank > 3 with white background", () => {

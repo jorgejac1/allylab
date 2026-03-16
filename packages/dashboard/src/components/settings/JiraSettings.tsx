@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Input, Select } from '../ui';
 import { useLocalStorage } from '../../hooks';
+import { PermissionGuard } from '../guards/RoleGuard';
 import type { JiraConfig, JiraFieldMapping } from '../../types';
 import { DEFAULT_JIRA_CONFIG, DEFAULT_FIELD_MAPPING } from '../../types/jira';
 import { FieldMappingConfig } from './FieldMappingConfig';
@@ -77,7 +78,7 @@ export function JiraSettings() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       <style>{`
         @keyframes savedSuccess {
           0%, 100% { opacity: 1; }
@@ -86,26 +87,28 @@ export function JiraSettings() {
       `}</style>
       {/* Enable/Disable */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex justify-between items-center">
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <h3 className="text-base font-semibold m-0 inline-flex items-center gap-2">
               <Link size={18} /> JIRA Integration
             </h3>
-            <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
+            <p className="text-sm text-slate-500 mt-1 mb-0">
               Export accessibility issues directly to your JIRA instance
             </p>
           </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={config.enabled}
-              onChange={e => handleConfigChange('enabled', e.target.checked)}
-              style={{ width: 18, height: 18 }}
-            />
-            <span style={{ fontSize: 14, fontWeight: 500 }}>
-              {config.enabled ? 'Enabled' : 'Disabled'}
-            </span>
-          </label>
+          <PermissionGuard permission="jira:connect">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={config.enabled}
+                onChange={e => handleConfigChange('enabled', e.target.checked)}
+                className="w-[18px] h-[18px]"
+              />
+              <span className="text-sm font-medium">
+                {config.enabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </label>
+          </PermissionGuard>
         </div>
       </Card>
 
@@ -113,13 +116,13 @@ export function JiraSettings() {
         <>
           {/* Endpoint Configuration */}
           <Card>
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <h3 className="text-base font-semibold mt-0 mb-4 inline-flex items-center gap-2">
               <Globe size={18} /> Endpoint Configuration
             </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="flex flex-col gap-4">
               <div>
-                <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+                <label className="block text-sm font-medium mb-1.5">
                   JIRA API Endpoint
                 </label>
                 <Input
@@ -127,13 +130,13 @@ export function JiraSettings() {
                   onChange={e => handleConfigChange('endpoint', e.target.value)}
                   placeholder="https://your-domain.atlassian.net/rest/api/2/issue"
                 />
-                <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                <p className="text-xs text-slate-500 mt-1">
                   Your JIRA REST API endpoint or proxy URL
                 </p>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+                <label className="block text-sm font-medium mb-1.5">
                   Authorization Header (Optional)
                 </label>
                 <Input
@@ -142,14 +145,14 @@ export function JiraSettings() {
                   placeholder="Basic xxx or Bearer xxx"
                   type="password"
                 />
-                <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                <p className="text-xs text-slate-500 mt-1">
                   Leave empty if your proxy handles authentication
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+                  <label className="block text-sm font-medium mb-1.5">
                     Project Key
                   </label>
                   <Input
@@ -160,7 +163,7 @@ export function JiraSettings() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+                  <label className="block text-sm font-medium mb-1.5">
                     Issue Type
                   </label>
                   <Select
@@ -177,21 +180,19 @@ export function JiraSettings() {
               </div>
 
               {/* Test Connection */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+              <div className="flex items-center gap-3 mt-2">
                 <Button
                   variant="secondary"
                   onClick={handleTestConnection}
                   disabled={testing || !config.endpoint}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  className="inline-flex items-center gap-1.5"
                 >
-                  {testing ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Testing...</> : <><Plug size={14} /> Test Connection</>}
+                  {testing ? <><Loader2 size={14} className="animate-spin" /> Testing...</> : <><Plug size={14} /> Test Connection</>}
                 </Button>
                 {testResult && (
                   <span
-                    style={{
-                      fontSize: 13,
-                      color: testResult.success ? '#10b981' : '#ef4444',
-                    }}
+                    className="text-sm"
+                    style={{ color: testResult.success ? '#10b981' : '#ef4444' }}
                   >
                     {testResult.message}
                   </span>
@@ -204,13 +205,14 @@ export function JiraSettings() {
           <FieldMappingConfig mapping={mapping} onChange={setMapping} />
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={handleReset}>
               Reset to Defaults
             </Button>
             <Button
               onClick={handleSave}
-              style={saved ? { animation: 'savedSuccess 2s ease-out', display: 'inline-flex', alignItems: 'center', gap: 6 } : { display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              className="inline-flex items-center gap-1.5"
+              style={saved ? { animation: 'savedSuccess 2s ease-out' } : undefined}
               onAnimationEnd={handleSaveAnimationEnd}
             >
               {saved ? <><Check size={14} /> Saved!</> : 'Save Settings'}

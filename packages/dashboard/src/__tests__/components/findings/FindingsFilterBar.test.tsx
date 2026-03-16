@@ -180,7 +180,7 @@ describe("findings/FindingsFilterBar", () => {
   });
 
   it("renders source filter when counts provided", () => {
-    const sourceCounts = { axeCore: 8, customRule: 2, total: 10 };
+    const sourceCounts = { axeCore: 8, customRule: 2, tvRule: 0, total: 10 };
     render(<FindingsFilterBar {...defaultProps} sourceCounts={sourceCounts} onSourceFilterChange={vi.fn()} />);
     expect(screen.getByTestId("source-filter")).toBeInTheDocument();
   });
@@ -192,7 +192,7 @@ describe("findings/FindingsFilterBar", () => {
 
   it("calls onSourceFilterChange when source filter changes", () => {
     const onSourceFilterChange = vi.fn();
-    const sourceCounts = { axeCore: 8, customRule: 2, total: 10 };
+    const sourceCounts = { axeCore: 8, customRule: 2, tvRule: 0, total: 10 };
     render(<FindingsFilterBar {...defaultProps} sourceCounts={sourceCounts} onSourceFilterChange={onSourceFilterChange} />);
     fireEvent.click(screen.getByTestId("source-filter"));
     expect(onSourceFilterChange).toHaveBeenCalledWith("custom-rule");

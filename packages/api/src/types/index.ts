@@ -1,8 +1,8 @@
 export type Severity = 'critical' | 'serious' | 'moderate' | 'minor';
 
-export type Viewport = 'desktop' | 'tablet' | 'mobile';
+export type Viewport = 'desktop' | 'tablet' | 'mobile' | 'tv-hd' | 'tv-4k';
 
-export type FindingSource = 'axe-core' | 'custom-rule';
+export type FindingSource = 'axe-core' | 'custom-rule' | 'tv-rule';
 
 export interface ViewportConfig {
   width: number;
@@ -16,6 +16,8 @@ export const VIEWPORT_CONFIGS: Record<Viewport, ViewportConfig> = {
   desktop: { width: 1280, height: 720, isMobile: false, hasTouch: false },
   tablet: { width: 768, height: 1024, isMobile: true, hasTouch: true },
   mobile: { width: 375, height: 667, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
+  'tv-hd': { width: 1920, height: 1080, isMobile: false, hasTouch: false, deviceScaleFactor: 1 },
+  'tv-4k': { width: 3840, height: 2160, isMobile: false, hasTouch: false, deviceScaleFactor: 1 },
 };
 
 export interface Finding {
@@ -129,3 +131,4 @@ export * from './jira';
 export * from './schedule';
 export * from './rules';
 export * from './auth';
+export * from './sso';

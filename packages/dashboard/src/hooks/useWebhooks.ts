@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getApiBase } from '../utils/api';
 import type { Webhook, WebhookEvent, WebhookType } from '../types/webhook';
+import { addAuditEntry } from '../utils/auditLog';
 
 export function useWebhooks() {
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
@@ -41,6 +42,7 @@ export function useWebhooks() {
       if (response.ok) {
         const webhook = await response.json();
         setWebhooks(prev => [...prev, webhook]);
+        addAuditEntry({ eventType: 'webhook:triggered', severity: 'info', action: `Created webhook "${name}"`, resourceType: 'webhook', resourceId: webhook.id, success: true });
         return webhook;
       }
     } catch {
@@ -62,6 +64,7 @@ export function useWebhooks() {
       if (response.ok) {
         const updated = await response.json();
         setWebhooks(prev => prev.map(wh => (wh.id === id ? updated : wh)));
+        addAuditEntry({ eventType: 'settings:updated', severity: 'info', action: `Updated webhook ${id}`, resourceType: 'webhook', resourceId: id, success: true });
         return true;
       }
     } catch {
@@ -77,6 +80,7 @@ export function useWebhooks() {
       });
       if (response.ok) {
         setWebhooks(prev => prev.filter(wh => wh.id !== id));
+        addAuditEntry({ eventType: 'settings:updated', severity: 'warning', action: `Deleted webhook ${id}`, resourceType: 'webhook', resourceId: id, success: true });
         return true;
       }
     } catch {

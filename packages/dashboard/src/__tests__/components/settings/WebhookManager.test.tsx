@@ -17,6 +17,20 @@ vi.mock("../../../hooks/useWebhooks", () => ({
   useWebhooks: () => hookReturn,
 }));
 
+vi.mock('../../../contexts', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', email: 'admin@test.com', name: 'Admin', role: 'admin' },
+      organization: { id: 'org1', name: 'Test', plan: 'enterprise', settings: { maxScansPerMonth: -1, maxAiFixesPerMonth: -1, maxGitHubPRsPerMonth: -1, scheduledScans: true, maxCustomRules: -1, jiraIntegration: true, exportFormats: ['csv', 'pdf', 'json'] } },
+      isAuthenticated: true,
+      can: () => true,
+      hasRole: () => true,
+    }),
+  };
+});
+
 const baseWebhook: Webhook = {
   id: "1",
   name: "Alerts",
@@ -262,7 +276,7 @@ describe("settings/WebhookManager", () => {
 
     // Find delete button (ghost button with red color for Trash icon)
     const allButtons = within(listCard).getAllByRole("button");
-    const deleteButton = allButtons.find(btn => btn.style.color === 'rgb(220, 38, 38)' || btn.style.color === '#dc2626');
+    const deleteButton = allButtons.find(btn => btn.classList.contains("text-red-600"));
     fireEvent.click(deleteButton!);
     await waitFor(() => expect(hookReturn.deleteWebhook).toHaveBeenCalledWith("1"));
 
@@ -321,7 +335,7 @@ describe("settings/WebhookManager", () => {
 
     const failedStatusNode = screen.getAllByText("Failed")[0] as HTMLElement;
     let genericCard: HTMLElement | null = failedStatusNode;
-    while (genericCard && !genericCard.style.border) {
+    while (genericCard && !genericCard.classList.contains("border")) {
       genericCard = genericCard.parentElement;
     }
     expect(genericCard).not.toBeNull();
@@ -336,7 +350,7 @@ describe("settings/WebhookManager", () => {
 
     const teamsNode = screen.getByText("Teams Alert") as HTMLElement;
     let teamsCard: HTMLElement | null = teamsNode;
-    while (teamsCard && !teamsCard.style.border) {
+    while (teamsCard && !teamsCard.classList.contains("border")) {
       teamsCard = teamsCard.parentElement;
     }
     expect(teamsCard).not.toBeNull();
@@ -354,7 +368,7 @@ describe("settings/WebhookManager", () => {
 
     const unknownSpan = screen.getAllByText("Unknown")[0];
     let unknownCard = unknownSpan.parentElement as HTMLElement | null;
-    while (unknownCard && !unknownCard.style.border) {
+    while (unknownCard && !unknownCard.classList.contains("border")) {
       unknownCard = unknownCard.parentElement as HTMLElement | null;
     }
     expect(unknownCard).not.toBeNull();

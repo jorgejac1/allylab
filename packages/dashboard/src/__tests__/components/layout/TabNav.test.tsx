@@ -42,18 +42,14 @@ describe("layout/TabNav", () => {
     render(<TabNav tabs={tabs} activeTab="history" onChange={vi.fn()} />);
 
     const historyButton = screen.getByText("History").closest("button");
-    expect(historyButton).toHaveStyle({
-      background: "#eff6ff",
-      borderBottom: "2px solid #2563eb",
-      color: "#2563eb",
-    });
+    expect(historyButton).toHaveClass("bg-blue-50", "border-blue-600", "text-blue-600");
   });
 
   it("renders inactive tab with default styling", () => {
     render(<TabNav tabs={tabs} activeTab="scan" onChange={vi.fn()} />);
 
     const historyButton = screen.getByText("History").closest("button");
-    expect(historyButton).toHaveStyle({ color: "rgb(100, 116, 139)" });
+    expect(historyButton).toHaveClass("text-slate-500");
   });
 
   it("renders badges when provided", () => {
@@ -66,20 +62,14 @@ describe("layout/TabNav", () => {
     render(<TabNav tabs={tabs} activeTab="history" onChange={vi.fn()} />);
 
     const badge = screen.getByText("5");
-    expect(badge).toHaveStyle({
-      background: "#2563eb",
-      color: "#fff",
-    });
+    expect(badge).toHaveClass("bg-blue-600", "text-white");
   });
 
   it("renders badge with inactive styling when tab is inactive", () => {
     render(<TabNav tabs={tabs} activeTab="scan" onChange={vi.fn()} />);
 
     const badge = screen.getByText("5");
-    expect(badge).toHaveStyle({
-      background: "#e2e8f0",
-      color: "#64748b",
-    });
+    expect(badge).toHaveClass("bg-slate-200", "text-slate-500");
   });
 
   it("does not render badge when not provided", () => {
@@ -115,11 +105,7 @@ describe("layout/TabNav", () => {
 
     const disabledButton = screen.getByText("Disabled").closest("button");
     expect(disabledButton).toHaveAttribute("disabled");
-    expect(disabledButton).toHaveStyle({
-      cursor: "not-allowed",
-      color: "#cbd5e1",
-      opacity: 0.5,
-    });
+    expect(disabledButton).toHaveClass("cursor-not-allowed", "text-slate-300", "opacity-50");
   });
 
   it("handles tab without icon or badge", () => {
@@ -127,10 +113,7 @@ describe("layout/TabNav", () => {
 
     const settingsButton = screen.getByText("Settings").closest("button");
     expect(settingsButton).toBeInTheDocument();
-    expect(settingsButton).toHaveStyle({
-      background: "#eff6ff",
-      color: "#2563eb",
-    });
+    expect(settingsButton).toHaveClass("bg-blue-50", "text-blue-600");
   });
 
   it("calls onChange with correct tab id", () => {

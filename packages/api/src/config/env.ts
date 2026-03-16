@@ -13,6 +13,9 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
 
+  // Storage backend
+  storageType: (process.env.STORAGE_TYPE || 'json') as 'json' | 'sqlite' | 'postgres',
+
   // Feature flags
   enableAiFixes: !!process.env.ANTHROPIC_API_KEY,
   githubApiUrl: process.env.GITHUB_API_URL || 'https://api.github.com',
@@ -22,11 +25,16 @@ export const config = {
   clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 
   // Security settings
-  jwtSecret: process.env.JWT_SECRET || defaultJwtSecret || '',
+  jwtSecret: process.env.JWT_SECRET || defaultJwtSecret || crypto.randomBytes(32).toString('hex'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
   enableSSRFProtection: process.env.DISABLE_SSRF_PROTECTION !== 'true',
   enableRateLimiting: process.env.DISABLE_RATE_LIMITING !== 'true',
   enableAuth: process.env.DISABLE_AUTH !== 'true',
+
+  // CORS
+  corsOrigins: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+    : ['http://localhost:5173', 'http://localhost:3000'],
 
   // Rate limiting
   rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
@@ -47,6 +55,10 @@ export const config = {
 if (config.nodeEnv === 'production') {
   if (!process.env.JWT_SECRET) {
     console.error('FATAL: JWT_SECRET must be set in production');
+    process.exit(1);
+  }
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+    console.error('FATAL: JWT_SECRET must be at least 32 characters');
     process.exit(1);
   }
   if (!process.env.ENCRYPTION_KEY) {

@@ -9,13 +9,13 @@ describe("ui/Input and Textarea", () => {
     render(<Input placeholder="type" data-testid="input" />);
     const input = screen.getByTestId("input");
     expect(input).toHaveAttribute("placeholder", "type");
-    expect(input).toHaveStyle({ padding: "10px 14px" });
+    expect(input).toHaveClass("sm:py-2.5", "sm:px-3.5", "rounded-lg", "border", "border-slate-200");
   });
 
   it("renders textarea with styles", () => {
     render(<Textarea data-testid="ta" defaultValue="hello" />);
     const ta = screen.getByTestId("ta");
     expect(ta).toHaveValue("hello");
-    expect(ta).toHaveStyle({ resize: "vertical" });
+    expect(ta).toHaveClass("resize-y", "min-h-[100px]");
   });
 });

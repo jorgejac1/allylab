@@ -16,13 +16,13 @@ interface Segment {
   percent: number;
 }
 
-export function SeverityBar({ 
-  critical, 
-  serious, 
-  moderate, 
-  minor, 
+export function SeverityBar({
+  critical,
+  serious,
+  moderate,
+  minor,
   height = 24,
-  showLabels = true 
+  showLabels = true
 }: SeverityBarProps) {
   const total = critical + serious + moderate + minor;
   if (total === 0) return null;
@@ -39,29 +39,17 @@ export function SeverityBar({
   return (
     <div>
       <div
-        style={{
-          display: 'flex',
-          height,
-          borderRadius: height / 2,
-          overflow: 'hidden',
-          background: '#e2e8f0',
-        }}
+        className="flex overflow-hidden bg-slate-200"
+        style={{ height, borderRadius: height / 2 }}
       >
         {segments.map(seg => (
           <div
             key={seg.severity}
+            className="h-full flex items-center justify-center text-white text-xs font-semibold overflow-hidden"
             style={{
               width: `${seg.percent}%`,
-              height: '100%',
               background: SEVERITY_COLORS[seg.severity],
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontSize: 11,
-              fontWeight: 600,
               minWidth: seg.percent > 10 ? 'auto' : 0,
-              overflow: 'hidden',
             }}
             title={`${seg.severity}: ${seg.count}`}
           >
@@ -70,18 +58,14 @@ export function SeverityBar({
         ))}
       </div>
       {showLabels && (
-        <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+        <div className="flex gap-4 mt-2 flex-wrap">
           {segments.map(seg => (
-            <div key={seg.severity} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div key={seg.severity} className="flex items-center gap-1.5">
               <div
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 2,
-                  background: SEVERITY_COLORS[seg.severity],
-                }}
+                className="w-2.5 h-2.5 rounded-sm"
+                style={{ background: SEVERITY_COLORS[seg.severity] }}
               />
-              <span style={{ fontSize: 12, color: '#64748b' }}>
+              <span className="text-xs text-slate-500">
                 {seg.severity}: {seg.count}
               </span>
             </div>

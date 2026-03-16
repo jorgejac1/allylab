@@ -14,14 +14,8 @@ interface SeverityDotProps {
 export const SeverityDot = memo(function SeverityDot({ severity }: SeverityDotProps) {
   return (
     <span
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: '50%',
-        background: SEVERITY_COLORS[severity] || '#94a3b8',
-        flexShrink: 0,
-        display: 'inline-block',
-      }}
+      className="w-2 h-2 rounded-full shrink-0 inline-block"
+      style={{ background: SEVERITY_COLORS[severity] || '#94a3b8' }}
     />
   );
 });

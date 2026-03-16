@@ -25,47 +25,20 @@ export function FileResultItem({
   return (
     <button
       onClick={onSelect}
-      style={{
-        width: '100%',
-        padding: '10px 12px',
-        border: 'none',
-        borderBottom: '1px solid #f1f5f9',
-        borderLeft: file.isBestMatch ? '4px solid #22c55e' : '4px solid transparent',
-        background: file.isBestMatch ? '#f0fdf4' : '#fff',
-        textAlign: 'left',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = file.isBestMatch ? '#dcfce7' : '#f0f9ff'}
-      onMouseLeave={e => e.currentTarget.style.background = file.isBestMatch ? '#f0fdf4' : '#fff'}
+      className={`w-full py-2.5 px-3 border-none border-b border-slate-100 text-left cursor-pointer flex flex-col gap-1 ${
+        file.isBestMatch
+          ? 'border-l-4 border-l-green-500 bg-green-50 hover:bg-green-100'
+          : 'border-l-4 border-l-transparent bg-white hover:bg-sky-50'
+      }`}
     >
       {/* File path + Badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{
-          fontSize: 12,
-          fontFamily: 'monospace',
-          color: '#0f172a',
-          flex: 1,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-        }}>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-mono text-slate-900 flex-1 inline-flex items-center gap-1">
           <FileText size={12} aria-hidden="true" /> {file.path}
         </span>
         {file.isBestMatch && (
-          <span style={{
-            fontSize: 10,
-            background: '#22c55e',
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: 4,
-            fontWeight: 600,
-            display: 'inline-flex',
-            alignItems: 'center',
-          }}>
-            <Target size={10} style={{ marginRight: 4 }} aria-hidden="true" /> Best Match
+          <span className="text-[10px] bg-green-500 text-white py-0.5 px-1.5 rounded font-semibold inline-flex items-center">
+            <Target size={10} className="mr-1" aria-hidden="true" /> Best Match
           </span>
         )}
         {!file.isBestMatch && file.confidence.level !== 'none' && (
@@ -75,26 +48,14 @@ export function FileResultItem({
 
       {/* Confidence details */}
       {file.confidence.level !== 'none' && !isRanking && (
-        <div style={{ fontSize: 10, color: '#64748b' }}>
+        <div className="text-[10px] text-slate-500">
           {file.confidence.details}
         </div>
       )}
 
       {/* Preview */}
       {file.preview && (
-        <pre style={{
-          margin: 0,
-          padding: 8,
-          background: '#f8fafc',
-          borderRadius: 4,
-          fontSize: 10,
-          color: '#475569',
-          fontFamily: 'ui-monospace, monospace',
-          whiteSpace: 'pre-wrap',
-          overflow: 'hidden',
-          maxHeight: 60,
-          lineHeight: 1.4,
-        }}>
+        <pre className="m-0 p-2 bg-slate-50 rounded text-[10px] text-slate-600 font-mono whitespace-pre-wrap overflow-hidden max-h-[60px] leading-snug">
           {file.preview.length > 150 ? file.preview.slice(0, 150) + '...' : file.preview}
         </pre>
       )}
@@ -110,9 +71,9 @@ function ConfidenceBadge({
   colors: { bg: string; text: string; border: string };
 }) {
   const icons = {
-    high: <Check size={10} style={{ marginRight: 2 }} aria-hidden="true" />,
-    medium: <CircleMinus size={10} style={{ marginRight: 2 }} aria-hidden="true" />,
-    low: <CircleHelp size={10} style={{ marginRight: 2 }} aria-hidden="true" />,
+    high: <Check size={10} className="mr-0.5" aria-hidden="true" />,
+    medium: <CircleMinus size={10} className="mr-0.5" aria-hidden="true" />,
+    low: <CircleHelp size={10} className="mr-0.5" aria-hidden="true" />,
   };
 
   const labels = {
@@ -122,17 +83,10 @@ function ConfidenceBadge({
   };
 
   return (
-    <span style={{
-      fontSize: 10,
-      background: colors.bg,
-      color: colors.text,
-      border: `1px solid ${colors.border}`,
-      padding: '2px 6px',
-      borderRadius: 4,
-      fontWeight: 500,
-      display: 'inline-flex',
-      alignItems: 'center',
-    }}>
+    <span
+      className="text-[10px] py-0.5 px-1.5 rounded font-medium inline-flex items-center"
+      style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
+    >
       {icons[level]}{labels[level]}
     </span>
   );

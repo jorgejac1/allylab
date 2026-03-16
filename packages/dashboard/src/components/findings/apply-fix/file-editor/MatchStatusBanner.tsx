@@ -20,14 +20,10 @@ export function MatchStatusBanner({ autoMatch }: MatchStatusBannerProps) {
   const hasMultipleInstances = autoMatch.allInstances && autoMatch.allInstances.length > 1;
 
   return (
-    <div style={{
-      padding: '10px 14px',
-      background: style.bg,
-      border: `1px solid ${style.border}`,
-      borderRadius: 6,
-      fontSize: 12,
-      color: style.text,
-    }}>
+    <div
+      className="py-2.5 px-3.5 rounded-md text-xs"
+      style={{ background: style.bg, border: `1px solid ${style.border}`, color: style.text }}
+    >
       <MatchHeader
         confidence={autoMatch.confidence}
         icon={style.icon}
@@ -38,7 +34,7 @@ export function MatchStatusBanner({ autoMatch }: MatchStatusBannerProps) {
         textColor={style.text}
       />
 
-      <div style={{ marginTop: 6, paddingLeft: 28, fontSize: 11, opacity: 0.9 }}>
+      <div className="mt-1.5 pl-7 text-[11px] opacity-90">
         {autoMatch.reason}
       </div>
 
@@ -55,21 +51,11 @@ export function MatchStatusBanner({ autoMatch }: MatchStatusBannerProps) {
 
 function NoMatchBanner() {
   return (
-    <div style={{
-      padding: '10px 14px',
-      background: '#fef2f2',
-      border: '1px solid #fecaca',
-      borderRadius: 6,
-      fontSize: 12,
-      color: '#dc2626',
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: 8,
-    }}>
+    <div className="py-2.5 px-3.5 bg-red-50 border border-red-200 rounded-md text-xs text-red-600 flex items-start gap-2">
       <AlertTriangle size={16} aria-hidden="true" />
       <div>
         <strong>Could not auto-detect the code location.</strong>
-        <div style={{ marginTop: 4, color: '#991b1b' }}>
+        <div className="mt-1 text-red-800">
           Please enable "Manual selection mode" and select the lines to replace.
         </div>
       </div>
@@ -101,23 +87,19 @@ function MatchHeader({
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
-      <div style={{ flex: 1 }}>
+    <div className="flex items-center gap-2">
+      <span className="inline-flex items-center">{icon}</span>
+      <div className="flex-1">
         <strong>{messages[confidence]}</strong>
-        <span style={{ marginLeft: 8, opacity: 0.8 }}>
+        <span className="ml-2 opacity-80">
           Lines {lineStart}-{lineEnd}
         </span>
       </div>
       {instanceCount && instanceCount > 1 && (
-        <span style={{
-          fontSize: 10,
-          background: borderColor,
-          color: textColor,
-          padding: '2px 6px',
-          borderRadius: 4,
-          fontWeight: 600,
-        }}>
+        <span
+          className="text-[10px] py-0.5 px-1.5 rounded font-semibold"
+          style={{ background: borderColor, color: textColor }}
+        >
           {instanceCount} instances
         </span>
       )}
@@ -127,18 +109,7 @@ function MatchHeader({
 
 function CommentWarning({ hasMultipleInstances }: { hasMultipleInstances?: boolean }) {
   return (
-    <div style={{
-      marginTop: 8,
-      padding: '6px 10px',
-      background: '#fef3c7',
-      border: '1px solid #fcd34d',
-      borderRadius: 4,
-      fontSize: 11,
-      color: '#92400e',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-    }}>
+    <div className="mt-2 py-1.5 px-2.5 bg-amber-100 border border-amber-300 rounded text-[11px] text-amber-800 flex items-center gap-1.5">
       <AlertTriangle size={12} aria-hidden="true" />
       <span>
         <strong>Warning:</strong> This appears to be in a comment or type definition, not actual code.
@@ -155,22 +126,10 @@ function NavigationHint({
   borderColor: string;
   textColor: string;
 }) {
-  const kbdStyle = {
-    background: 'rgba(255,255,255,0.5)',
-    padding: '1px 4px',
-    borderRadius: 2,
-    border: `1px solid ${borderColor}`,
-  };
-
   return (
-    <div style={{
-      marginTop: 8,
-      fontSize: 10,
-      color: textColor,
-      opacity: 0.8,
-    }}>
-      <Lightbulb size={10} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} aria-hidden="true" />
-      {' '}Use <kbd style={kbdStyle}>↑</kbd> <kbd style={kbdStyle}>↓</kbd> to navigate between instances
+    <div className="mt-2 text-[10px] opacity-80" style={{ color: textColor }}>
+      <Lightbulb size={10} className="inline align-middle mr-1" aria-hidden="true" />
+      {' '}Use <kbd className="px-1 py-px rounded-sm" style={{ background: 'rgba(255,255,255,0.5)', border: `1px solid ${borderColor}` }}>↑</kbd> <kbd className="px-1 py-px rounded-sm" style={{ background: 'rgba(255,255,255,0.5)', border: `1px solid ${borderColor}` }}>↓</kbd> to navigate between instances
     </div>
   );
 }

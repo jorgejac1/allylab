@@ -67,7 +67,7 @@ describe("layout/Sidebar", () => {
     render(<Sidebar groups={groups} activeItem="history" onItemClick={vi.fn()} />);
 
     const historyButton = screen.getByText("History").closest("button");
-    expect(historyButton).toHaveStyle({ background: "#1e293b", fontWeight: 600 });
+    expect(historyButton).toHaveClass("bg-slate-800", "font-semibold");
   });
 
   it("renders badges when provided", () => {
@@ -107,11 +107,7 @@ describe("layout/Sidebar", () => {
 
     const disabledButton = screen.getByText("Disabled").closest("button");
     expect(disabledButton).toHaveAttribute("disabled");
-    expect(disabledButton).toHaveStyle({
-      cursor: "not-allowed",
-      color: "#475569",
-      opacity: 0.5,
-    });
+    expect(disabledButton).toHaveClass("cursor-not-allowed", "text-slate-600", "opacity-50");
   });
 
   it("renders footer when provided", () => {
@@ -189,13 +185,13 @@ describe("layout/Sidebar", () => {
     const { container } = render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} collapsed={true} />);
 
     const aside = container.querySelector("aside");
-    expect(aside).toHaveStyle({ width: "64px" });
+    expect(aside).toHaveClass("w-16");
   });
 
   it("applies correct width when not collapsed", () => {
     const { container } = render(<Sidebar groups={groups} activeItem="scan" onItemClick={vi.fn()} />);
 
     const aside = container.querySelector("aside");
-    expect(aside).toHaveStyle({ width: "240px" });
+    expect(aside).toHaveClass("w-60");
   });
 });

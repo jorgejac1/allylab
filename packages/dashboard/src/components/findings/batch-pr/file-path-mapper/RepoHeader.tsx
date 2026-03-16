@@ -2,31 +2,20 @@ import type { RepoHeaderProps } from './types';
 
 export function RepoHeader({ repo, branches, selectedBranch, onBranchChange, onChangeRepo }: RepoHeaderProps) {
   return (
-    <div style={{
-      padding: 12,
-      background: '#f8fafc',
-      borderRadius: 8,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-    }}>
+    <div className="p-3 bg-slate-50 rounded-lg flex items-center gap-3">
       <img
         src={repo.owner.avatar_url}
         alt=""
-        style={{ width: 32, height: 32, borderRadius: 6 }}
+        className="w-8 h-8 rounded-md"
+        width={32}
+        height={32}
+        loading="lazy"
       />
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 500, fontSize: 14 }}>{repo.full_name}</div>
+      <div className="flex-1">
+        <div className="font-medium text-sm">{repo.full_name}</div>
         <button
           onClick={onChangeRepo}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#3b82f6',
-            fontSize: 12,
-            cursor: 'pointer',
-            padding: 0,
-          }}
+          className="bg-none border-none text-blue-500 text-xs cursor-pointer p-0"
         >
           Change repository
         </button>
@@ -35,12 +24,7 @@ export function RepoHeader({ repo, branches, selectedBranch, onBranchChange, onC
         value={selectedBranch}
         onChange={e => onBranchChange(e.target.value)}
         aria-label="Select branch"
-        style={{
-          padding: '6px 10px',
-          border: '1px solid #e2e8f0',
-          borderRadius: 6,
-          fontSize: 13,
-        }}
+        className="py-1.5 px-2.5 border border-slate-200 rounded-md text-[13px]"
       >
         {branches.map(branch => (
           <option key={branch.name} value={branch.name}>

@@ -2,36 +2,21 @@ import type { SectionProps } from './types';
 
 export function Section({ title, subtitle, action, children }: SectionProps) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 10,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: '#64748b',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
+    <div className="mb-6">
+      <div className="flex justify-between items-center mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
             {title}
           </span>
           {subtitle && (
-            <span style={{ fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
+            <span className="text-[11px] text-slate-400 italic">
               {subtitle}
             </span>
           )}
         </div>
         {action}
       </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{children}</div>
+      <div className="flex gap-2 flex-wrap">{children}</div>
     </div>
   );
 }

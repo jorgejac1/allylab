@@ -109,39 +109,21 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
   return (
     <Card>
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-        }}
-      >
-        <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold m-0 inline-flex items-center gap-2">
           <Calendar size={20} /> Period Comparison
         </h3>
-        <Button variant="secondary" size="sm" onClick={onClose} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <Button variant="secondary" size="sm" onClick={onClose} className="inline-flex items-center gap-1">
           <X size={14} /> Close
         </Button>
       </div>
 
       {/* Period Selector */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          marginBottom: 24,
-          padding: 16,
-          background: "#f8fafc",
-          borderRadius: 8,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <span style={{ fontSize: 14, fontWeight: 500, marginRight: 8 }}>
+      <div className="flex gap-2 mb-6 p-4 bg-slate-50 rounded-lg items-center flex-wrap">
+        <span className="text-sm font-medium mr-2">
           Compare:
         </span>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div className="flex gap-1">
           {(["week", "month", "quarter"] as PresetPeriod[]).map((p) => (
             <button
               key={p}
@@ -149,17 +131,11 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
                 setPreset(p);
                 setComparisonData(null);
               }}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 6,
-                border: "none",
-                background: preset === p ? "#2563eb" : "#fff",
-                color: preset === p ? "#fff" : "#64748b",
-                fontSize: 13,
-                fontWeight: 500,
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
+              className={`py-1.5 px-3 rounded-md border-none text-sm font-medium cursor-pointer transition-all ${
+                preset === p
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-500 hover:bg-slate-100'
+              }`}
             >
               {p === "week" && "Week vs Week"}
               {p === "month" && "Month vs Month"}
@@ -168,29 +144,21 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
           ))}
         </div>
 
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
 
-        <Button onClick={handleCompare} disabled={isLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          {isLoading ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Loading...</> : <><BarChart3 size={14} /> Compare Periods</>}
+        <Button onClick={handleCompare} disabled={isLoading} className="inline-flex items-center gap-1.5">
+          {isLoading ? <><Loader2 size={14} className="animate-spin" /> Loading...</> : <><BarChart3 size={14} /> Compare Periods</>}
         </Button>
       </div>
 
       {/* Date Range Preview */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
-          gap: 16,
-          marginBottom: 24,
-          alignItems: "center",
-        }}
-      >
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-4 mb-6 items-center">
         <DateRangeCard
           label="Previous Period"
           range={formatDateRange(dateRanges.period1Start, dateRanges.period1End)}
           color="#64748b"
         />
-        <span style={{ fontSize: 24, color: "#cbd5e1" }}>→</span>
+        <span className="text-2xl text-slate-300">&rarr;</span>
         <DateRangeCard
           label="Current Period"
           range={formatDateRange(dateRanges.period2Start, dateRanges.period2End)}
@@ -200,33 +168,16 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
 
       {/* Error State */}
       {error && (
-        <div
-          style={{
-            padding: 16,
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
-            color: "#991b1b",
-            fontSize: 14,
-            marginBottom: 24,
-          }}
-        >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><AlertTriangle size={16} /> {error}</span>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-900 text-sm mb-6">
+          <span className="inline-flex items-center gap-1.5"><AlertTriangle size={16} /> {error}</span>
         </div>
       )}
 
       {/* Comparison Results */}
       {comparisonData && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div className="flex flex-col gap-6">
           {/* Score Comparison */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto 1fr",
-              gap: 24,
-              alignItems: "center",
-            }}
-          >
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-center">
             <PeriodCard
               label="Previous"
               score={comparisonData.comparison.score.period1}
@@ -250,23 +201,11 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
           </div>
 
           {/* Severity Breakdown */}
-          <div
-            style={{
-              padding: 20,
-              background: "#f8fafc",
-              borderRadius: 12,
-            }}
-          >
-            <h4 style={{ fontSize: 14, fontWeight: 600, margin: "0 0 16px" }}>
+          <div className="p-5 bg-slate-50 rounded-xl">
+            <h4 className="text-sm font-semibold mt-0 mb-4">
               Severity Changes
             </h4>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 16,
-              }}
-            >
+            <div className="grid grid-cols-4 gap-4">
               <SeverityChangeCard
                 label="Critical"
                 before={comparisonData.comparison.critical.period1}
@@ -301,18 +240,12 @@ export function PeriodComparison({ scans, onClose, initialPreset = "month" }: Pe
 
       {/* Empty State */}
       {!comparisonData && !isLoading && !error && (
-        <div
-          style={{
-            padding: 48,
-            textAlign: "center",
-            color: "#64748b",
-          }}
-        >
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><BarChart3 size={48} /></div>
-          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8 }}>
+        <div className="py-12 px-12 text-center text-slate-500">
+          <div className="mb-4 flex justify-center"><BarChart3 size={48} /></div>
+          <div className="text-base font-medium mb-2">
             Compare Performance Over Time
           </div>
-          <div style={{ fontSize: 14 }}>
+          <div className="text-sm">
             Select a time period and click "Compare Periods" to see how your
             accessibility scores have changed.
           </div>

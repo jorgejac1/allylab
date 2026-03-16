@@ -4,6 +4,7 @@ import { loadAllScans, saveScan, deleteScan, getScansForUrl } from '../utils/sto
 import { getTrackingStats, getPreviousFingerprints } from '../utils/issueTracker';
 import { generateFingerprint, generateFindingId } from '../utils/fingerprint';
 import { loadAlertSettings } from '../utils/alertSettings';
+import { addAuditEntry } from '../utils/auditLog';
 
 export interface RegressionInfo {
   scanId: string;
@@ -125,6 +126,8 @@ export function useScans() {
     // Update state
     setScans(prev => [savedScan, ...prev]);
 
+    addAuditEntry({ eventType: 'scan:run', severity: 'info', action: `Ran accessibility scan on ${result.url}`, resourceType: 'scan', resourceId: savedScan.id, success: true });
+
     return savedScan;
   }, []);
 
@@ -132,6 +135,7 @@ export function useScans() {
   const removeScan = useCallback((scanId: string) => {
     deleteScan(scanId);
     setScans(prev => prev.filter(s => s.id !== scanId));
+    addAuditEntry({ eventType: 'scan:deleted', severity: 'info', action: 'Deleted scan', resourceType: 'scan', resourceId: scanId, success: true });
   }, []);
 
   // Get scans for a specific URL

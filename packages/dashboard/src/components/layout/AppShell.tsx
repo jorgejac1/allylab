@@ -10,25 +10,18 @@ interface AppShellProps {
   apiStatus?: 'connected' | 'disconnected' | 'checking';
 }
 
-export function AppShell({ 
-  children, 
-  tabs, 
-  activeTab, 
+export function AppShell({
+  children,
+  tabs,
+  activeTab,
   onTabChange,
   apiStatus = 'connected'
 }: AppShellProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        background: '#f8fafc',
-      }}
-    >
+    <div className="flex flex-col min-h-screen bg-slate-50">
       <Header apiStatus={apiStatus} />
       <TabNav tabs={tabs} activeTab={activeTab} onChange={onTabChange} />
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <main className="flex-1 flex flex-col">
         {children}
       </main>
     </div>

@@ -10,3 +10,5 @@ export {
   CanViewExecutive,
   CanManageUsers,
 } from './RoleGuard';
+export { PlanGate } from './PlanGate';
+export { UpgradePrompt } from './UpgradePrompt';

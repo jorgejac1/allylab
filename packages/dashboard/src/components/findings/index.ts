@@ -13,7 +13,6 @@ export { FilterButton, PillButton, Divider } from './FilterButton';
 export { JiraCell } from './JiraCell';
 export { JiraExportModal } from './JiraExportModal';
 export { FixCodePreview } from './FixCodePreview';
-export { CreatePRModal } from './CreatePRModal';
 export { BatchPRModal } from './BatchPRModal';
 export { PRStatusBadge } from './PRStatusBadge';
 export { VerificationModal } from './VerificationModal';

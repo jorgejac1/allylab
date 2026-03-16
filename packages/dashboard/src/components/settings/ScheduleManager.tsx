@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Input, Select, EmptyState } from '../ui';
 import { useSchedules } from '../../hooks';
+import { PermissionGuard } from '../guards/RoleGuard';
 import type { Schedule, ScheduleFrequency, ScheduleRunResult } from '../../types';
 import type { AuthProfile } from '../../types/auth';
 import { Plus, Loader2, Calendar, Play, BarChart3, Trash2, X, CheckCircle, XCircle, Lock } from 'lucide-react';
@@ -15,12 +16,12 @@ const FREQUENCY_OPTIONS = [
 ];
 
 export function ScheduleManager() {
-  const { 
-    schedules, 
-    isLoading, 
-    error, 
-    createSchedule, 
-    updateSchedule, 
+  const {
+    schedules,
+    isLoading,
+    error,
+    createSchedule,
+    updateSchedule,
     deleteSchedule,
     runNow,
     getHistory,
@@ -73,7 +74,7 @@ export function ScheduleManager() {
   if (isLoading) {
     return (
       <Card>
-        <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
+        <div className="p-10 text-center text-slate-500">
           Loading schedules...
         </div>
       </Card>
@@ -81,29 +82,22 @@ export function ScheduleManager() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Error Display */}
       {error && (
-        <div style={{ 
-          padding: 12, 
-          background: '#fef2f2', 
-          border: '1px solid #fecaca',
-          borderRadius: 8,
-          color: '#dc2626',
-          fontSize: 14,
-        }}>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
           {error}
         </div>
       )}
 
       {/* Create New Schedule */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold mt-0 mb-4 inline-flex items-center gap-2">
           <Plus size={18} /> Add Scheduled Scan
         </h3>
-        
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 250 }}>
+
+        <div className="flex gap-3 flex-wrap">
+          <div className="flex-1 min-w-[250px]">
             <Input
               value={newUrl}
               onChange={e => setNewUrl(e.target.value)}
@@ -130,15 +124,17 @@ export function ScheduleManager() {
               />
             </div>
           )}
-          <Button onClick={handleCreate} disabled={isCreating || !newUrl.trim()} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            {isCreating ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</> : <><Plus size={14} /> Add Schedule</>}
-          </Button>
+          <PermissionGuard permission="scan:schedule">
+            <Button onClick={handleCreate} disabled={isCreating || !newUrl.trim()} className="inline-flex items-center gap-1.5">
+              {isCreating ? <><Loader2 size={14} className="animate-spin" /> Creating...</> : <><Plus size={14} /> Add Schedule</>}
+            </Button>
+          </PermissionGuard>
         </div>
       </Card>
 
       {/* Schedules List */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold mt-0 mb-4 inline-flex items-center gap-2">
           <Calendar size={18} /> Scheduled Scans ({schedules.length})
         </h3>
 
@@ -149,7 +145,7 @@ export function ScheduleManager() {
             description="Add a URL above to start monitoring automatically"
           />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-3">
             {schedules.map(schedule => (
               <ScheduleRow
                 key={schedule.id}
@@ -212,56 +208,41 @@ function ScheduleRow({
 
   return (
     <div
+      className="flex items-center gap-4 p-4 rounded-lg border border-slate-200"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 16,
-        padding: 16,
         background: schedule.enabled ? '#f8fafc' : '#fafafa',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
         opacity: schedule.enabled ? 1 : 0.7,
       }}
     >
       {/* Enable Toggle */}
-      <label style={{ cursor: 'pointer' }}>
+      <label className="cursor-pointer">
         <input
           type="checkbox"
           checked={schedule.enabled}
           onChange={onToggle}
-          style={{ width: 18, height: 18 }}
+          className="w-[18px] h-[18px]"
         />
       </label>
 
       {/* Site Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span style={{ fontWeight: 600 }}>{domain}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-semibold">{domain}</span>
           {authProfile && (
-            <span style={{
-              padding: '2px 6px',
-              borderRadius: 4,
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              fontSize: 10,
-              fontWeight: 500,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-            }}>
+            <span className="py-0.5 px-1.5 rounded bg-blue-50 text-blue-700 text-[10px] font-medium inline-flex items-center gap-1">
               <Lock size={10} />
               {authProfile.name}
             </span>
           )}
         </div>
-        <div style={{ fontSize: 12, color: '#64748b', wordBreak: 'break-all' }}>
+        <div className="text-xs text-slate-500 break-all">
           {schedule.url}
         </div>
         {schedule.lastRun && (
-          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+          <div className="text-[11px] text-slate-400 mt-1">
             Last run: {new Date(schedule.lastRun).toLocaleString()}
             {schedule.lastScore !== undefined && (
-              <span style={{ marginLeft: 8 }}>
+              <span className="ml-2">
                 Score: <strong style={{ color: getScoreColor(schedule.lastScore) }}>{schedule.lastScore}</strong>
               </span>
             )}
@@ -295,29 +276,29 @@ function ScheduleRow({
       )}
 
       {/* Next Run */}
-      <div style={{ width: 120, textAlign: 'center' }}>
+      <div className="w-[120px] text-center">
         {schedule.nextRun && schedule.enabled ? (
           <div>
-            <div style={{ fontSize: 11, color: '#64748b' }}>Next run</div>
-            <div style={{ fontSize: 12, fontWeight: 500 }}>
+            <div className="text-[11px] text-slate-500">Next run</div>
+            <div className="text-xs font-medium">
               {formatFutureTime(schedule.nextRun)}
             </div>
           </div>
         ) : (
-          <span style={{ fontSize: 12, color: '#94a3b8' }}>—</span>
+          <span className="text-xs text-slate-400">&mdash;</span>
         )}
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="flex gap-2">
         <Button
           variant="secondary"
           size="sm"
           onClick={onRunNow}
           disabled={isRunning}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          className="inline-flex items-center gap-1"
         >
-          {isRunning ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={14} />} Run
+          {isRunning ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />} Run
         </Button>
         <Button
           variant="ghost"
@@ -334,7 +315,7 @@ function ScheduleRow({
           onClick={onDelete}
           title="Delete schedule"
           aria-label="Delete schedule"
-          style={{ color: '#ef4444' }}
+          className="text-red-500"
         >
           <Trash2 size={16} aria-hidden="true" />
         </Button>
@@ -356,92 +337,64 @@ interface HistoryModalProps {
 function HistoryModal({ schedule, history, onClose }: HistoryModalProps) {
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 flex items-center justify-center z-[1000]"
+      style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
     >
       <div
-        style={{
-          background: '#fff',
-          borderRadius: 12,
-          padding: 24,
-          width: '90%',
-          maxWidth: 600,
-          maxHeight: '80vh',
-          overflow: 'auto',
-        }}
+        className="bg-white rounded-xl p-6 w-[90%] max-w-[600px] max-h-[80vh] overflow-auto"
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold m-0 inline-flex items-center gap-2">
             <BarChart3 size={20} /> Scan History
           </h3>
           <button
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#64748b',
-              display: 'inline-flex',
-              alignItems: 'center',
-            }}
+            className="bg-transparent border-none cursor-pointer text-slate-500 inline-flex items-center"
           >
             <X size={20} />
           </button>
         </div>
 
-        <p style={{ fontSize: 14, color: '#64748b', marginBottom: 16 }}>
+        <p className="text-sm text-slate-500 mb-4">
           {schedule.url}
         </p>
 
         {history.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
+          <div className="p-10 text-center text-slate-500">
             No scan history yet
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {history.map((run, index) => (
               <div
                 key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  padding: 12,
-                  background: run.success ? '#f0fdf4' : '#fef2f2',
-                  borderRadius: 8,
-                }}
+                className="flex items-center gap-4 p-3 rounded-lg"
+                style={{ background: run.success ? '#f0fdf4' : '#fef2f2' }}
               >
-                <span>{run.success ? <CheckCircle size={18} style={{ color: '#10b981' }} /> : <XCircle size={18} style={{ color: '#ef4444' }} />}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13 }}>
+                <span>{run.success ? <CheckCircle size={18} className="text-emerald-500" /> : <XCircle size={18} className="text-red-500" />}</span>
+                <div className="flex-1">
+                  <div className="text-sm">
                     {new Date(run.timestamp).toLocaleString()}
                   </div>
                   {run.error && (
-                    <div style={{ fontSize: 12, color: '#dc2626' }}>{run.error}</div>
+                    <div className="text-xs text-red-600">{run.error}</div>
                   )}
                 </div>
                 {run.success && (
                   <>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: getScoreColor(run.score) }}>
+                    <div className="text-center">
+                      <div className="text-lg font-bold" style={{ color: getScoreColor(run.score) }}>
                         {run.score}
                       </div>
-                      <div style={{ fontSize: 10, color: '#64748b' }}>Score</div>
+                      <div className="text-[10px] text-slate-500">Score</div>
                     </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: '#64748b' }}>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-slate-500">
                         {run.totalIssues}
                       </div>
-                      <div style={{ fontSize: 10, color: '#64748b' }}>Issues</div>
+                      <div className="text-[10px] text-slate-500">Issues</div>
                     </div>
                   </>
                 )}

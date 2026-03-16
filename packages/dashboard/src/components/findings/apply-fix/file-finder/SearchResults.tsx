@@ -26,11 +26,7 @@ export function SearchResults({
   onSelect,
 }: SearchResultsProps) {
   return (
-    <div style={{
-      border: '1px solid #e2e8f0',
-      borderRadius: 6,
-      overflow: 'hidden',
-    }}>
+    <div className="border border-slate-200 rounded-md overflow-hidden">
       <ResultsHeader
         isLoading={isLoading}
         isRanking={isRanking}
@@ -71,26 +67,13 @@ function ResultsHeader({
     : `${resultCount} files`;
 
   return (
-    <div style={{
-      padding: '8px 12px',
-      background: '#f8fafc',
-      borderBottom: '1px solid #e2e8f0',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }}>
-      <span style={{ fontSize: 12, color: '#64748b' }}>
+    <div className="py-2 px-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+      <span className="text-xs text-slate-500">
         {statusText}
       </span>
       <button
         onClick={onBack}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: '#3b82f6',
-          fontSize: 12,
-          cursor: 'pointer',
-        }}
+        className="bg-none border-none text-blue-500 text-xs cursor-pointer"
       >
         ← Back
       </button>
@@ -106,19 +89,13 @@ function FilterInput({
   onChange: (value: string) => void;
 }) {
   return (
-    <div style={{ padding: '8px 12px', borderBottom: '1px solid #e2e8f0' }}>
+    <div className="py-2 px-3 border-b border-slate-200">
       <input
         type="text"
         placeholder="Filter files..."
         value={value}
         onChange={e => onChange(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '6px 10px',
-          border: '1px solid #e2e8f0',
-          borderRadius: 4,
-          fontSize: 12,
-        }}
+        className="w-full py-1.5 px-2.5 border border-slate-200 rounded text-xs"
       />
     </div>
   );
@@ -139,8 +116,8 @@ function ResultsContent({
 }) {
   if (isLoading) {
     return (
-      <div style={{ padding: 16, textAlign: 'center', color: '#64748b' }}>
-        <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
+      <div className="p-4 text-center text-slate-500">
+        <div className="mb-2 flex justify-center">
           <Search size={20} aria-hidden="true" />
         </div>
         Searching repository...
@@ -150,14 +127,14 @@ function ResultsContent({
 
   if (error) {
     return (
-      <div style={{ padding: 16, color: '#dc2626', fontSize: 13 }}>
+      <div className="p-4 text-red-600 text-[13px]">
         {error}
       </div>
     );
   }
 
   return (
-    <div style={{ maxHeight: 300, overflow: 'auto' }}>
+    <div className="max-h-[300px] overflow-auto">
       {results.slice(0, 50).map((file, idx) => (
         <FileResultItem
           key={idx}

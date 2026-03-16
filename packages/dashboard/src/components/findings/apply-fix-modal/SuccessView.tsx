@@ -14,23 +14,23 @@ export function SuccessView({ isOpen, onClose, prResult }: SuccessViewProps) {
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="flex items-center gap-2">
           <PartyPopper size={20} aria-hidden="true" />
           Pull Request Created!
         </span>
       }
       size="lg"
     >
-      <div style={{ textAlign: 'center', padding: 20 }}>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: '#3b82f6' }}>
+      <div className="text-center p-5">
+        <div className="mb-4 flex justify-center text-blue-500">
           <Rocket size={64} aria-hidden="true" />
         </div>
-        <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>PR #{prResult.prNumber} Created!</h3>
-        <p style={{ color: '#64748b', fontSize: 14, marginBottom: 24 }}>
+        <h3 className="m-0 mb-2 text-lg">PR #{prResult.prNumber} Created!</h3>
+        <p className="text-slate-500 text-sm mb-6">
           Your accessibility fix has been submitted for review.
         </p>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <div className="flex gap-3 justify-center">
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
@@ -38,18 +38,7 @@ export function SuccessView({ isOpen, onClose, prResult }: SuccessViewProps) {
             href={prResult.prUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
-              background: '#0f172a',
-              color: '#fff',
-              borderRadius: 8,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 500,
-            }}
+            className="inline-flex items-center gap-2 py-2.5 px-5 bg-slate-900 text-white rounded-lg no-underline text-sm font-medium"
           >
             View on GitHub →
           </a>

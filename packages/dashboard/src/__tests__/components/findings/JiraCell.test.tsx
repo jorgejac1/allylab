@@ -118,55 +118,36 @@ describe("findings/JiraCell", () => {
   it("applies correct styling to input when linking", () => {
     render(<JiraCell {...defaultProps} isLinking={true} />);
     const input = document.querySelector("input");
-    expect(input).toHaveStyle({
-      width: "80px",
-      fontSize: "11px",
-    });
+    expect(input).toHaveClass("w-20", "text-xs");
   });
 
   it("applies correct styling to save button", () => {
     const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
     const saveButton = container.querySelectorAll("button")[0];
-    expect(saveButton).toHaveStyle({
-      background: "rgb(16, 185, 129)",
-      color: "rgb(255, 255, 255)",
-    });
+    expect(saveButton).toHaveClass("bg-emerald-500", "text-white");
   });
 
   it("applies correct styling to issue key link", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText(/PROJ-123/);
-    expect(link).toHaveStyle({
-      background: "rgb(219, 234, 254)",
-      color: "rgb(29, 78, 216)",
-    });
+    const link = screen.getByText(/PROJ-123/).closest("a");
+    expect(link).toHaveClass("bg-blue-100", "text-blue-700");
   });
 
-  it("changes save button style on hover", () => {
+  it("has hover classes on save button", () => {
     const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
     const saveButton = container.querySelectorAll("button")[0];
-
-    fireEvent.mouseOver(saveButton);
-    expect(saveButton).toHaveStyle({ background: "#059669" });
-
-    fireEvent.mouseOut(saveButton);
-    expect(saveButton).toHaveStyle({ background: "#10b981" });
+    expect(saveButton).toHaveClass("hover:bg-emerald-600");
   });
 
-  it("changes cancel button style on hover", () => {
+  it("has hover classes on cancel button", () => {
     const { container } = render(<JiraCell {...defaultProps} isLinking={true} />);
     const cancelButton = container.querySelectorAll("button")[1];
-
-    fireEvent.mouseOver(cancelButton);
-    expect(cancelButton).toHaveStyle({ background: "#e2e8f0" });
-
-    fireEvent.mouseOut(cancelButton);
-    expect(cancelButton).toHaveStyle({ background: "#f1f5f9" });
+    expect(cancelButton).toHaveClass("bg-slate-100", "hover:bg-slate-200");
   });
 
   it("prevents default action on issue key link click", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText(/PROJ-123/);
+    const link = screen.getByText(/PROJ-123/).closest("a")!;
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
     Object.defineProperty(event, "preventDefault", {
       value: vi.fn(),
@@ -176,38 +157,21 @@ describe("findings/JiraCell", () => {
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
-  it("changes issue key link style on hover", () => {
+  it("has hover classes on issue key link", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
-    const link = screen.getByText(/PROJ-123/);
-
-    fireEvent.mouseOver(link);
-    expect(link).toHaveStyle({ background: "#bfdbfe" });
-    expect(link.style.borderColor).toBe("rgb(147, 197, 253)");
-
-    fireEvent.mouseOut(link);
-    expect(link).toHaveStyle({ background: "#dbeafe" });
-    expect(link.style.borderColor).toBe("transparent");
+    const link = screen.getByText(/PROJ-123/).closest("a");
+    expect(link).toHaveClass("hover:bg-blue-200", "hover:border-blue-300");
   });
 
-  it("changes remove button style on hover", () => {
+  it("has hover classes on remove button", () => {
     render(<JiraCell {...defaultProps} issueKey="PROJ-123" />);
     const removeButton = screen.getByRole("button", { name: /remove/i });
-
-    fireEvent.mouseOver(removeButton);
-    expect(removeButton).toHaveStyle({ color: "#ef4444", background: "#fef2f2" });
-
-    fireEvent.mouseOut(removeButton);
-    expect(removeButton).toHaveStyle({ color: "#94a3b8", background: "none" });
+    expect(removeButton).toHaveClass("text-slate-400", "hover:text-red-500", "hover:bg-red-50");
   });
 
-  it("changes link button style on hover", () => {
+  it("has hover classes on link button", () => {
     render(<JiraCell {...defaultProps} />);
-    const linkButton = screen.getByText(/Link/);
-
-    fireEvent.mouseEnter(linkButton);
-    expect(linkButton).toHaveStyle({ background: "#f1f5f9" });
-
-    fireEvent.mouseLeave(linkButton);
-    expect(linkButton).toHaveStyle({ background: "#f8fafc" });
+    const linkButton = screen.getByText(/Link/).closest("button");
+    expect(linkButton).toHaveClass("bg-slate-50", "hover:bg-slate-100");
   });
 });

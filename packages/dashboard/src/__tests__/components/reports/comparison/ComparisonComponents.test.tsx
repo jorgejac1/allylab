@@ -110,7 +110,7 @@ describe("comparison/PeriodCard", () => {
     );
 
     const card = container.firstChild as HTMLElement;
-    expect(card).toHaveStyle({ background: "#eff6ff" });
+    expect(card).toHaveClass("bg-blue-50");
   });
 });
 

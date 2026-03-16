@@ -75,9 +75,6 @@ describe("layout/Header", () => {
     const { container } = render(<Header title="Dashboard" subtitle="Test" apiStatus="connected" />);
 
     const header = container.querySelector("header");
-    expect(header).toHaveStyle({
-      borderBottom: "1px solid #e2e8f0",
-      background: "#ffffff",
-    });
+    expect(header).toHaveClass("bg-white", "border-b", "border-slate-200");
   });
 });

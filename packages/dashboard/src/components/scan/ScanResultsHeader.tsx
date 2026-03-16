@@ -15,47 +15,31 @@ export function ScanResultsHeader({
   onExport,
 }: ScanResultsHeaderProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 24,
-        padding: 24,
-        background: "#fff",
-        borderRadius: 12,
-        border: "1px solid #e2e8f0",
-      }}
-    >
+    <div className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-xl border border-slate-200">
       {/* Score */}
       <ScoreCircle score={result.score} size={100} showGrade />
 
       {/* Info */}
-      <div style={{ flex: 1 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 8px" }}>
+      <div className="flex-1">
+        <h2 className="text-xl font-semibold m-0 mb-2">
           Accessibility Report
         </h2>
         <a
           href={result.url}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: "#2563eb", fontSize: 14 }}
+          className="text-blue-600 text-sm"
         >
           {result.url}
         </a>
-        <div style={{ fontSize: 13, color: "#64748b", marginTop: 8 }}>
+        <div className="text-sm text-slate-500 mt-2">
           Scanned on {new Date(result.timestamp).toLocaleString()} · Duration:{" "}
           {(result.scanDuration / 1000).toFixed(1)}s
         </div>
       </div>
 
       {/* Issue Counts */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 12,
-        }}
-      >
+      <div className="grid grid-cols-4 gap-3">
         <IssueCount label="Critical" count={result.critical} color="#dc2626" />
         <IssueCount label="Serious" count={result.serious} color="#ea580c" />
         <IssueCount label="Moderate" count={result.moderate} color="#ca8a04" />
@@ -63,14 +47,14 @@ export function ScanResultsHeader({
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {onRescan && (
-          <Button size="sm" onClick={onRescan} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Button size="sm" onClick={onRescan} className="inline-flex items-center gap-1.5">
             <RefreshCw size={14} /> Rescan
           </Button>
         )}
         {onExport && (
-          <Button variant="secondary" size="sm" onClick={onExport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Button variant="secondary" size="sm" onClick={onExport} className="inline-flex items-center gap-1.5">
             <Upload size={14} /> Export
           </Button>
         )}
@@ -89,9 +73,9 @@ function IssueCount({
   color: string;
 }) {
   return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 24, fontWeight: 700, color }}>{count}</div>
-      <div style={{ fontSize: 11, color: "#64748b" }}>{label}</div>
+    <div className="text-center">
+      <div className="text-2xl font-bold" style={{ color }}>{count}</div>
+      <div className="text-xs text-slate-500">{label}</div>
     </div>
   );
 }

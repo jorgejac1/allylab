@@ -35,10 +35,32 @@ vi.mock("../../../hooks/useGitHub", () => ({
   })),
 }));
 
+vi.mock("../../../hooks/useGitLabMR", () => ({
+  useGitLabMR: vi.fn(() => ({
+    connection: { connected: false },
+    isLoading: false,
+    error: null,
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    getProjects: vi.fn().mockResolvedValue([]),
+    getBranches: vi.fn().mockResolvedValue([]),
+    searchCode: vi.fn().mockResolvedValue([]),
+    getProjectTree: vi.fn().mockResolvedValue([]),
+    getFileContent: vi.fn().mockResolvedValue(null),
+    createTrackedMR: vi.fn(),
+    getTrackedMRs: vi.fn().mockReturnValue([]),
+    getMRForFinding: vi.fn().mockReturnValue(undefined),
+  })),
+}));
+
 vi.mock("../../../hooks/usePRTracking", () => ({
   usePRTracking: vi.fn(() => ({
     trackPR: mockTrackPR,
   })),
+}));
+
+vi.mock("../../../components/findings/GitPlatformSelector", () => ({
+  GitPlatformSelector: () => null,
 }));
 
 // Mock API utils
@@ -248,7 +270,7 @@ describe("components/findings/BatchPRModal", () => {
 
     render(<BatchPRModal {...defaultProps} />);
 
-    expect(screen.getByText("GitHub Not Connected")).toBeInTheDocument();
+    expect(screen.getByText("Git Not Connected")).toBeInTheDocument();
   });
 
   it("starts on fixes step", () => {
@@ -722,8 +744,8 @@ describe("components/findings/BatchPRModal", () => {
         html_url: "https://github.com/owner/empty-branch-repo",
       },
     ];
-    mockGetRepos.mockResolvedValueOnce(reposWithEmptyBranch);
-    mockGetBranches.mockResolvedValueOnce([]); // No branches available
+    mockGetRepos.mockResolvedValue(reposWithEmptyBranch);
+    mockGetBranches.mockResolvedValue([]); // No branches available
 
     render(<BatchPRModal {...defaultProps} />);
 
@@ -843,7 +865,7 @@ describe("components/findings/BatchPRModal", () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[BatchPRModal] Failed to create PR:",
+        "[BatchPRModal] Failed to create PR/MR:",
         "Network failure"
       );
     });
@@ -1222,7 +1244,7 @@ describe("components/findings/BatchPRModal", () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "[BatchPRModal] Failed to create PR:",
+        "[BatchPRModal] Failed to create PR/MR:",
         "Unknown error"
       );
     });

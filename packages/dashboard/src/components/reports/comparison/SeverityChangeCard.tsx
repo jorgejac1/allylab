@@ -16,46 +16,21 @@ export function SeverityChangeCard({
   const isIncreased = change > 0;
 
   return (
-    <div
-      style={{
-        padding: 12,
-        background: '#fff',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginBottom: 8,
-        }}
-      >
+    <div className="p-3 bg-white rounded-lg border border-slate-200">
+      <div className="flex items-center gap-1.5 mb-2">
         <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: color,
-          }}
+          className="w-2 h-2 rounded-full"
+          style={{ background: color }}
         />
-        <span style={{ fontSize: 12, fontWeight: 500 }}>{label}</span>
+        <span className="text-xs font-medium">{label}</span>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-        }}
-      >
-        <span style={{ fontSize: 11, color: '#94a3b8' }}>
-          {before.toFixed(1)} → {after.toFixed(1)}
+      <div className="flex justify-between items-baseline">
+        <span className="text-xs text-slate-400">
+          {before.toFixed(1)} &rarr; {after.toFixed(1)}
         </span>
         <span
+          className="text-sm font-semibold"
           style={{
-            fontSize: 13,
-            fontWeight: 600,
             color: isReduced ? '#10b981' : isIncreased ? '#ef4444' : '#64748b',
           }}
         >

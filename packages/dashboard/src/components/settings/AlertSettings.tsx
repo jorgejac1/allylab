@@ -26,49 +26,40 @@ export function AlertSettings() {
 
   return (
     <Card>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div className="flex justify-between items-center mb-5">
         <div>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Alert Settings</h3>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+          <h3 className="m-0 text-base font-semibold">Alert Settings</h3>
+          <p className="mt-1 mb-0 text-sm text-slate-500">
             Configure regression detection and alert thresholds
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="flex flex-col gap-5">
         {/* Enable/Disable Regression Alerts */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: 16,
-            background: '#f8fafc',
-            borderRadius: 8,
-          }}
-        >
+        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
           <div>
-            <div style={{ fontWeight: 500, fontSize: 14 }}>Show Regression Alerts</div>
-            <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+            <div className="font-medium text-sm">Show Regression Alerts</div>
+            <div className="text-xs text-slate-500 mt-0.5">
               Display warnings when accessibility scores drop significantly
             </div>
           </div>
-          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+          <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
               checked={localSettings.showRegressionAlerts}
               onChange={e => handleChange('showRegressionAlerts', e.target.checked)}
-              style={{ width: 18, height: 18 }}
+              className="w-[18px] h-[18px]"
             />
           </label>
         </div>
 
         {/* Regression Threshold */}
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+          <label className="block text-sm font-medium mb-1.5">
             Regression Threshold
           </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="flex items-center gap-3">
             <Input
               type="number"
               min={1}
@@ -78,21 +69,21 @@ export function AlertSettings() {
               style={{ width: 100 }}
               disabled={!localSettings.showRegressionAlerts}
             />
-            <span style={{ fontSize: 13, color: '#64748b' }}>
+            <span className="text-sm text-slate-500">
               points — Alert when score drops by this amount or more
             </span>
           </div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+          <div className="text-xs text-slate-400 mt-1">
             Default: {defaults.regressionThreshold} points
           </div>
         </div>
 
         {/* Recent Days */}
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+          <label className="block text-sm font-medium mb-1.5">
             Recent Activity Window
           </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="flex items-center gap-3">
             <Input
               type="number"
               min={1}
@@ -102,30 +93,23 @@ export function AlertSettings() {
               style={{ width: 100 }}
               disabled={!localSettings.showRegressionAlerts}
             />
-            <span style={{ fontSize: 13, color: '#64748b' }}>
+            <span className="text-sm text-slate-500">
               days — Show regressions from this time period
             </span>
           </div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+          <div className="text-xs text-slate-400 mt-1">
             Default: {defaults.recentDays} days
           </div>
         </div>
 
         {/* Example Preview */}
         {localSettings.showRegressionAlerts && (
-          <div
-            style={{
-              padding: 16,
-              background: '#fef3c7',
-              border: '1px solid #f59e0b',
-              borderRadius: 8,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <AlertTriangle size={16} style={{ color: '#92400e' }} />
-              <span style={{ fontWeight: 500, fontSize: 13, color: '#92400e' }}>Preview</span>
+          <div className="p-4 bg-amber-100 border border-amber-500 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle size={16} className="text-amber-800" />
+              <span className="font-medium text-sm text-amber-800">Preview</span>
             </div>
-            <div style={{ fontSize: 12, color: '#78350f' }}>
+            <div className="text-xs text-amber-900">
               With these settings, you'll be alerted when a scan's score drops by{' '}
               <strong>{localSettings.regressionThreshold}+ points</strong> from the previous scan.
               The Trends page will show regressions from the last{' '}
@@ -135,18 +119,11 @@ export function AlertSettings() {
         )}
 
         {/* Actions */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            paddingTop: 16,
-            borderTop: '1px solid #e2e8f0',
-          }}
-        >
+        <div className="flex justify-between pt-4 border-t border-slate-200">
           <Button
             variant="ghost"
             onClick={handleReset}
-            style={{ color: '#64748b' }}
+            className="text-slate-500"
           >
             Reset to Defaults
           </Button>

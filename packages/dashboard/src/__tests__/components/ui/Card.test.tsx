@@ -12,6 +12,6 @@ describe("ui/Card", () => {
     );
     const card = screen.getByTestId("card");
     expect(card).toHaveTextContent("Content");
-    expect(card).toHaveStyle({ padding: "32px" });
+    expect(card).toHaveClass("sm:p-8");
   });
 });

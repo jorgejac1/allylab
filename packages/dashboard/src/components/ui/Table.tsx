@@ -12,9 +12,9 @@ interface TableProps {
 
 export function Table({ children, striped = false, hoverable = true }: TableProps) {
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div className="overflow-x-auto">
       <table
-        style={{ width: '100%', borderCollapse: 'collapse' }}
+        className="w-full border-collapse"
         data-striped={striped}
         data-hoverable={hoverable}
       >
@@ -42,7 +42,7 @@ interface TableHeadProps {
 
 export function TableHead({ children }: TableHeadProps) {
   return (
-    <thead style={{ background: '#f8fafc' }}>
+    <thead className="bg-slate-50">
       {children}
     </thead>
   );
@@ -74,12 +74,9 @@ export function TableRow({ children, onClick, selected = false }: TableRowProps)
   return (
     <tr
       onClick={onClick}
-      style={{
-        borderBottom: '1px solid #f1f5f9',
-        cursor: onClick ? 'pointer' : 'default',
-        background: selected ? '#eff6ff' : undefined,
-        transition: 'background 0.15s ease',
-      }}
+      className={`border-b border-slate-100 transition-colors duration-150 ${
+        onClick ? 'cursor-pointer' : 'cursor-default'
+      } ${selected ? 'bg-blue-50' : ''}`}
     >
       {children}
     </tr>
@@ -99,9 +96,9 @@ interface TableThProps {
   onSort?: () => void;
 }
 
-export function TableTh({ 
-  children, 
-  align = 'left', 
+export function TableTh({
+  children,
+  align = 'left',
   width,
   sortable = false,
   sorted = false,
@@ -110,23 +107,15 @@ export function TableTh({
   return (
     <th
       onClick={sortable ? onSort : undefined}
-      style={{
-        padding: '12px 16px',
-        textAlign: align,
-        fontSize: 11,
-        fontWeight: 600,
-        color: '#64748b',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        width,
-        cursor: sortable ? 'pointer' : 'default',
-        userSelect: sortable ? 'none' : undefined,
-      }}
+      className={`px-2 py-2 sm:px-4 sm:py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wide ${
+        sortable ? 'cursor-pointer select-none' : 'cursor-default'
+      }`}
+      style={{ textAlign: align, width }}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <span className="inline-flex items-center gap-1">
         {children}
         {sortable && (
-          <span style={{ color: sorted ? '#2563eb' : '#cbd5e1' }}>
+          <span className={sorted ? 'text-blue-600' : 'text-slate-300'}>
             {sorted === 'asc' ? '↑' : sorted === 'desc' ? '↓' : '↕'}
           </span>
         )}
@@ -147,25 +136,20 @@ interface TableTdProps {
   maxWidth?: number;
 }
 
-export function TableTd({ 
-  children, 
-  align = 'left', 
+export function TableTd({
+  children,
+  align = 'left',
   width,
   truncate = false,
   maxWidth,
 }: TableTdProps) {
   return (
     <td
+      className={`px-2 py-2 sm:px-4 sm:py-3 align-middle text-sm/[normal] ${truncate ? 'overflow-hidden text-ellipsis whitespace-nowrap' : ''}`}
       style={{
-        padding: '12px 16px',
         textAlign: align,
-        verticalAlign: 'middle',
-        fontSize: 14,
         width,
         maxWidth: truncate ? maxWidth || 200 : undefined,
-        overflow: truncate ? 'hidden' : undefined,
-        textOverflow: truncate ? 'ellipsis' : undefined,
-        whiteSpace: truncate ? 'nowrap' : undefined,
       }}
     >
       {children}
@@ -183,16 +167,16 @@ interface TableEmptyProps {
   message?: string;
 }
 
-export function TableEmpty({ 
-  colSpan, 
-  icon = '📭', 
-  message = 'No data available' 
+export function TableEmpty({
+  colSpan,
+  icon = '📭',
+  message = 'No data available'
 }: TableEmptyProps) {
   return (
     <tr>
-      <td colSpan={colSpan} style={{ padding: 40, textAlign: 'center' }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>
-        <div style={{ fontSize: 14, color: '#94a3b8' }}>{message}</div>
+      <td colSpan={colSpan} className="p-10 text-center">
+        <div className="text-[40px] mb-3">{icon}</div>
+        <div className="text-sm/[normal] text-slate-400">{message}</div>
       </td>
     </tr>
   );
@@ -213,25 +197,12 @@ export function TableLoading({ colSpan, rows = 5 }: TableLoadingProps) {
       {Array.from({ length: rows }).map((_, i) => (
         <tr key={i}>
           {Array.from({ length: colSpan }).map((_, j) => (
-            <td key={j} style={{ padding: '12px 16px' }}>
-              <div
-                style={{
-                  height: 16,
-                  background: '#e2e8f0',
-                  borderRadius: 4,
-                  animation: 'pulse 1.5s infinite',
-                }}
-              />
+            <td key={j} className="px-2 py-2 sm:px-4 sm:py-3">
+              <div className="h-4 bg-slate-200 rounded animate-pulse" />
             </td>
           ))}
         </tr>
       ))}
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </>
   );
 }

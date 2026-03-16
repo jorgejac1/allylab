@@ -21,17 +21,8 @@ export function FilePathList({
 
   return (
     <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-      }}>
-        <label style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: '#475569',
-        }}>
+      <div className="flex justify-between items-center mb-2">
+        <label className="text-[13px] font-medium text-slate-600">
           File Paths ({withPathCount}/{findings.length} mapped)
         </label>
 
@@ -47,18 +38,13 @@ export function FilePathList({
                 <Spinner size={12} /> Detecting...
               </>
             ) : (
-              <><Search size={12} aria-hidden="true" style={{ marginRight: 4 }} /> Auto-detect All</>
+              <><Search size={12} aria-hidden="true" className="mr-1" /> Auto-detect All</>
             )}
           </Button>
         )}
       </div>
 
-      <div style={{
-        maxHeight: 300,
-        overflow: 'auto',
-        border: '1px solid #e2e8f0',
-        borderRadius: 8,
-      }}>
+      <div className="max-h-[300px] overflow-auto border border-slate-200 rounded-lg">
         {findings.map((item) => {
           const originalIndex = allFindings.indexOf(item);
           const state = detectionStates[item.finding.id];

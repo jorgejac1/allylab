@@ -58,6 +58,12 @@ export async function authRoutes(fastify: FastifyInstance) {
    * Authenticate user and return session
    */
   fastify.post<{ Body: LoginBody }>('/auth/login', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '15 minutes',
+      },
+    },
     schema: {
       description: 'Authenticate user with email and password',
       tags: ['Authentication'],

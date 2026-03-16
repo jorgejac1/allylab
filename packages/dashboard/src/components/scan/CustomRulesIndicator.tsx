@@ -37,15 +37,10 @@ export function CustomRulesIndicator() {
 
   return (
     <div
+      className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs"
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 6,
         background: status.enabled > 0 ? '#dbeafe' : '#f1f5f9',
         border: `1px solid ${status.enabled > 0 ? '#93c5fd' : '#e2e8f0'}`,
-        fontSize: 12,
         color: status.enabled > 0 ? '#1e40af' : '#64748b',
       }}
     >
@@ -54,7 +49,7 @@ export function CustomRulesIndicator() {
         {status.enabled} custom rule{status.enabled !== 1 ? 's' : ''} enabled
       </span>
       {status.enabled < status.total && (
-        <span style={{ color: '#94a3b8' }}>
+        <span className="text-slate-400">
           ({status.total} total)
         </span>
       )}

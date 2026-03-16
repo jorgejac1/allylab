@@ -8,26 +8,26 @@ interface QuickStatsProps {
 
 export function QuickStats({ result }: QuickStatsProps) {
   return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+    <div className="flex flex-wrap gap-4">
       {/* Score */}
-      <Card style={{ display: 'flex', alignItems: 'center', gap: 16, flex: '1 1 200px' }}>
+      <Card className="flex items-center gap-4" style={{ flex: '1 1 200px' }}>
         <ScoreCircle score={result.score} size={80} />
         <div>
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Accessibility Score</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{result.score}/100</div>
+          <div className="text-xs text-slate-500 mb-1">Accessibility Score</div>
+          <div className="font-bold" style={{ fontSize: 28 }}>{result.score}/100</div>
         </div>
       </Card>
 
       {/* Total Issues */}
       <Card style={{ flex: '1 1 150px' }}>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Total Issues</div>
-        <div style={{ fontSize: 36, fontWeight: 700 }}>{result.totalIssues}</div>
+        <div className="text-xs text-slate-500 mb-1">Total Issues</div>
+        <div className="font-bold" style={{ fontSize: 36 }}>{result.totalIssues}</div>
       </Card>
 
       {/* Severity Breakdown */}
       <Card style={{ flex: '2 1 300px' }}>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 12 }}>By Severity</div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div className="text-xs text-slate-500 mb-3">By Severity</div>
+        <div className="flex gap-3 flex-wrap">
           <SeverityBadge severity="critical" count={result.critical} />
           <SeverityBadge severity="serious" count={result.serious} />
           <SeverityBadge severity="moderate" count={result.moderate} />
@@ -37,8 +37,8 @@ export function QuickStats({ result }: QuickStatsProps) {
 
       {/* Scan Duration */}
       <Card style={{ flex: '1 1 120px' }}>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Scan Time</div>
-        <div style={{ fontSize: 28, fontWeight: 700 }}>
+        <div className="text-xs text-slate-500 mb-1">Scan Time</div>
+        <div className="font-bold" style={{ fontSize: 28 }}>
           {(result.scanDuration / 1000).toFixed(1)}s
         </div>
       </Card>

@@ -54,21 +54,16 @@ export function ConfirmDialog({
   };
 
   const colorMap = {
-    danger: '#dc2626',
-    warning: '#f59e0b',
-    info: '#3b82f6',
+    danger: { bg: 'bg-red-600/10', text: 'text-red-600' },
+    warning: { bg: 'bg-amber-500/10', text: 'text-amber-500' },
+    info: { bg: 'bg-blue-500/10', text: 'text-blue-500' },
   };
+
+  const { bg, text } = colorMap[variant];
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
@@ -76,54 +71,21 @@ export function ConfirmDialog({
     >
       {/* Backdrop */}
       <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(2px)',
-        }}
+        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
         onClick={onCancel}
       />
 
       {/* Dialog */}
-      <div
-        style={{
-          position: 'relative',
-          background: '#fff',
-          borderRadius: 12,
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          maxWidth: 400,
-          width: '90%',
-          padding: 24,
-          animation: 'dialogFadeIn 0.15s ease-out',
-        }}
-      >
+      <div className="relative bg-white rounded-xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] max-w-[400px] w-[90%] p-6 animate-[dialogFadeIn_0.15s_ease-out]">
         {/* Icon */}
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            background: `${colorMap[variant]}15`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: colorMap[variant],
-            marginBottom: 16,
-          }}
-        >
+        <div className={`w-12 h-12 rounded-full ${bg} flex items-center justify-center ${text} mb-4`}>
           {iconMap[variant]}
         </div>
 
         {/* Title */}
         <h2
           id="confirm-dialog-title"
-          style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: '#0f172a',
-            margin: '0 0 8px',
-          }}
+          className="text-lg/[normal] font-semibold text-slate-900 m-0 mb-2"
         >
           {title}
         </h2>
@@ -131,18 +93,13 @@ export function ConfirmDialog({
         {/* Message */}
         <p
           id="confirm-dialog-message"
-          style={{
-            fontSize: 14,
-            color: '#64748b',
-            margin: '0 0 24px',
-            lineHeight: 1.5,
-          }}
+          className="text-sm text-slate-500 m-0 mb-6 leading-normal"
         >
           {message}
         </p>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+        <div className="flex gap-3 justify-end">
           <Button variant="secondary" onClick={onCancel}>
             {cancelLabel}
           </Button>

@@ -15,6 +15,7 @@ import type {
   GitLabFile,
   GitLabCodeSearchResult,
 } from '../types/gitlab';
+import { addAuditEntry } from '../utils/auditLog';
 
 export function useGitLab() {
   const [connection, setConnection] = useState<GitLabConnection>({ connected: false });
@@ -55,6 +56,7 @@ export function useGitLab() {
       if (response.ok) {
         const data = await response.json();
         setConnection(data);
+        addAuditEntry({ eventType: 'integration:connected', severity: 'info', action: 'Connected GitLab account', resourceType: 'integration', resourceId: 'gitlab', success: true });
         return true;
       } else {
         const data = await response.json();
@@ -78,6 +80,7 @@ export function useGitLab() {
       setError(null);
       await fetch(`${getApiBase()}/gitlab/connection`, { method: 'DELETE' });
       setConnection({ connected: false });
+      addAuditEntry({ eventType: 'integration:disconnected', severity: 'info', action: 'Disconnected GitLab account', resourceType: 'integration', resourceId: 'gitlab', success: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[useGitLab] Failed to disconnect:', message);
@@ -212,6 +215,7 @@ export function useGitLab() {
         return { success: false, error: result.error };
       }
 
+      addAuditEntry({ eventType: 'mr:created', severity: 'info', action: `Created MR in ${projectPath}`, resourceType: 'mr', resourceId: String(result.iid || ''), success: true });
       return { success: true, mr: result };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network error';

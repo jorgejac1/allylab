@@ -61,6 +61,27 @@ let currentMockData = mockDashboardData;
 
 vi.mock("../../../hooks", () => ({
   useDashboardData: () => currentMockData,
+  useDashboardLayout: () => ({
+    layout: {
+      widgets: [
+        { id: 'kpi-cards', label: 'KPI Cards', enabled: true, position: 0, size: 'full' },
+        { id: 'severity-breakdown', label: 'Severity Breakdown', enabled: true, position: 1, size: 'full' },
+        { id: 'top-issues', label: 'Top Issues', enabled: true, position: 2, size: 'half' },
+        { id: 'site-rankings', label: 'Site Rankings', enabled: true, position: 3, size: 'half' },
+        { id: 'goal-progress', label: 'Goal Progress', enabled: true, position: 4, size: 'half' },
+        { id: 'score-trend', label: 'Score Trend', enabled: true, position: 5, size: 'half' },
+      ],
+      updatedAt: '',
+    },
+    isEditing: false,
+    toggleWidget: vi.fn(),
+    reorderWidgets: vi.fn(),
+    resizeWidget: vi.fn(),
+    startEditing: vi.fn(),
+    saveEdits: vi.fn(),
+    cancelEdits: vi.fn(),
+    resetToDefaults: vi.fn(),
+  }),
 }));
 
 vi.mock("../../../utils/scoreUtils", () => ({
@@ -101,6 +122,11 @@ vi.mock("../../../components/charts", () => ({
   Sparkline: ({ data }: { data: number[] }) => (
     <div data-testid="sparkline" data-data={JSON.stringify(data)}>
       Sparkline
+    </div>
+  ),
+  GoalProgress: ({ currentScore, goalScore }: { currentScore: number; goalScore: number }) => (
+    <div data-testid="goal-progress" data-current={currentScore} data-goal={goalScore}>
+      Goal Progress
     </div>
   ),
 }));
@@ -175,6 +201,40 @@ vi.mock("../../../components/executive/SiteRankings", () => ({
     <div data-testid="site-rankings" data-sites={JSON.stringify(sites)}>
       <button onClick={() => onClickSite?.("https://test.com")}>Click Site</button>
       Site Rankings
+    </div>
+  ),
+}));
+
+vi.mock("../../../components/executive/customization", () => ({
+  CustomizeButton: ({
+    isEditing,
+  }: {
+    isEditing: boolean;
+    onStartEdit: () => void;
+    onSave: () => void;
+    onCancel: () => void;
+    onReset: () => void;
+  }) => (
+    <button data-testid="customize-button" data-editing={isEditing}>
+      Customize
+    </button>
+  ),
+  WidgetTogglePanel: (_props: {
+    widgets: unknown[];
+    onToggle: (id: string) => void;
+    onReorder: (from: number, to: number) => void;
+    onResize: (id: string, size: string) => void;
+  }) => (
+    <div data-testid="widget-toggle-panel">Widget Toggle Panel</div>
+  ),
+  DraggableWidget: ({ children, label, size }: {
+    children: React.ReactNode;
+    isEditing: boolean;
+    label: string;
+    size: string;
+  }) => (
+    <div data-testid="draggable-widget" data-label={label} data-size={size}>
+      {children}
     </div>
   ),
 }));

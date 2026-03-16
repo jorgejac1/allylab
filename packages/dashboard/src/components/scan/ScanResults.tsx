@@ -111,54 +111,46 @@ export function ScanResults({
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", gap: 24 }}
+      className="flex flex-col gap-6"
       key={fpRefreshKey}
     >
       {/* Header with Score */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          gap: 16,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div className="flex items-center gap-5">
           <ScoreCircle score={scan.score} size={80} showGrade />
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 4px" }}>
+            <h2 className="text-xl font-semibold m-0 mb-1">
               Scan Results
             </h2>
-            <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>
+            <p className="text-sm text-slate-500 m-0">
               <a
                 href={scan.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: "#2563eb" }}
+                className="text-blue-600"
               >
                 {scan.url}
               </a>
               {" · "}
               {new Date(scan.timestamp).toLocaleString()}
               {fpCount > 0 && (
-                <span style={{ marginLeft: 8, color: "#94a3b8" }}>
+                <span className="ml-2 text-slate-400">
                   · {fpCount} false positive{fpCount !== 1 ? "s" : ""} hidden
                 </span>
               )}
             </p>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={handleExportCSV}>
-            <Upload size={14} style={{ marginRight: 6 }} />Export CSV
+            <Upload size={14} className="mr-1.5" />Export CSV
           </Button>
           <Button variant="secondary" size="sm" onClick={handleExportJSON}>
-            <Upload size={14} style={{ marginRight: 6 }} />Export JSON
+            <Upload size={14} className="mr-1.5" />Export JSON
           </Button>
           {onRescan && (
             <Button size="sm" onClick={onRescan}>
-              <RefreshCw size={14} style={{ marginRight: 6 }} />Rescan
+              <RefreshCw size={14} className="mr-1.5" />Rescan
             </Button>
           )}
         </div>
@@ -172,7 +164,7 @@ export function ScanResults({
 
       {/* Severity Bar */}
       <Card>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
+        <div className="text-sm font-semibold mb-3">
           Issues by Severity
         </div>
         <SeverityBar
@@ -219,7 +211,7 @@ export function ScanResults({
 
         {activeTab === "rules" && (
           <Card>
-            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+            <div className="text-base font-semibold mb-4">
               Rules Summary
             </div>
             {rulesArray.length === 0 ? (
@@ -229,9 +221,7 @@ export function ScanResults({
                 description="No accessibility violations were detected."
               />
             ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
+              <div className="flex flex-col gap-3">
                 {rulesArray.map((rule) => (
                   <RuleSummaryRow key={rule.ruleId} rule={rule} />
                 ))}
@@ -278,49 +268,27 @@ function RuleSummaryRow({ rule }: RuleSummaryRowProps) {
   const colors = impactColors[rule.impact] || impactColors.minor;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        padding: 16,
-        background: "#f8fafc",
-        borderRadius: 8,
-        border: "1px solid #e2e8f0",
-      }}
-    >
+    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
       {/* Count */}
       <div
+        className="w-12 h-12 rounded-lg flex items-center justify-center text-xl font-bold shrink-0"
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: 8,
           background: colors.bg,
           color: colors.text,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 20,
-          fontWeight: 700,
-          flexShrink: 0,
         }}
       >
         {rule.count}
       </div>
 
       {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>{rule.ruleTitle}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold mb-1">{rule.ruleTitle}</div>
+        <div className="flex gap-2 flex-wrap">
           <span
+            className="py-0.5 px-2 rounded text-xs font-semibold uppercase"
             style={{
-              padding: "2px 8px",
-              borderRadius: 4,
-              fontSize: 11,
-              fontWeight: 600,
               background: colors.bg,
               color: colors.text,
-              textTransform: "uppercase",
             }}
           >
             {rule.impact}
@@ -328,19 +296,13 @@ function RuleSummaryRow({ rule }: RuleSummaryRowProps) {
           {rule.wcagTags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              style={{
-                padding: "2px 8px",
-                borderRadius: 4,
-                fontSize: 11,
-                background: "#eff6ff",
-                color: "#2563eb",
-              }}
+              className="py-0.5 px-2 rounded text-xs text-blue-600 bg-blue-50"
             >
               {tag}
             </span>
           ))}
           {rule.wcagTags.length > 3 && (
-            <span style={{ fontSize: 11, color: "#64748b" }}>
+            <span className="text-xs text-slate-500">
               +{rule.wcagTags.length - 3} more
             </span>
           )}
@@ -352,15 +314,7 @@ function RuleSummaryRow({ rule }: RuleSummaryRowProps) {
         href={rule.helpUrl}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          padding: "6px 12px",
-          borderRadius: 6,
-          fontSize: 12,
-          color: "#2563eb",
-          textDecoration: "none",
-          background: "#eff6ff",
-          flexShrink: 0,
-        }}
+        className="py-1.5 px-3 rounded-md text-xs text-blue-600 no-underline shrink-0 bg-blue-50"
       >
         Learn More →
       </a>

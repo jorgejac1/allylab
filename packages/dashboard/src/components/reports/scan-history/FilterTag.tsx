@@ -7,41 +7,16 @@ interface FilterTagProps {
 
 export const FilterTag = memo(function FilterTag({ label, onRemove }: FilterTagProps) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 8px',
-        background: '#e0f2fe',
-        color: '#0369a1',
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 500,
-      }}
-    >
+    <span className="inline-flex items-center gap-1.5 py-1 px-2 bg-sky-100 text-sky-700 rounded text-xs font-medium">
       {label}
       <button
         onClick={e => {
           e.stopPropagation();
           onRemove();
         }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 16,
-          height: 16,
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-          color: '#0369a1',
-          fontSize: 14,
-          lineHeight: 1,
-        }}
+        className="flex items-center justify-center w-4 h-4 bg-transparent border-none cursor-pointer p-0 text-sky-700 text-sm leading-none"
       >
-        ×
+        &times;
       </button>
     </span>
   );

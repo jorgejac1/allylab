@@ -52,7 +52,7 @@ export function GitLabSettings({
   if (isLoading) {
     return (
       <Card>
-        <div style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>
+        <div className="p-5 text-center text-slate-500">
           Loading GitLab connection...
         </div>
       </Card>
@@ -60,61 +60,45 @@ export function GitLabSettings({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold">
           GitLab Integration
         </h3>
 
         {connection.connected && connection.user ? (
           <div>
             {/* Connected State */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              padding: 16,
-              background: '#fdf4ff',
-              border: '1px solid #f0abfc',
-              borderRadius: 8,
-              marginBottom: 16,
-            }}>
+            <div className="flex items-center gap-4 p-4 rounded-lg mb-4" style={{ background: '#fdf4ff', border: '1px solid #f0abfc' }}>
               <img
                 src={connection.user.avatar_url}
                 alt={connection.user.username}
-                style={{ width: 48, height: 48, borderRadius: '50%' }}
+                className="w-12 h-12 rounded-full"
+                width={48}
+                height={48}
+                loading="lazy"
               />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>
+              <div className="flex-1">
+                <div className="font-semibold text-sm">
                   {connection.user.name || connection.user.username}
                 </div>
-                <div style={{ fontSize: 13, color: '#64748b' }}>
+                <div className="text-sm text-slate-500">
                   @{connection.user.username}
                 </div>
                 {connection.instanceUrl !== 'https://gitlab.com' && (
-                  <div style={{ fontSize: 12, color: '#a855f7', marginTop: 4 }}>
+                  <div className="text-xs text-purple-500 mt-1">
                     {connection.instanceUrl}
                   </div>
                 )}
               </div>
-              <span style={{
-                padding: '4px 12px',
-                background: '#fae8ff',
-                color: '#a21caf',
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 500,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}>
+              <span className="py-1 px-3 rounded-full text-xs font-medium inline-flex items-center gap-1" style={{ background: '#fae8ff', color: '#a21caf' }}>
                 <Check size={12} /> Connected
               </span>
             </div>
 
             {/* Project Count */}
             {connection.projects && (
-              <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
+              <p className="text-sm text-slate-500 mb-4">
                 Access to {connection.projects.length} projects
               </p>
             )}
@@ -126,17 +110,11 @@ export function GitLabSettings({
         ) : (
           <div>
             {/* Disconnected State */}
-            <div style={{
-              padding: 16,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: 8,
-              marginBottom: 16,
-            }}>
-              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#475569' }}>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg mb-4">
+              <p className="mt-0 mb-3 text-sm text-slate-600">
                 Connect GitLab to create Merge Requests with accessibility fixes directly from AllyLab.
               </p>
-              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#64748b' }}>
+              <ul className="m-0 pl-5 text-sm text-slate-500">
                 <li>Auto-generate MRs for detected issues</li>
                 <li>AI-powered code fixes in your preferred framework</li>
                 <li>Supports GitLab.com and self-hosted instances</li>
@@ -144,30 +122,22 @@ export function GitLabSettings({
             </div>
 
             {error && (
-              <div style={{
-                padding: 12,
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: 8,
-                color: '#dc2626',
-                fontSize: 13,
-                marginBottom: 16,
-              }}>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm mb-4">
                 {error}
               </div>
             )}
 
             {showTokenInput ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="flex flex-col gap-3">
                 {/* Self-hosted toggle */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={showSelfHosted}
                     onChange={(e) => setShowSelfHosted(e.target.checked)}
                   />
                   <Server size={14} />
-                  <span style={{ fontSize: 13 }}>Self-hosted GitLab</span>
+                  <span className="text-sm">Self-hosted GitLab</span>
                 </label>
 
                 {showSelfHosted && (
@@ -176,12 +146,7 @@ export function GitLabSettings({
                     placeholder="https://gitlab.yourcompany.com"
                     value={instanceUrl}
                     onChange={(e) => setInstanceUrl(e.target.value)}
-                    style={{
-                      padding: '10px 12px',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: 6,
-                      fontSize: 14,
-                    }}
+                    className="py-2.5 px-3 border border-slate-200 rounded-md text-sm"
                   />
                 )}
 
@@ -190,15 +155,9 @@ export function GitLabSettings({
                   placeholder="glpat-xxxxxxxxxxxxxxxxxxxx"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
-                  style={{
-                    padding: '10px 12px',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    fontFamily: 'monospace',
-                  }}
+                  className="py-2.5 px-3 border border-slate-200 rounded-md text-sm font-mono"
                 />
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="flex gap-2">
                   <Button
                     variant="primary"
                     onClick={handleConnect}
@@ -215,7 +174,7 @@ export function GitLabSettings({
               <Button
                 variant="primary"
                 onClick={() => setShowTokenInput(true)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                className="inline-flex items-center gap-1.5"
               >
                 <Link size={14} /> Connect GitLab
               </Button>
@@ -226,33 +185,24 @@ export function GitLabSettings({
 
       {/* How to get a token */}
       <Card>
-        <details style={{ cursor: 'pointer' }}>
-          <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <details className="cursor-pointer">
+          <summary className="font-medium text-sm py-2 inline-flex items-center gap-2">
             <Key size={16} /> How to create a GitLab Personal Access Token
           </summary>
-          <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
-            <ol style={{ margin: '12px 0', paddingLeft: 20 }}>
-              <li>Go to <a href="https://gitlab.com/-/user_settings/personal_access_tokens" target="_blank" rel="noopener noreferrer" style={{ color: '#a855f7' }}>GitLab Access Tokens</a> (or your self-hosted instance)</li>
+          <div className="pl-4 text-sm text-slate-600 leading-relaxed">
+            <ol className="my-3 pl-5">
+              <li>Go to <a href="https://gitlab.com/-/user_settings/personal_access_tokens" target="_blank" rel="noopener noreferrer" className="text-purple-500">GitLab Access Tokens</a> (or your self-hosted instance)</li>
               <li>Enter a token name like &quot;AllyLab Integration&quot;</li>
               <li>Set an expiration date (optional but recommended)</li>
               <li>Select the following scopes:
-                <ul style={{ marginTop: 4 }}>
+                <ul className="mt-1">
                   <li><strong>api</strong>: Full API access</li>
                   <li>Or at minimum: <strong>read_repository</strong>, <strong>write_repository</strong></li>
                 </ul>
               </li>
               <li>Click &quot;Create personal access token&quot; and copy it</li>
             </ol>
-            <p style={{
-              padding: 12,
-              background: '#fef3c7',
-              borderRadius: 6,
-              color: '#92400e',
-              margin: '12px 0 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}>
+            <p className="p-3 bg-amber-100 rounded-md text-amber-800 mt-3 mb-0 flex items-center gap-2">
               <AlertTriangle size={16} /> Your token is stored securely on the server and never exposed to the browser.
             </p>
           </div>

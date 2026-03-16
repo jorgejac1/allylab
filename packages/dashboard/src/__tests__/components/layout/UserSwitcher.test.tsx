@@ -5,7 +5,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { UserSwitcher } from '../../../components/layout/UserSwitcher';
+import type { Role } from '../../../types/auth';
 import * as authContextModule from '../../../contexts/AuthContext';
+
+type AuthContextReturn = ReturnType<typeof authContextModule.useAuth>;
 
 // Mock the auth context
 vi.mock('../../../contexts/AuthContext', () => ({
@@ -49,7 +52,7 @@ describe('UserSwitcher', () => {
         switchUser: mockSwitchUser,
         hasWebsiteSession: false,
         logout: mockLogout,
-      } as any);
+      } as unknown as AuthContextReturn);
 
       const { container } = render(<UserSwitcher />);
       expect(container.firstChild).toBeNull();
@@ -64,7 +67,7 @@ describe('UserSwitcher', () => {
         switchUser: mockSwitchUser,
         hasWebsiteSession: true,
         logout: mockLogout,
-      } as any);
+      } as unknown as AuthContextReturn);
     });
 
     it('displays user name and role', () => {
@@ -116,7 +119,7 @@ describe('UserSwitcher', () => {
         switchUser: mockSwitchUser,
         hasWebsiteSession: false,
         logout: mockLogout,
-      } as any);
+      } as unknown as AuthContextReturn);
     });
 
     it('displays user name and role', () => {
@@ -184,7 +187,7 @@ describe('UserSwitcher', () => {
         switchUser: mockSwitchUser,
         hasWebsiteSession: false,
         logout: mockLogout,
-      } as any);
+      } as unknown as AuthContextReturn);
     });
 
     it('closes dropdown when clicking outside', () => {
@@ -217,14 +220,14 @@ describe('UserSwitcher', () => {
   });
 
   describe('role colors', () => {
-    const testRoleColor = (role: string, expectedColor: string) => {
+    const testRoleColor = (role: Role, expectedColor: string) => {
       vi.mocked(authContextModule.useAuth).mockReturnValue({
         user: { ...mockUser, role },
         allUsers: [],
         switchUser: mockSwitchUser,
         hasWebsiteSession: true,
         logout: mockLogout,
-      } as any);
+      } as unknown as AuthContextReturn);
 
       render(<UserSwitcher />);
       const avatar = screen.getByTestId('user-avatar');

@@ -14,41 +14,34 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
   return (
-    <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #e2e8f0' }}>
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          onClick={() => onChange(tab.id)}
-          style={{
-            padding: '12px 20px',
-            background: activeTab === tab.id ? '#eff6ff' : 'transparent',
-            border: 'none',
-            borderBottom: `2px solid ${activeTab === tab.id ? '#2563eb' : 'transparent'}`,
-            cursor: 'pointer',
-            fontSize: 14,
-            fontWeight: 600,
-            color: activeTab === tab.id ? '#2563eb' : '#64748b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          {tab.label}
-          {tab.count !== undefined && (
-            <span
-              style={{
-                background: activeTab === tab.id ? '#2563eb' : '#e2e8f0',
-                color: activeTab === tab.id ? '#fff' : '#64748b',
-                padding: '2px 8px',
-                borderRadius: 20,
-                fontSize: 12,
-              }}
-            >
-              {tab.count}
-            </span>
-          )}
-        </button>
-      ))}
+    <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
+      {tabs.map(tab => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            className={`py-2 px-3 sm:py-3 sm:px-5 border-none cursor-pointer text-sm/[normal] font-semibold flex items-center gap-2 whitespace-nowrap border-b-2 ${
+              isActive
+                ? 'bg-blue-50 border-b-blue-600 text-blue-600'
+                : 'bg-transparent border-b-transparent text-slate-500'
+            }`}
+          >
+            {tab.label}
+            {tab.count !== undefined && (
+              <span
+                className={`py-0.5 px-2 rounded-full text-xs/[normal] ${
+                  isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-200 text-slate-500'
+                }`}
+              >
+                {tab.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

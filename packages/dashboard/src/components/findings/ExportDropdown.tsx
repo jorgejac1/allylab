@@ -71,7 +71,7 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
   };
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="relative inline-block">
       {/* Toast Container */}
       <Toast toasts={toasts} onClose={closeToast} />
 
@@ -81,37 +81,19 @@ export function ExportDropdown({ findings, scanUrl, scanDate }: ExportDropdownPr
         onClick={() => setIsOpen(!isOpen)}
         disabled={isExporting || findings.length === 0}
       >
-        {isExporting ? 'Exporting...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Download size={12} /> Export</span>}
+        {isExporting ? 'Exporting...' : <span className="inline-flex items-center gap-1.5"><Download size={12} /> Export</span>}
       </Button>
 
       {isOpen && (
         <>
           {/* Backdrop */}
           <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 10,
-            }}
+            className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Dropdown */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: 4,
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              borderRadius: 8,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              zIndex: 20,
-              minWidth: 160,
-              overflow: 'hidden',
-            }}
-          >
+          <div className="absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 min-w-40 overflow-hidden">
             <DropdownItem
               icon={<FileText size={14} />}
               label="Export as CSV"
@@ -146,28 +128,12 @@ function DropdownItem({
   onClick: () => void;
   isLast?: boolean;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        padding: '10px 14px',
-        background: isHovered ? '#f8fafc' : 'none',
-        border: 'none',
-        borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
-        fontSize: 14,
-        color: '#334155',
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'background 0.15s',
-        gap: 8,
-      }}
+      className={`flex items-center w-full py-2.5 px-3.5 bg-white hover:bg-slate-50 border-none text-sm text-slate-700 cursor-pointer text-left transition-colors duration-150 gap-2 ${
+        isLast ? '' : 'border-b border-slate-100'
+      }`}
     >
       <span>{icon}</span>
       {label}
@@ -182,11 +148,11 @@ async function exportToExcel(
   scanDate: string
 ) {
   const ExcelJS = await import('exceljs');
-  
+
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'AllyLab';
   workbook.created = new Date();
-  
+
   const worksheet = workbook.addWorksheet('Findings');
 
   // Define columns
@@ -249,8 +215,8 @@ async function exportToExcel(
 
   // Generate file
   const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { 
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -8,11 +8,13 @@ import { exportRoutes } from './export';
 import { webhookRoutes } from './webhooks';
 import { crawlRoutes } from './crawl';
 import { githubRoutes } from './github.js';
+import gitlabRoutes from './gitlab.js';
 import { fixesRoutes } from './fixes.js';
 import { trendsRoutes } from './trends.js';
 import { rulesRoutes } from './rules.js';
 import { userRoutes } from './users.js';
 import { authRoutes } from './auth.js';
+import { ssoRoutes } from './sso.js';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(authRoutes);
@@ -25,8 +27,10 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(webhookRoutes);
   await fastify.register(crawlRoutes);
   await fastify.register(githubRoutes);
+  await fastify.register(gitlabRoutes);
   await fastify.register(fixesRoutes);
   await fastify.register(trendsRoutes);
   await fastify.register(rulesRoutes);
   await fastify.register(userRoutes);
+  await fastify.register(ssoRoutes);
 }

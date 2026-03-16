@@ -51,54 +51,34 @@ export function UserSwitcher() {
   // When logged in from website, show simplified user display with logout
   if (hasWebsiteSession) {
     return (
-      <div ref={dropdownRef} style={{ position: 'relative' }}>
+      <div ref={dropdownRef} className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 12px',
-            background: 'transparent',
-            border: '1px solid #334155',
-            borderRadius: 8,
-            cursor: 'pointer',
-            color: '#e2e8f0',
-            fontSize: 13,
-            minWidth: 180,
-          }}
+          className="flex items-center gap-2 py-2 px-3 bg-transparent border border-slate-700 rounded-lg cursor-pointer text-slate-200 text-[13px]/[normal] min-w-[180px]"
           aria-expanded={isOpen}
           aria-haspopup="menu"
         >
           {/* Avatar */}
           <div
             data-testid="user-avatar"
+            className="w-7 h-7 rounded-full flex items-center justify-center"
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
               background: `linear-gradient(135deg, ${roleColor}40, ${roleColor}20)`,
               border: `2px solid ${roleColor}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             <RoleIcon size={14} color={roleColor} />
           </div>
 
           {/* User info */}
-          <div style={{ flex: 1, textAlign: 'left' }}>
-            <div style={{ fontWeight: 500, fontSize: 12, lineHeight: 1.2 }}>{user.name}</div>
-            <div style={{ fontSize: 10, color: roleColor }}>{ROLE_LABELS[user.role]}</div>
+          <div className="flex-1 text-left">
+            <div className="font-medium text-xs/[1.2]">{user.name}</div>
+            <div className="text-[10px]/[normal]" style={{ color: roleColor }}>{ROLE_LABELS[user.role]}</div>
           </div>
 
           <ChevronDown
             size={14}
-            style={{
-              transition: 'transform 0.2s',
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-            }}
+            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
@@ -106,28 +86,12 @@ export function UserSwitcher() {
         {isOpen && (
           <div
             role="menu"
-            style={{
-              position: 'absolute',
-              bottom: 'calc(100% + 4px)',
-              left: 0,
-              right: 0,
-              background: '#1e293b',
-              border: '1px solid #334155',
-              borderRadius: 8,
-              boxShadow: '0 -10px 25px rgba(0, 0, 0, 0.3)',
-              zIndex: 100,
-              overflow: 'hidden',
-            }}
+            className="absolute bottom-[calc(100%_+_4px)] left-0 right-0 bg-slate-800 border border-slate-700 rounded-lg shadow-[0_-10px_25px_rgba(0,0,0,0.3)] z-[100] overflow-hidden"
           >
             {/* User info header */}
-            <div
-              style={{
-                padding: '12px',
-                borderBottom: '1px solid #334155',
-              }}
-            >
-              <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>Signed in as</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0' }}>{user.email}</div>
+            <div className="p-3 border-b border-slate-700">
+              <div className="text-xs/[normal] text-slate-400 mb-1">Signed in as</div>
+              <div className="text-[13px]/[normal] font-medium text-slate-200">{user.email}</div>
             </div>
 
             {/* Logout button */}
@@ -137,26 +101,7 @@ export function UserSwitcher() {
                 logout();
               }}
               role="menuitem"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '10px 12px',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#ef4444',
-                fontSize: 13,
-                textAlign: 'left',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#293548';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
+              className="flex items-center gap-2 w-full py-2.5 px-3 bg-transparent border-0 cursor-pointer text-red-500 text-[13px]/[normal] text-left transition-colors duration-150 hover:bg-[#293548]"
             >
               <LogOut size={16} />
               Sign out
@@ -169,56 +114,38 @@ export function UserSwitcher() {
 
   // Dev mode: Full user switcher dropdown
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
+    <div ref={dropdownRef} className="relative">
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '8px 12px',
-          background: 'transparent',
-          border: '1px solid #334155',
-          borderRadius: 8,
-          cursor: canSwitchUsers ? 'pointer' : 'default',
-          color: '#e2e8f0',
-          fontSize: 13,
-          minWidth: 180,
-        }}
+        className={`flex items-center gap-2 py-2 px-3 bg-transparent border border-slate-700 rounded-lg text-slate-200 text-[13px]/[normal] min-w-[180px] ${
+          canSwitchUsers ? 'cursor-pointer' : 'cursor-default'
+        }`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         disabled={!canSwitchUsers}
       >
         {/* Avatar */}
         <div
+          className="w-7 h-7 rounded-full flex items-center justify-center"
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
             background: `linear-gradient(135deg, ${roleColor}40, ${roleColor}20)`,
             border: `2px solid ${roleColor}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           <RoleIcon size={14} color={roleColor} />
         </div>
 
         {/* User info */}
-        <div style={{ flex: 1, textAlign: 'left' }}>
-          <div style={{ fontWeight: 500, fontSize: 12, lineHeight: 1.2 }}>{user.name}</div>
-          <div style={{ fontSize: 10, color: roleColor }}>{ROLE_LABELS[user.role]}</div>
+        <div className="flex-1 text-left">
+          <div className="font-medium text-xs/[1.2]">{user.name}</div>
+          <div className="text-[10px]/[normal]" style={{ color: roleColor }}>{ROLE_LABELS[user.role]}</div>
         </div>
 
         {canSwitchUsers && (
           <ChevronDown
             size={14}
-            style={{
-              transition: 'transform 0.2s',
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
-            }}
+            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           />
         )}
       </button>
@@ -227,31 +154,10 @@ export function UserSwitcher() {
       {isOpen && canSwitchUsers && (
         <div
           role="listbox"
-          style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 4px)',
-            left: 0,
-            right: 0,
-            background: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: 8,
-            boxShadow: '0 -10px 25px rgba(0, 0, 0, 0.3)',
-            zIndex: 100,
-            overflow: 'hidden',
-            minWidth: 220,
-          }}
+          className="absolute bottom-[calc(100%_+_4px)] left-0 right-0 bg-slate-800 border border-slate-700 rounded-lg shadow-[0_-10px_25px_rgba(0,0,0,0.3)] z-[100] overflow-hidden min-w-[220px]"
         >
           {/* Header */}
-          <div
-            style={{
-              padding: '8px 12px',
-              borderBottom: '1px solid #334155',
-              fontSize: 10,
-              color: '#64748b',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
+          <div className="py-2 px-3 border-b border-slate-700 text-[10px]/[normal] text-slate-500 uppercase tracking-wide">
             Switch User (Dev Mode)
           </div>
 
@@ -270,47 +176,25 @@ export function UserSwitcher() {
                 }}
                 role="option"
                 aria-selected={isSelected}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  width: '100%',
-                  padding: '10px 12px',
-                  background: isSelected ? '#334155' : 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#e2e8f0',
-                  fontSize: 13,
-                  textAlign: 'left',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = '#293548';
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = 'transparent';
-                }}
+                className={`flex items-center gap-2.5 w-full py-2.5 px-3 border-0 cursor-pointer text-slate-200 text-[13px]/[normal] text-left transition-colors duration-150 ${
+                  isSelected ? 'bg-slate-700' : 'bg-transparent hover:bg-[#293548]'
+                }`}
               >
                 {/* Avatar */}
                 <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
                     background: `linear-gradient(135deg, ${color}40, ${color}20)`,
                     border: `2px solid ${color}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                   }}
                 >
                   <Icon size={14} color={color} />
                 </div>
 
                 {/* User info */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, fontSize: 13 }}>{u.name}</div>
-                  <div style={{ fontSize: 11, color: color }}>{ROLE_LABELS[u.role]}</div>
+                <div className="flex-1">
+                  <div className="font-medium text-[13px]/[normal]">{u.name}</div>
+                  <div className="text-[11px]/[normal]" style={{ color }}>{ROLE_LABELS[u.role]}</div>
                 </div>
 
                 {/* Selected indicator */}
@@ -325,44 +209,14 @@ export function UserSwitcher() {
               setIsOpen(false);
               logout();
             }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              width: '100%',
-              padding: '10px 12px',
-              background: 'transparent',
-              border: 'none',
-              borderTop: '1px solid #334155',
-              cursor: 'pointer',
-              color: '#ef4444',
-              fontSize: 13,
-              textAlign: 'left',
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#293548';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
+            className="flex items-center gap-2 w-full py-2.5 px-3 bg-transparent border-0 border-t border-slate-700 cursor-pointer text-red-500 text-[13px]/[normal] text-left transition-colors duration-150 hover:bg-[#293548]"
           >
             <LogOut size={16} />
             Sign out
           </button>
 
           {/* Footer hint */}
-          <div
-            style={{
-              padding: '8px 12px',
-              borderTop: '1px solid #334155',
-              fontSize: 10,
-              color: '#64748b',
-              textAlign: 'center',
-              borderRadius: '0 0 8px 8px',
-              background: '#1e293b',
-            }}
-          >
+          <div className="py-2 px-3 border-t border-slate-700 text-[10px]/[normal] text-slate-500 text-center rounded-b-lg bg-slate-800">
             Role changes apply immediately
           </div>
         </div>

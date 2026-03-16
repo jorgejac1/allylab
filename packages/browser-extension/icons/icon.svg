@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- Shield shape -->
+  <path d="M64 8L16 32v32c0 28.8 20.48 55.68 48 64 27.52-8.32 48-35.2 48-64V32L64 8z" fill="#2563eb"/>
+  <path d="M64 14L22 35.5v28.5c0 25.6 18.2 49.5 42 57 23.8-7.5 42-31.4 42-57V35.5L64 14z" fill="#1d4ed8"/>
+  <!-- A11Y text -->
+  <text x="64" y="78" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="32" fill="white">A11Y</text>
+  <!-- Accessibility person icon (simplified) -->
+  <circle cx="64" cy="42" r="6" fill="white" opacity="0.9"/>
+</svg>

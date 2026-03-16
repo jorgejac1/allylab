@@ -16,14 +16,7 @@ export function EditorActions({
   onCreatePR,
 }: EditorActionsProps) {
   return (
-    <div style={{
-      display: 'flex',
-      gap: 12,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      paddingTop: 8,
-      borderTop: '1px solid #e2e8f0',
-    }}>
+    <div className="flex gap-3 justify-end items-center pt-2 border-t border-slate-200">
       <KeyboardHints />
       <Button variant="secondary" onClick={onBack}>
         ← Back
@@ -35,12 +28,12 @@ export function EditorActions({
       >
         {isCreatingPR ? (
           <>
-            <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite', marginRight: 4 }} aria-hidden="true" />
+            <RefreshCw size={14} className="mr-1" style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" />
             Creating PR...
           </>
         ) : (
           <>
-            <Rocket size={14} style={{ marginRight: 4 }} aria-hidden="true" />
+            <Rocket size={14} className="mr-1" aria-hidden="true" />
             Create PR
           </>
         )}
@@ -50,18 +43,11 @@ export function EditorActions({
 }
 
 function KeyboardHints() {
-  const kbdStyle = {
-    background: '#f1f5f9',
-    padding: '1px 4px',
-    borderRadius: 2,
-    border: '1px solid #e2e8f0',
-  };
-
   return (
-    <span style={{ fontSize: 10, color: '#94a3b8', marginRight: 'auto' }}>
-      <kbd style={kbdStyle}>Enter</kbd> Create PR
+    <span className="text-[10px] text-slate-400 mr-auto">
+      <kbd className="bg-slate-100 px-1 py-px rounded-sm border border-slate-200">Enter</kbd> Create PR
       {' · '}
-      <kbd style={kbdStyle}>Esc</kbd> Back
+      <kbd className="bg-slate-100 px-1 py-px rounded-sm border border-slate-200">Esc</kbd> Back
     </span>
   );
 }

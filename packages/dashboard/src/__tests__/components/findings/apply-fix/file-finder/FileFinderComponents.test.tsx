@@ -75,19 +75,19 @@ describe("file-finder/OptionButton", () => {
   it("applies highlighted styling when recommended", () => {
     const { container } = render(<OptionButton {...defaultProps} badge="recommended" />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveStyle({ background: "#eff6ff" });
+    expect(button).toHaveClass("bg-blue-50");
   });
 
   it("applies highlighted styling when last-worked", () => {
     const { container } = render(<OptionButton {...defaultProps} badge="last-worked" />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveStyle({ background: "#eff6ff" });
+    expect(button).toHaveClass("bg-blue-50");
   });
 
   it("applies default styling when no badge", () => {
     const { container } = render(<OptionButton {...defaultProps} />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveStyle({ background: "#fff" });
+    expect(button).toHaveClass("bg-white");
   });
 });
 
@@ -185,7 +185,7 @@ describe("file-finder/FileResultItem", () => {
     const file = { ...defaultFile, isBestMatch: true };
     const { container } = render(<FileResultItem {...defaultProps} file={file} />);
     const button = container.firstChild as HTMLElement;
-    expect(button).toHaveStyle({ background: "#f0fdf4" });
+    expect(button).toHaveClass("bg-green-50");
   });
 });
 

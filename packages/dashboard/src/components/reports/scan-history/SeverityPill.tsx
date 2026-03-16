@@ -13,26 +13,14 @@ export const SeverityPill = memo(function SeverityPill({ severity, count }: Seve
 
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 8px',
-        borderRadius: 6,
-        background: `${color}15`,
-        minWidth: 40,
-        justifyContent: 'center',
-      }}
+      className="flex items-center gap-1 py-1 px-2 rounded-md min-w-[40px] justify-center"
+      style={{ background: `${color}15` }}
     >
       <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: color,
-        }}
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ background: color }}
       />
-      <span style={{ fontSize: 12, fontWeight: 600, color }}>{count}</span>
+      <span className="text-xs font-semibold" style={{ color }}>{count}</span>
     </div>
   );
 });

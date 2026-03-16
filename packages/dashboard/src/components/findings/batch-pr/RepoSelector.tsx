@@ -18,28 +18,23 @@ export function RepoSelector({
 }: RepoSelectorProps) {
   return (
     <div>
-      <p style={{ color: '#64748b', fontSize: 14, marginBottom: 16 }}>
+      <p className="text-slate-500 text-sm mb-4">
         Select the repository where you want to apply {fixCount} fixes:
       </p>
-      
+
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: 20, color: '#64748b' }}>
+        <div className="text-center p-5 text-slate-500">
           Loading repositories...
         </div>
       ) : (
-        <div style={{ 
-          maxHeight: 400, 
-          overflow: 'auto',
-          border: '1px solid #e2e8f0',
-          borderRadius: 8,
-        }}>
+        <div className="max-h-[400px] overflow-auto border border-slate-200 rounded-lg">
           {repos.map(repo => (
             <RepoRow key={repo.id} repo={repo} onSelect={() => onSelect(repo)} />
           ))}
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 16 }}>
+      <div className="flex justify-start mt-4">
         <Button variant="secondary" onClick={onBack}>
           ← Back
         </Button>
@@ -57,33 +52,23 @@ function RepoRow({ repo, onSelect }: RepoRowProps) {
   return (
     <button
       onClick={onSelect}
-      style={{
-        width: '100%',
-        padding: '12px 16px',
-        border: 'none',
-        borderBottom: '1px solid #e2e8f0',
-        background: '#fff',
-        textAlign: 'left',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-      onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+      className="w-full py-3 px-4 border-none border-b border-slate-200 bg-white hover:bg-slate-50 text-left cursor-pointer flex items-center gap-3"
     >
       <img
         src={repo.owner.avatar_url}
         alt=""
-        style={{ width: 24, height: 24, borderRadius: 4 }}
+        className="w-6 h-6 rounded"
+        width={24}
+        height={24}
+        loading="lazy"
       />
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 500, fontSize: 14 }}>{repo.full_name}</div>
-        <div style={{ fontSize: 12, color: '#64748b' }}>
+      <div className="flex-1">
+        <div className="font-medium text-sm">{repo.full_name}</div>
+        <div className="text-xs text-slate-500">
           {repo.private ? '🔒 Private' : '🌐 Public'} • {repo.default_branch}
         </div>
       </div>
-      <span style={{ color: '#94a3b8' }}>→</span>
+      <span className="text-slate-400">→</span>
     </button>
   );
 }

@@ -96,6 +96,21 @@ export const STORAGE_KEYS = {
 
   /** Authentication profiles for protected page scanning */
   AUTH_PROFILES: 'allylab_auth_profiles',
+
+  /** Audit log entries */
+  AUDIT_LOG: 'allylab_audit_log',
+
+  /** Saved filter presets */
+  FILTER_PRESETS: 'allylab_filter_presets',
+
+  /** Dashboard layout customization */
+  DASHBOARD_LAYOUT: 'allylab_dashboard_layout',
+
+  /** GitLab MR tracking */
+  TRACKED_MRS_GITLAB: 'allylab_tracked_mrs_gitlab',
+
+  /** Monthly usage tracking for plan limits */
+  USAGE_TRACKING: 'allylab_usage_tracking',
 } as const;
 
 // ============================================

@@ -9,58 +9,21 @@ export function FixPreview({ originalCode, fixedCode }: FixPreviewProps) {
   const fixedJsx = htmlToJsx(fixedCode);
 
   return (
-    <div style={{
-      padding: '0 12px 12px 32px',
-      background: '#f8fafc',
-    }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-        fontSize: 11,
-        fontFamily: 'ui-monospace, monospace',
-      }}>
+    <div className="px-3 pb-3 pl-8 bg-slate-50">
+      <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
         <div>
-          <div style={{
-            fontSize: 10,
-            fontWeight: 500,
-            color: '#991b1b',
-            marginBottom: 4
-          }}>
+          <div className="text-[10px] font-medium text-red-800 mb-1">
             Before:
           </div>
-          <pre style={{
-            margin: 0,
-            padding: 8,
-            background: '#fff5f5',
-            borderRadius: 4,
-            overflow: 'auto',
-            maxHeight: 80,
-            whiteSpace: 'pre-wrap',
-            color: '#991b1b',
-          }}>
+          <pre className="m-0 p-2 bg-red-50 rounded overflow-auto max-h-[80px] whitespace-pre-wrap text-red-800">
             {originalCode}
           </pre>
         </div>
         <div>
-          <div style={{
-            fontSize: 10,
-            fontWeight: 500,
-            color: '#166534',
-            marginBottom: 4
-          }}>
+          <div className="text-[10px] font-medium text-green-800 mb-1">
             After (JSX):
           </div>
-          <pre style={{
-            margin: 0,
-            padding: 8,
-            background: '#f0fdf4',
-            borderRadius: 4,
-            overflow: 'auto',
-            maxHeight: 80,
-            whiteSpace: 'pre-wrap',
-            color: '#166534',
-          }}>
+          <pre className="m-0 p-2 bg-green-50 rounded overflow-auto max-h-[80px] whitespace-pre-wrap text-green-800">
             {fixedJsx}
           </pre>
         </div>

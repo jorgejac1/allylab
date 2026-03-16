@@ -328,6 +328,7 @@ function getTooltipStyle(
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTourAttributes() {
   return {
     scanInput: { 'data-tour': 'scan-input' },

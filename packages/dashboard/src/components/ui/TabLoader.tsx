@@ -7,24 +7,14 @@ interface TabLoaderProps {
 
 export function TabLoader({ size = 24, message }: TabLoaderProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 48,
-        gap: 12,
-      }}
-    >
+    <div className="flex flex-col justify-center items-center p-12 gap-3">
       <Loader2
         size={size}
-        style={{ animation: 'spin 1s linear infinite' }}
+        className="animate-spin"
       />
       {message && (
-        <span style={{ fontSize: 14, color: '#64748b' }}>{message}</span>
+        <span className="text-sm/[normal] text-slate-500">{message}</span>
       )}
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

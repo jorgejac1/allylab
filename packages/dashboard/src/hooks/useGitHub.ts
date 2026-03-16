@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getApiBase } from '../utils/api';
 import type { GitHubConnection, GitHubRepo, GitHubBranch, PRResult } from '../types/github';
+import { addAuditEntry } from '../utils/auditLog';
 
 export interface CodeSearchResult {
   path: string;
@@ -54,6 +55,7 @@ export function useGitHub() {
 
       if (response.ok) {
         await checkConnection();
+        addAuditEntry({ eventType: 'integration:connected', severity: 'info', action: 'Connected GitHub account', resourceType: 'integration', resourceId: 'github', success: true });
         return true;
       } else {
         const data = await response.json();
@@ -77,6 +79,7 @@ export function useGitHub() {
       setError(null);
       await fetch(`${getApiBase()}/github/disconnect`, { method: 'POST' });
       setConnection({ connected: false });
+      addAuditEntry({ eventType: 'integration:disconnected', severity: 'info', action: 'Disconnected GitHub account', resourceType: 'integration', resourceId: 'github', success: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[useGitHub] Failed to disconnect:', message);
@@ -194,11 +197,15 @@ export function useGitHub() {
       });
 
       const result = await response.json();
-      
+
+      if (result.success) {
+        addAuditEntry({ eventType: 'pr:created', severity: 'info', action: `Created PR #${result.prNumber} in ${owner}/${repo}`, resourceType: 'pr', resourceId: String(result.prNumber || ''), success: true });
+      }
+
       if (!result.success) {
         console.error('[useGitHub] PR creation failed:', result.error);
       }
-      
+
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network error';

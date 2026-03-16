@@ -17,7 +17,7 @@ describe("charts/IssueChangeBadge", () => {
     );
 
     const changeElement = screen.getByText("-5");
-    expect(changeElement).toHaveStyle({ color: "#10b981" });
+    expect(changeElement).toHaveClass("text-emerald-500");
     // Check icon should be present
     expect(container.querySelector("svg")).toBeInTheDocument();
   });
@@ -28,7 +28,7 @@ describe("charts/IssueChangeBadge", () => {
     );
 
     const changeElement = screen.getByText("+3");
-    expect(changeElement).toHaveStyle({ color: "#ef4444" });
+    expect(changeElement).toHaveClass("text-red-500");
     // ArrowUp icon should be present
     expect(container.querySelector("svg")).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe("charts/IssueChangeBadge", () => {
     );
 
     const changeElement = screen.getByText("0");
-    expect(changeElement).toHaveStyle({ color: "#64748b" });
+    expect(changeElement).toHaveClass("text-slate-500");
     // No icon should be present for zero change
     expect(container.querySelector("svg")).not.toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe("charts/IssueChangeBadge", () => {
       <IssueChangeBadge label="Test" change={1} color="#ff5733" />
     );
 
-    const colorDot = container.querySelector("span[style*='border-radius: 50%']");
+    const colorDot = container.querySelector("span.rounded-full");
     expect(colorDot).toHaveStyle({ background: "#ff5733" });
   });
 });

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Card } from '../ui';
 import { useWebhooks } from '../../hooks/useWebhooks';
+import { PermissionGuard } from '../guards/RoleGuard';
 import type { WebhookEvent, WebhookType } from '../../types/webhook';
 import { MessageSquare, Users, Link2, Lightbulb, Bell, FlaskConical, Trash2, BookOpen, Loader2, Check, X } from 'lucide-react';
 
@@ -37,7 +38,7 @@ const PLATFORM_OPTIONS: { value: WebhookType; label: string; icon: ReactNode; pl
 
 export function WebhookManager() {
   const { webhooks, createWebhook, updateWebhook, deleteWebhook, testWebhook } = useWebhooks();
-  
+
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [secret, setSecret] = useState('');
@@ -51,7 +52,7 @@ export function WebhookManager() {
 
   const handleAdd = async () => {
     if (!name.trim() || !url.trim() || selectedEvents.length === 0) return;
-    
+
     setIsAdding(true);
     await createWebhook(name.trim(), url.trim(), selectedEvents, secret.trim() || undefined, platform);
     setName('');
@@ -90,68 +91,60 @@ export function WebhookManager() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Add Webhook Form */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold">
           Add Notification
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           {/* Platform Selection */}
           <div>
-            <label style={{ fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 8, display: 'block' }}>
+            <label className="text-sm font-medium text-slate-600 mb-2 block">
               Platform
             </label>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="flex gap-2">
               {PLATFORM_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setPlatform(opt.value)}
+                  className="flex-1 flex flex-col items-center gap-1 cursor-pointer transition-all duration-150 text-sm font-medium"
                   style={{
-                    flex: 1,
                     padding: '12px 16px',
                     borderRadius: 8,
-                    border: platform === opt.value 
-                      ? '2px solid #3b82f6' 
+                    border: platform === opt.value
+                      ? '2px solid #3b82f6'
                       : '1px solid #e2e8f0',
                     background: platform === opt.value ? '#eff6ff' : '#fff',
                     color: platform === opt.value ? '#1d4ed8' : '#374151',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 4,
                   }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{opt.icon}</span>
+                  <span className="flex items-center justify-center">{opt.icon}</span>
                   <span>{opt.label}</span>
                 </button>
               ))}
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
               <Lightbulb size={14} />{currentPlatform.help}
             </p>
           </div>
 
           {/* Name & URL */}
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div className="flex gap-3">
             <input
               type="text"
               placeholder="Notification name (e.g., #a11y-alerts)"
               value={name}
               onChange={e => setName(e.target.value)}
-              style={inputStyle}
+              className="flex-1 py-2.5 px-3 border border-slate-200 rounded-md text-sm"
             />
             <input
               type="url"
               placeholder={currentPlatform.placeholder}
               value={url}
               onChange={e => setUrl(e.target.value)}
-              style={{ ...inputStyle, flex: 2 }}
+              className="flex-[2] py-2.5 px-3 border border-slate-200 rounded-md text-sm"
             />
           </div>
 
@@ -162,33 +155,30 @@ export function WebhookManager() {
               placeholder="Secret (optional) - for HMAC signature verification"
               value={secret}
               onChange={e => setSecret(e.target.value)}
-              style={inputStyle}
+              className="flex-1 py-2.5 px-3 border border-slate-200 rounded-md text-sm"
             />
           )}
 
           {/* Events */}
           <div>
-            <label style={{ fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 8, display: 'block' }}>
+            <label className="text-sm font-medium text-slate-600 mb-2 block">
               Trigger on events:
             </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="flex flex-wrap gap-2">
               {EVENT_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => handleToggleEvent(opt.value)}
                   title={opt.description}
+                  className="cursor-pointer transition-all duration-150 text-sm font-medium"
                   style={{
                     padding: '6px 12px',
                     borderRadius: 6,
-                    border: selectedEvents.includes(opt.value) 
-                      ? '2px solid #3b82f6' 
+                    border: selectedEvents.includes(opt.value)
+                      ? '2px solid #3b82f6'
                       : '1px solid #e2e8f0',
                     background: selectedEvents.includes(opt.value) ? '#eff6ff' : '#fff',
                     color: selectedEvents.includes(opt.value) ? '#1d4ed8' : '#64748b',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
                   }}
                 >
                   {opt.label}
@@ -197,91 +187,79 @@ export function WebhookManager() {
             </div>
           </div>
 
-          <Button
-            variant="primary"
-            onClick={handleAdd}
-            disabled={isAdding || !name.trim() || !url.trim() || selectedEvents.length === 0}
-          >
-            {isAdding ? 'Adding...' : `Add ${currentPlatform.label} Notification`}
-          </Button>
+          <PermissionGuard permission="webhooks:manage">
+            <Button
+              variant="primary"
+              onClick={handleAdd}
+              disabled={isAdding || !name.trim() || !url.trim() || selectedEvents.length === 0}
+            >
+              {isAdding ? 'Adding...' : `Add ${currentPlatform.label} Notification`}
+            </Button>
+          </PermissionGuard>
         </div>
       </Card>
 
       {/* Webhook List */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold">
           Notifications ({webhooks.length})
         </h3>
 
         {webhooks.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px 16px' }}>
-            <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: '#94a3b8' }}><Bell size={48} /></div>
-            <p style={{ color: '#64748b', fontSize: 14, margin: 0 }}>
+          <div className="text-center py-8 px-4">
+            <div className="mb-3 flex justify-center text-slate-400"><Bell size={48} /></div>
+            <p className="text-slate-500 text-sm m-0">
               No notifications configured. Add Slack or Teams above to get alerted on scan results.
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-3">
             {webhooks.map(webhook => (
               <div
                 key={webhook.id}
+                className="p-4 border border-slate-200 rounded-lg"
                 style={{
-                  padding: 16,
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 8,
                   background: webhook.enabled ? '#fff' : '#f8fafc',
                   opacity: webhook.enabled ? 1 : 0.7,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <div className="flex items-center gap-3 mb-2">
                   {/* Toggle */}
                   <button
                     onClick={() => handleToggleEnabled(webhook.id, !webhook.enabled)}
+                    className="border-none cursor-pointer relative transition-colors duration-200"
                     style={{
                       width: 40,
                       height: 22,
                       borderRadius: 11,
-                      border: 'none',
                       background: webhook.enabled ? '#10b981' : '#cbd5e1',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'background 0.2s',
                     }}
                   >
                     <span
+                      className="absolute top-0.5 rounded-full bg-white shadow-sm transition-[left] duration-200"
                       style={{
-                        position: 'absolute',
-                        top: 2,
                         left: webhook.enabled ? 20 : 2,
                         width: 18,
                         height: 18,
-                        borderRadius: '50%',
-                        background: '#fff',
-                        transition: 'left 0.2s',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                       }}
                     />
                   </button>
 
                   {/* Platform Icon */}
-                  <span style={{ display: 'flex', alignItems: 'center', color: '#64748b' }} title={getPlatformLabel(webhook.type)}>
+                  <span className="flex items-center text-slate-500" title={getPlatformLabel(webhook.type)}>
                     {getPlatformIcon(webhook.type)}
                   </span>
 
                   {/* Name */}
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{webhook.name}</span>
+                  <span className="font-semibold text-sm">{webhook.name}</span>
 
                   {/* Platform Badge */}
                   <span
+                    className="py-0.5 px-2 rounded text-[11px] font-medium text-white"
                     style={{
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontWeight: 500,
-                      background: webhook.type === 'slack' ? '#4A154B' 
-                        : webhook.type === 'teams' ? '#464EB8' 
+                      background: webhook.type === 'slack' ? '#4A154B'
+                        : webhook.type === 'teams' ? '#464EB8'
                         : '#64748b',
-                      color: '#fff',
                     }}
                   >
                     {getPlatformLabel(webhook.type)}
@@ -290,24 +268,21 @@ export function WebhookManager() {
                   {/* Status */}
                   {webhook.lastStatus && (
                     <span
+                      className="py-0.5 px-2 rounded text-[11px] font-medium"
                       style={{
-                        padding: '2px 8px',
-                        borderRadius: 4,
-                        fontSize: 11,
-                        fontWeight: 500,
                         background: webhook.lastStatus === 'success' ? '#dcfce7' : '#fef2f2',
                         color: webhook.lastStatus === 'success' ? '#15803d' : '#dc2626',
                       }}
                     >
-                      {webhook.lastStatus === 'success' ? <><Check size={10} style={{ marginRight: 4 }} />Success</> : <><X size={10} style={{ marginRight: 4 }} />Failed</>}
+                      {webhook.lastStatus === 'success' ? <><Check size={10} className="mr-1" />Success</> : <><X size={10} className="mr-1" />Failed</>}
                     </span>
                   )}
 
-                  <div style={{ flex: 1 }} />
+                  <div className="flex-1" />
 
                   {/* Test Result */}
                   {testResult?.id === webhook.id && (
-                    <span style={{ fontSize: 12, color: testResult.success ? '#15803d' : '#dc2626', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <span className="text-xs inline-flex items-center gap-1" style={{ color: testResult.success ? '#15803d' : '#dc2626' }}>
                       {testResult.success ? <><Check size={12} />Test passed</> : <><X size={12} />{testResult.error || 'Test failed'}</>}
                     </span>
                   )}
@@ -319,37 +294,32 @@ export function WebhookManager() {
                     onClick={() => handleTest(webhook.id)}
                     disabled={testingId === webhook.id}
                   >
-                    {testingId === webhook.id ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Testing...</> : <><FlaskConical size={14} style={{ marginRight: 6 }} />Test</>}
+                    {testingId === webhook.id ? <><Loader2 size={14} className="mr-1.5 animate-spin" />Testing...</> : <><FlaskConical size={14} className="mr-1.5" />Test</>}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => deleteWebhook(webhook.id)}
-                    style={{ color: '#dc2626' }}
+                    className="text-red-600"
                   >
                     <Trash2 size={14} />
                   </Button>
                 </div>
 
                 {/* URL */}
-                <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
-                  <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+                <div className="text-xs text-slate-500 mb-2">
+                  <code className="bg-slate-100 py-0.5 px-1.5 rounded">
                     {webhook.url.length > 60 ? webhook.url.substring(0, 60) + '...' : webhook.url}
                   </code>
                 </div>
 
                 {/* Events */}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <div className="flex gap-1.5 flex-wrap">
                   {webhook.events.map(event => (
                     <span
                       key={event}
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: 4,
-                        fontSize: 11,
-                        background: '#e0e7ff',
-                        color: '#3730a3',
-                      }}
+                      className="py-0.5 px-2 rounded text-[11px]"
+                      style={{ background: '#e0e7ff', color: '#3730a3' }}
                     >
                       {event}
                     </span>
@@ -358,7 +328,7 @@ export function WebhookManager() {
 
                 {/* Last Triggered */}
                 {webhook.lastTriggered && (
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
+                  <div className="text-[11px] text-slate-400 mt-2">
                     Last triggered: {new Date(webhook.lastTriggered).toLocaleString()}
                   </div>
                 )}
@@ -370,19 +340,19 @@ export function WebhookManager() {
 
       {/* Platform Setup Guides */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold flex items-center gap-2">
           <BookOpen size={18} />Setup Guides
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           {/* Slack Setup */}
-          <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <details className="cursor-pointer">
+            <summary className="font-medium text-sm py-2 flex items-center gap-2">
               <MessageSquare size={16} />How to set up Slack notifications
             </summary>
-            <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
-              <ol style={{ margin: '8px 0', paddingLeft: 20 }}>
-                <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>api.slack.com/apps</a></li>
+            <div className="pl-4 text-sm text-slate-600 leading-relaxed">
+              <ol className="my-2 pl-5">
+                <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" className="text-blue-500">api.slack.com/apps</a></li>
                 <li>Create a new app or select an existing one</li>
                 <li>Navigate to "Incoming Webhooks" and enable it</li>
                 <li>Click "Add New Webhook to Workspace"</li>
@@ -393,12 +363,12 @@ export function WebhookManager() {
           </details>
 
           {/* Teams Setup */}
-          <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <details className="cursor-pointer">
+            <summary className="font-medium text-sm py-2 flex items-center gap-2">
               <Users size={16} />How to set up Microsoft Teams notifications
             </summary>
-            <div style={{ paddingLeft: 16, fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
-              <ol style={{ margin: '8px 0', paddingLeft: 20 }}>
+            <div className="pl-4 text-sm text-slate-600 leading-relaxed">
+              <ol className="my-2 pl-5">
                 <li>Open Microsoft Teams and navigate to the channel</li>
                 <li>Click the "..." menu next to the channel name</li>
                 <li>Select "Connectors" (or "Workflows" in newer versions)</li>
@@ -410,22 +380,12 @@ export function WebhookManager() {
           </details>
 
           {/* Generic Webhook */}
-          <details style={{ cursor: 'pointer' }}>
-            <summary style={{ fontWeight: 500, fontSize: 14, padding: '8px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <details className="cursor-pointer">
+            <summary className="font-medium text-sm py-2 flex items-center gap-2">
               <Link2 size={16} />Generic webhook payload format
             </summary>
-            <div style={{ paddingLeft: 16, fontSize: 13 }}>
-              <pre
-                style={{
-                  background: '#0f172a',
-                  color: '#e2e8f0',
-                  padding: 16,
-                  borderRadius: 8,
-                  fontSize: 12,
-                  overflow: 'auto',
-                  marginTop: 8,
-                }}
-              >
+            <div className="pl-4 text-sm">
+              <pre className="bg-slate-900 text-slate-200 p-4 rounded-lg text-xs overflow-auto mt-2">
 {`{
   "event": "scan.completed",
   "timestamp": "2024-01-15T10:30:00Z",
@@ -453,11 +413,3 @@ Headers:
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  flex: 1,
-  padding: '10px 12px',
-  border: '1px solid #e2e8f0',
-  borderRadius: 6,
-  fontSize: 14,
-};

@@ -10,17 +10,11 @@ export const FilterButton = memo(function FilterButton({ active, onClick, label 
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: '4px 10px',
-        borderRadius: 4,
-        border: 'none',
-        background: active ? '#fff' : 'transparent',
-        color: active ? '#0f172a' : '#64748b',
-        fontSize: 12,
-        fontWeight: 500,
-        cursor: 'pointer',
-        boxShadow: active ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-      }}
+      className={`py-1 px-2.5 rounded border-none text-xs font-medium cursor-pointer ${
+        active
+          ? 'bg-white text-slate-900 shadow-sm'
+          : 'bg-transparent text-slate-500'
+      }`}
     >
       {label}
     </button>
@@ -43,18 +37,10 @@ export const PillButton = memo(function PillButton({
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: '4px 12px',
-        borderRadius: 20,
-        border: active ? 'none' : '1px solid #e2e8f0',
-        background: active ? activeColor : '#fff',
-        color: active ? '#fff' : '#64748b',
-        fontSize: 12,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      className={`py-1 px-3 rounded-full text-xs cursor-pointer flex items-center gap-1 ${
+        active ? 'border-none text-white' : 'border border-slate-200 text-slate-500'
+      }`}
+      style={active ? { background: activeColor } : { background: '#fff' }}
     >
       {label}
     </button>
@@ -62,5 +48,5 @@ export const PillButton = memo(function PillButton({
 });
 
 export const Divider = memo(function Divider() {
-  return <div style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 4px' }} />;
+  return <div className="w-px h-5 bg-slate-200 mx-1" />;
 });

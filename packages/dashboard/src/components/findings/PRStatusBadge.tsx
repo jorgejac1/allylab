@@ -27,9 +27,9 @@ export const PRStatusBadge = memo(function PRStatusBadge({ pr, onVerify, isVerif
   };
 
   const getStatusText = () => {
-    if (pr.verificationStatus === 'verified') return <><Check size={12} style={{ marginRight: 4 }} /> Verified</>;
-    if (pr.verificationStatus === 'failed') return <><X size={12} style={{ marginRight: 4 }} /> Still Present</>;
-    if (pr.status === 'merged') return <><GitMerge size={12} style={{ marginRight: 4 }} /> Merged</>;
+    if (pr.verificationStatus === 'verified') return <><Check size={12} className="mr-1" /> Verified</>;
+    if (pr.verificationStatus === 'failed') return <><X size={12} className="mr-1" /> Still Present</>;
+    if (pr.status === 'merged') return <><GitMerge size={12} className="mr-1" /> Merged</>;
     if (pr.status === 'closed') return 'Closed';
     return 'Open';
   };
@@ -37,38 +37,23 @@ export const PRStatusBadge = memo(function PRStatusBadge({ pr, onVerify, isVerif
   const showVerifyButton = pr.status === 'merged' && !pr.verificationStatus;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="flex items-center gap-2">
       <a
         href={pr.prUrl}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          padding: '4px 8px',
-          borderRadius: 4,
-          fontSize: 12,
-          fontWeight: 500,
-          textDecoration: 'none',
-          ...getStatusStyle(),
-        }}
+        className="inline-flex items-center gap-1 py-1 px-2 rounded text-xs font-medium no-underline"
+        style={getStatusStyle()}
       >
         PR #{pr.prNumber} • {getStatusText()}
       </a>
-      
+
       {showVerifyButton && onVerify && (
         <button
           onClick={onVerify}
           disabled={isVerifying}
+          className="py-1 px-2 bg-slate-900 text-white border-none rounded text-xs font-medium"
           style={{
-            padding: '4px 8px',
-            background: '#0f172a',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            fontSize: 11,
-            fontWeight: 500,
             cursor: isVerifying ? 'wait' : 'pointer',
             opacity: isVerifying ? 0.7 : 1,
           }}

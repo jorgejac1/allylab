@@ -9,17 +9,8 @@ interface SeverityBadgeProps {
 export function SeverityBadge({ severity, count }: SeverityBadgeProps) {
   return (
     <span
-      style={{
-        padding: '4px 10px',
-        borderRadius: 20,
-        fontSize: 12,
-        fontWeight: 600,
-        color: '#fff',
-        background: SEVERITY_COLORS[severity],
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      className="py-1 px-2.5 rounded-full text-xs/[normal] font-semibold text-white inline-flex items-center gap-1"
+      style={{ background: SEVERITY_COLORS[severity] }}
     >
       {severity.charAt(0).toUpperCase() + severity.slice(1)}
       {count !== undefined && <span>({count})</span>}
@@ -31,26 +22,18 @@ interface StatusBadgeProps {
   status: IssueStatus;
 }
 
+const statusColors: Record<IssueStatus, { bg: string; text: string }> = {
+  new: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  recurring: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  fixed: { bg: 'bg-green-100', text: 'text-green-700' },
+};
+
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const colors: Record<IssueStatus, { bg: string; text: string }> = {
-    new: { bg: '#dbeafe', text: '#1d4ed8' },
-    recurring: { bg: '#fef3c7', text: '#b45309' },
-    fixed: { bg: '#dcfce7', text: '#15803d' },
-  };
+  const { bg, text } = statusColors[status];
 
   return (
     <span
-      style={{
-        padding: '4px 10px',
-        borderRadius: 20,
-        fontSize: 12,
-        fontWeight: 600,
-        color: colors[status].text,
-        background: colors[status].bg,
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      className={`py-1 px-2.5 rounded-full text-xs/[normal] font-semibold inline-flex items-center gap-1 ${bg} ${text}`}
     >
       {STATUS_ICONS[status]} {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>

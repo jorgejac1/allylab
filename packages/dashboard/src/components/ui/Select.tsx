@@ -4,19 +4,11 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: { value: string; label: string }[];
 }
 
-export function Select({ options, style, ...props }: SelectProps) {
+export function Select({ options, className, ...props }: SelectProps) {
+  const isDark = className?.includes('bg-slate-9');
   return (
     <select
-      style={{
-        padding: '10px 14px',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-        fontSize: 14,
-        outline: 'none',
-        background: '#fff',
-        cursor: 'pointer',
-        ...style,
-      }}
+      className={`py-2 px-3 sm:py-2.5 sm:px-3.5 rounded-lg text-sm/[normal] outline-none cursor-pointer min-w-0 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${isDark ? '' : 'bg-white border border-slate-200'} ${className || ''}`}
       {...props}
     >
       {options.map(opt => (

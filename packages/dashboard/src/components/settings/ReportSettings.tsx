@@ -41,23 +41,23 @@ export function ReportSettings() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Score Goal Settings */}
       <Card>
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}><Target size={18} /> Score Goal</h3>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+        <div className="mb-5">
+          <h3 className="m-0 text-base font-semibold inline-flex items-center gap-2"><Target size={18} /> Score Goal</h3>
+          <p className="mt-1 mb-0 text-sm text-slate-500">
             Set your target accessibility score and track progress
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="flex flex-col gap-5">
           {/* Goal Score */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+            <label className="block text-sm font-medium mb-1.5">
               Target Score
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="flex items-center gap-3">
               <Input
                 type="number"
                 min={50}
@@ -66,7 +66,7 @@ export function ReportSettings() {
                 onChange={e => handleGoalChange('scoreGoal', parseInt(e.target.value, 10) || 90)}
                 style={{ width: 100 }}
               />
-              <span style={{ fontSize: 13, color: '#64748b' }}>
+              <span className="text-sm text-slate-500">
                 /100 — Your accessibility compliance target
               </span>
             </div>
@@ -92,17 +92,17 @@ export function ReportSettings() {
 
       {/* PDF Export Settings */}
       <Card>
-        <div style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}><FileText size={18} /> PDF Export</h3>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+        <div className="mb-5">
+          <h3 className="m-0 text-base font-semibold inline-flex items-center gap-2"><FileText size={18} /> PDF Export</h3>
+          <p className="mt-1 mb-0 text-sm text-slate-500">
             Customize what's included in exported PDF reports
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="flex flex-col gap-5">
           {/* Company Name */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+            <label className="block text-sm font-medium mb-1.5">
               Company Name
             </label>
             <Input
@@ -111,17 +111,17 @@ export function ReportSettings() {
               placeholder="Your Company Name"
               style={{ maxWidth: 300 }}
             />
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+            <p className="text-xs text-slate-400 mt-1">
               Appears in the PDF header. Leave blank to use "AllyLab"
             </p>
           </div>
 
           {/* Include Options */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 12 }}>
+            <label className="block text-sm font-medium mb-3">
               Include in Reports
             </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="flex flex-col gap-3">
               <CheckboxRow
                 label="Summary Statistics"
                 checked={localSettings.pdfExport.includeStats}
@@ -153,35 +153,28 @@ export function ReportSettings() {
       </Card>
 
       {/* Preview */}
-      <Card style={{ background: '#f8fafc' }}>
-        <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 600 }}>Preview</h4>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+      <Card className="bg-slate-50">
+        <h4 className="mt-0 mb-3 text-sm font-semibold">Preview</h4>
+        <div className="flex gap-6 flex-wrap">
           <PreviewItem label="Target Score" value={`${localSettings.scoreGoal.scoreGoal}/100`} />
           <PreviewItem label="Goal Line" value={localSettings.scoreGoal.showScoreGoal ? 'Visible' : 'Hidden'} />
           <PreviewItem label="Progress Bar" value={localSettings.scoreGoal.showGoalProgress ? 'Visible' : 'Hidden'} />
-          <PreviewItem 
-            label="PDF Sections" 
+          <PreviewItem
+            label="PDF Sections"
             value={`${[
               localSettings.pdfExport.includeStats,
               localSettings.pdfExport.includeScoreTrend,
               localSettings.pdfExport.includeIssueTrend,
               localSettings.pdfExport.includeDistribution,
               localSettings.pdfExport.includeSummary,
-            ].filter(Boolean).length} of 5`} 
+            ].filter(Boolean).length} of 5`}
           />
         </div>
       </Card>
 
       {/* Actions */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          paddingTop: 16,
-          borderTop: '1px solid #e2e8f0',
-        }}
-      >
-        <Button variant="ghost" onClick={handleReset} style={{ color: '#64748b' }}>
+      <div className="flex justify-between pt-4 border-t border-slate-200">
+        <Button variant="ghost" onClick={handleReset} className="text-slate-500">
           Reset to Defaults
         </Button>
         <Button onClick={handleSave} disabled={!hasChanges}>
@@ -204,26 +197,17 @@ function ToggleRow({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16,
-        background: '#f8fafc',
-        borderRadius: 8,
-      }}
-    >
+    <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg">
       <div>
-        <div style={{ fontWeight: 500, fontSize: 14 }}>{label}</div>
-        <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{description}</div>
+        <div className="font-medium text-sm">{label}</div>
+        <div className="text-xs text-slate-500 mt-0.5">{description}</div>
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+      <label className="flex items-center cursor-pointer">
         <input
           type="checkbox"
           checked={checked}
           onChange={e => onChange(e.target.checked)}
-          style={{ width: 18, height: 18 }}
+          className="w-[18px] h-[18px]"
         />
       </label>
     </div>
@@ -241,14 +225,9 @@ function CheckboxRow({
 }) {
   return (
     <label
+      className="flex items-center gap-2.5 cursor-pointer py-2 px-3 rounded-md"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        cursor: 'pointer',
-        padding: '8px 12px',
         background: checked ? '#eff6ff' : '#f8fafc',
-        borderRadius: 6,
         border: `1px solid ${checked ? '#bfdbfe' : '#e2e8f0'}`,
       }}
     >
@@ -256,9 +235,9 @@ function CheckboxRow({
         type="checkbox"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
-        style={{ width: 16, height: 16 }}
+        className="w-4 h-4"
       />
-      <span style={{ fontSize: 13, color: checked ? '#1e40af' : '#475569' }}>{label}</span>
+      <span className="text-sm" style={{ color: checked ? '#1e40af' : '#475569' }}>{label}</span>
     </label>
   );
 }
@@ -266,8 +245,8 @@ function CheckboxRow({
 function PreviewItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>{value}</div>
+      <div className="text-[11px] text-slate-500 mb-0.5">{label}</div>
+      <div className="text-sm font-semibold text-slate-900">{value}</div>
     </div>
   );
 }

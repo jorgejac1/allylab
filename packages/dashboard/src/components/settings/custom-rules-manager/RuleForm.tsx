@@ -12,13 +12,13 @@ export function RuleForm({
 }: RuleFormProps) {
   return (
     <Card>
-      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <h3 className="text-base font-semibold mt-0 mb-4 flex items-center gap-2">
         {editingRule ? <><Pencil size={18} aria-hidden="true" />Edit Rule</> : <><Plus size={18} aria-hidden="true" />Create New Rule</>}
       </h3>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="flex flex-col gap-4">
         {/* Row 1: Name & Type */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
           <FormField label="Rule Name *">
             <Input
               value={formData.name}
@@ -47,13 +47,13 @@ export function RuleForm({
         </FormField>
 
         {/* Row 3: Selector & Severity */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
           <FormField label="CSS Selector *">
             <Input
               value={formData.selector}
               onChange={e => onUpdateField('selector', e.target.value)}
               placeholder="e.g., body > a[href^='#']:first-child"
-              style={{ fontFamily: 'monospace' }}
+              className="font-mono"
               aria-required="true"
             />
           </FormField>
@@ -68,7 +68,7 @@ export function RuleForm({
         </div>
 
         {/* Row 4: Condition */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormField label="Operator">
             <Select
               value={formData.condition?.operator || 'not-exists'}
@@ -93,7 +93,7 @@ export function RuleForm({
         </div>
 
         {/* Row 5: Message & Help URL */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-4">
           <FormField label="Error Message">
             <Input
               value={formData.message}
@@ -112,7 +112,7 @@ export function RuleForm({
 
         {/* Row 6: WCAG Tags */}
         <FormField label="WCAG Tags">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <div className="flex flex-wrap gap-2">
             {WCAG_TAGS.map(tag => (
               <WcagTagButton
                 key={tag}
@@ -125,38 +125,25 @@ export function RuleForm({
         </FormField>
 
         {/* Test Section */}
-        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>
-          <FormField label={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FlaskConical size={14} aria-hidden="true" />Test Rule (optional)</span>}>
+        <div className="border-t border-slate-200 pt-4">
+          <FormField label={<span className="flex items-center gap-1.5"><FlaskConical size={14} aria-hidden="true" />Test Rule (optional)</span>}>
             <textarea
               value={testHtml}
               onChange={e => onTestHtmlChange(e.target.value)}
               placeholder="Paste HTML to test the rule against..."
               aria-label="HTML to test rule against"
-              style={{
-                width: '100%',
-                height: 100,
-                padding: 12,
-                borderRadius: 6,
-                border: '1px solid #e2e8f0',
-                fontFamily: 'monospace',
-                fontSize: 13,
-                resize: 'vertical',
-              }}
+              className="w-full h-[100px] p-3 rounded-md border border-slate-200 font-mono text-[13px] resize-y"
             />
           </FormField>
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+          <div className="flex gap-3 mt-2">
             <Button variant="secondary" size="sm" onClick={onTest}>
-              <Play size={14} aria-hidden="true" style={{ marginRight: 6 }} />Run Test
+              <Play size={14} aria-hidden="true" className="mr-1.5" />Run Test
             </Button>
             {testResults && (
-              <span style={{
-                fontSize: 14,
-                color: testResults.passed ? '#10b981' : '#dc2626',
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}>
+              <span
+                className="text-sm font-medium flex items-center gap-1.5"
+                style={{ color: testResults.passed ? '#10b981' : '#dc2626' }}
+              >
                 {testResults.passed
                   ? <><CheckCircle size={14} aria-hidden="true" />Passed</>
                   : <><XCircle size={14} aria-hidden="true" />{testResults.violations.length} violation(s) found</>}
@@ -166,13 +153,7 @@ export function RuleForm({
         </div>
 
         {/* Actions */}
-        <div style={{
-          display: 'flex',
-          gap: 12,
-          justifyContent: 'flex-end',
-          borderTop: '1px solid #e2e8f0',
-          paddingTop: 16,
-        }}>
+        <div className="flex gap-3 justify-end border-t border-slate-200 pt-4">
           <Button variant="secondary" onClick={onCancel}>Cancel</Button>
           <Button onClick={onSubmit} disabled={loading}>
             {loading ? 'Saving...' : editingRule ? 'Update Rule' : 'Create Rule'}

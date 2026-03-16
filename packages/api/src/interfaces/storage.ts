@@ -85,6 +85,11 @@ export interface IStorage<T extends IEntity> {
   count(filter?: (item: T) => boolean): Promise<number>;
 
   /**
+   * Get the total number of items (alias for count without filter)
+   */
+  size(): Promise<number>;
+
+  /**
    * Clear all items
    */
   clear(): Promise<void>;

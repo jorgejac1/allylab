@@ -28,8 +28,8 @@ describe("ui/Tabs", () => {
   it("applies inactive styles for non-active tab and pill", () => {
     render(<Tabs tabs={tabs} activeTab="b" onChange={vi.fn()} />);
     const inactive = screen.getByText("Tab A");
-    expect(inactive).toHaveStyle({ color: "#64748b" });
+    expect(inactive).toHaveClass("text-slate-500");
     const count = screen.getByText("3");
-    expect(count).toHaveStyle({ background: "#e2e8f0" });
+    expect(count).toHaveClass("bg-slate-200");
   });
 });

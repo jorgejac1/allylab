@@ -10,18 +10,18 @@ interface ScanHistoryToolbarProps {
   filterUrl: string;
   onFilterUrlChange: (url: string) => void;
   uniqueUrls: string[];
-  
+
   // Sort
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
-  
+
   // Date range
   dateRangeOption: DateRangeOption;
   onDateRangeOptionChange: (option: DateRangeOption) => void;
   customDateRange: DateRange;
   onCustomDateChange: (field: 'start' | 'end', value: string) => void;
   showCustomPicker: boolean;
-  
+
   // Compare mode
   compareMode: boolean;
   compareSelectionCount: number;
@@ -29,7 +29,7 @@ interface ScanHistoryToolbarProps {
   onCompareSubmit: () => void;
   onCompareCancel: () => void;
   canCompare: boolean;
-  
+
   // Clear all
   onClearAll: () => void;
 }
@@ -56,18 +56,10 @@ export function ScanHistoryToolbar({
   const hasActiveFilters = filterUrl !== 'all' || dateRangeOption !== 'all';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex flex-col gap-3">
       {/* First Row: Filters */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
-        }}
-      >
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="flex justify-between items-center flex-wrap gap-3">
+        <div className="flex gap-3 items-center flex-wrap">
           {/* URL Filter */}
           <Select
             value={filterUrl}
@@ -76,7 +68,7 @@ export function ScanHistoryToolbar({
               { value: 'all', label: 'All Sites' },
               ...uniqueUrls.map(url => ({ value: url, label: url })),
             ]}
-            style={{ minWidth: 180 }}
+            className="min-w-[180px]"
           />
 
           {/* Sort */}
@@ -91,7 +83,7 @@ export function ScanHistoryToolbar({
               { value: 'issues-high', label: 'Most Issues' },
               { value: 'issues-low', label: 'Fewest Issues' },
             ]}
-            style={{ minWidth: 150 }}
+            className="min-w-[150px]"
           />
 
           {/* Date Range Filter */}
@@ -105,12 +97,12 @@ export function ScanHistoryToolbar({
               { value: '90days', label: 'Last 90 Days' },
               { value: 'custom', label: 'Custom Range' },
             ]}
-            style={{ minWidth: 160 }}
+            className="min-w-[160px]"
           />
         </div>
 
         {/* Compare Buttons */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex gap-2">
           {canCompare && (
             <>
               {compareMode ? (
@@ -127,7 +119,7 @@ export function ScanHistoryToolbar({
                   </Button>
                 </>
               ) : (
-                <Button variant="secondary" size="sm" onClick={onCompareModeToggle} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Button variant="secondary" size="sm" onClick={onCompareModeToggle} className="inline-flex items-center gap-1.5">
                   <BarChart3 size={14} /> Compare Scans
                 </Button>
               )}
@@ -147,15 +139,8 @@ export function ScanHistoryToolbar({
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            flexWrap: 'wrap',
-          }}
-        >
-          <span style={{ fontSize: 12, color: '#64748b' }}>Active filters:</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-slate-500">Active filters:</span>
           {filterUrl !== 'all' && (
             <FilterTag
               label={`Site: ${filterUrl}`}
@@ -172,7 +157,7 @@ export function ScanHistoryToolbar({
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            style={{ fontSize: 12, color: '#64748b' }}
+            className="text-xs text-slate-500"
           >
             Clear all
           </Button>

@@ -55,59 +55,28 @@ export function FindingDetailsDrawer({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.3)",
-          zIndex: 999,
-        }}
+        className="fixed inset-0 bg-black/30 z-[999]"
       />
 
       {/* Drawer */}
       <div
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: 600,
-          maxWidth: "100vw",
-          background: "#fff",
-          boxShadow: "-4px 0 20px rgba(0,0,0,0.1)",
-          zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          animation: "slideIn 0.2s ease-out",
-        }}
+        className="fixed top-0 right-0 bottom-0 w-[600px] max-w-[100vw] bg-white shadow-[-4px_0_20px_rgba(0,0,0,0.1)] z-[1000] flex flex-col"
+        style={{ animation: 'slideIn 0.2s ease-out' }}
       >
         {/* Header */}
-        <div style={{ padding: 20, borderBottom: "1px solid #e2e8f0" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
-          >
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>
+        <div className="p-5 border-b border-slate-200">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold m-0 mb-2">
                 {finding.ruleTitle}
               </h2>
-              <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>
+              <p className="text-sm text-slate-500 m-0">
                 {finding.description}
               </p>
             </div>
             <button
               onClick={onClose}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#64748b",
-                padding: 4,
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              className="bg-none border-none cursor-pointer text-slate-500 p-1 flex items-center"
             >
               <X size={24} />
             </button>
@@ -115,34 +84,18 @@ export function FindingDetailsDrawer({
 
           {/* False Positive Banner */}
           {finding.falsePositive && (
-            <div
-              style={{
-                marginTop: 12,
-                padding: 12,
-                background: "#fef2f2",
-                borderRadius: 8,
-                border: "1px solid #fecaca",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  color: "#991b1b",
-                  fontWeight: 500,
-                }}
-              >
+            <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+              <div className="flex items-center gap-2 text-red-900 font-medium">
                 <Ban size={16} />
                 Marked as False Positive
               </div>
               {finding.falsePositiveReason && (
-                <div style={{ marginTop: 8, fontSize: 13, color: "#64748b" }}>
+                <div className="mt-2 text-[13px] text-slate-500">
                   Reason: {finding.falsePositiveReason}
                 </div>
               )}
               {finding.falsePositiveMarkedAt && (
-                <div style={{ marginTop: 4, fontSize: 12, color: "#94a3b8" }}>
+                <div className="mt-1 text-xs text-slate-400">
                   Marked on{" "}
                   {new Date(finding.falsePositiveMarkedAt).toLocaleDateString()}
                 </div>
@@ -152,9 +105,9 @@ export function FindingDetailsDrawer({
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
+        <div className="flex-1 overflow-auto p-5">
           {/* Status Badges */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+          <div className="flex gap-2 mb-5">
             <SeverityBadge severity={finding.impact} />
             <StatusBadge status={finding.status} />
           </div>
@@ -169,25 +122,18 @@ export function FindingDetailsDrawer({
 
           {/* WCAG Tags */}
           <Section title="WCAG Compliance">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="flex gap-2 flex-wrap">
               {finding.wcagTags.length > 0 ? (
                 finding.wcagTags.map((tag) => (
                   <span
                     key={tag}
-                    style={{
-                      padding: "4px 10px",
-                      background: "#eff6ff",
-                      color: "#2563eb",
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 500,
-                    }}
+                    className="py-1 px-2.5 bg-blue-50 text-blue-600 rounded-md text-xs font-medium"
                   >
                     {tag}
                   </span>
                 ))
               ) : (
-                <span style={{ color: "#64748b", fontSize: 13 }}>
+                <span className="text-slate-500 text-[13px]">
                   No WCAG tags
                 </span>
               )}
@@ -196,37 +142,13 @@ export function FindingDetailsDrawer({
 
           {/* Selector */}
           <Section title="CSS Selector">
-            <div style={{ position: "relative" }}>
-              <code
-                style={{
-                  display: "block",
-                  padding: 12,
-                  background: "#1e293b",
-                  color: "#e2e8f0",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  wordBreak: "break-all",
-                }}
-              >
+            <div className="relative">
+              <code className="block p-3 bg-slate-800 text-slate-200 rounded-lg text-xs break-all">
                 {finding.selector}
               </code>
               <button
                 onClick={() => handleCopy(finding.selector, "selector")}
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  padding: "4px 8px",
-                  background: "#334155",
-                  border: "none",
-                  borderRadius: 4,
-                  color: "#fff",
-                  fontSize: 11,
-                  cursor: "pointer",
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
+                className="absolute top-2 right-2 py-1 px-2 bg-slate-700 border-none rounded text-white text-[11px] cursor-pointer flex items-center gap-1"
               >
                 {copiedSelector ? <><Check size={12} />Copied!</> : "Copy"}
               </button>
@@ -235,38 +157,13 @@ export function FindingDetailsDrawer({
 
           {/* HTML */}
           <Section title="HTML Element">
-            <div style={{ position: "relative" }}>
-              <pre
-                style={{
-                  padding: 12,
-                  background: "#1e293b",
-                  color: "#e2e8f0",
-                  borderRadius: 8,
-                  fontSize: 11,
-                  overflow: "auto",
-                  maxHeight: 200,
-                  margin: 0,
-                }}
-              >
+            <div className="relative">
+              <pre className="p-3 bg-slate-800 text-slate-200 rounded-lg text-[11px] overflow-auto max-h-[200px] m-0">
                 {finding.html}
               </pre>
               <button
                 onClick={() => handleCopy(finding.html, "html")}
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  padding: "4px 8px",
-                  background: "#334155",
-                  border: "none",
-                  borderRadius: 4,
-                  color: "#fff",
-                  fontSize: 11,
-                  cursor: "pointer",
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
+                className="absolute top-2 right-2 py-1 px-2 bg-slate-700 border-none rounded text-white text-[11px] cursor-pointer flex items-center gap-1"
               >
                 {copiedHtml ? <><Check size={12} />Copied!</> : "Copy"}
               </button>
@@ -274,21 +171,19 @@ export function FindingDetailsDrawer({
           </Section>
 
           {/* AI Fix Section */}
-          <Section title={<><Wrench size={14} style={{ marginRight: 6 }} />AI-Powered Fix</>}>
+          <Section title={<><Wrench size={14} className="mr-1.5" />AI-Powered Fix</>}>
             {codeFix ? (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
+              <div className="flex flex-col gap-3">
                 <FixCodePreview fix={codeFix} />
 
                 {/* Action Buttons */}
-                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <div className="flex gap-2 mt-2">
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={() => setShowApplyFixModal(true)}
                   >
-                    <Wrench size={14} style={{ marginRight: 6 }} />
+                    <Wrench size={14} className="mr-1.5" />
                     Apply Fix
                   </Button>
                   <Button
@@ -296,7 +191,7 @@ export function FindingDetailsDrawer({
                     size="sm"
                     onClick={handleGenerateEnhancedFix}
                   >
-                    <RefreshCw size={14} style={{ marginRight: 6 }} />
+                    <RefreshCw size={14} className="mr-1.5" />
                     Regenerate
                   </Button>
                 </div>
@@ -304,17 +199,7 @@ export function FindingDetailsDrawer({
             ) : (
               <div>
                 {fixError && (
-                  <div
-                    style={{
-                      padding: 12,
-                      background: "#fef2f2",
-                      border: "1px solid #fecaca",
-                      borderRadius: 8,
-                      color: "#dc2626",
-                      fontSize: 13,
-                      marginBottom: 12,
-                    }}
-                  >
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-[13px] mb-3">
                     {fixError}
                   </div>
                 )}
@@ -329,21 +214,19 @@ export function FindingDetailsDrawer({
                       <>
                         <Settings
                           size={14}
-                          style={{
-                            marginRight: 8,
-                            animation: "spin 1s linear infinite",
-                          }}
+                          className="mr-2"
+                          style={{ animation: "spin 1s linear infinite" }}
                         />
                         Generating Fix...
                       </>
                     ) : (
-                      <><Sparkles size={14} style={{ marginRight: 6 }} />Generate AI Fix</>
+                      <><Sparkles size={14} className="mr-1.5" />Generate AI Fix</>
                     )}
                   </Button>
                 )}
 
-                <p style={{ fontSize: 12, color: "#64748b", marginTop: 8 }}>
-                  Powered by Claude AI • Generates framework-specific code fixes
+                <p className="text-xs text-slate-500 mt-2">
+                  Powered by Claude AI - Generates framework-specific code fixes
                 </p>
               </div>
             )}
@@ -352,17 +235,7 @@ export function FindingDetailsDrawer({
           {/* Legacy Fix Suggestion (if exists from old data) */}
           {finding.fixSuggestion && !codeFix && (
             <Section title="Previous Fix Suggestion">
-              <div
-                style={{
-                  padding: 12,
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 8,
-                  fontSize: 13,
-                  color: "#475569",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-600 whitespace-pre-wrap">
                 {finding.fixSuggestion}
               </div>
             </Section>
@@ -375,18 +248,9 @@ export function FindingDetailsDrawer({
                 placeholder="Optional: Explain why this is a false positive..."
                 value={fpReason}
                 onChange={(e) => setFpReason(e.target.value)}
-                style={{
-                  width: "100%",
-                  minHeight: 80,
-                  padding: 12,
-                  borderRadius: 8,
-                  border: "1px solid #e2e8f0",
-                  fontSize: 14,
-                  resize: "vertical",
-                  marginBottom: 12,
-                }}
+                className="w-full min-h-[80px] p-3 rounded-lg border border-slate-200 text-sm resize-y mb-3"
               />
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="flex gap-2">
                 <Button
                   variant="secondary"
                   size="sm"
@@ -407,18 +271,7 @@ export function FindingDetailsDrawer({
               href={finding.helpUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 16px",
-                background: "#eff6ff",
-                color: "#2563eb",
-                borderRadius: 8,
-                textDecoration: "none",
-                fontSize: 14,
-                fontWeight: 500,
-              }}
+              className="inline-flex items-center gap-2 py-2.5 px-4 bg-blue-50 text-blue-600 rounded-lg no-underline text-sm font-medium"
             >
               <BookOpen size={16} />
               WCAG Documentation →
@@ -427,18 +280,10 @@ export function FindingDetailsDrawer({
         </div>
 
         {/* Footer */}
-        <div
-          style={{
-            padding: 16,
-            borderTop: "1px solid #e2e8f0",
-            display: "flex",
-            gap: 12,
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className="p-4 border-t border-slate-200 flex gap-3 justify-end">
           {finding.falsePositive ? (
             <Button variant="secondary" onClick={handleUnmarkFalsePositive}>
-              <Check size={14} style={{ marginRight: 6 }} />
+              <Check size={14} className="mr-1.5" />
               Restore Issue
             </Button>
           ) : (
@@ -446,7 +291,7 @@ export function FindingDetailsDrawer({
               variant="secondary"
               onClick={() => setShowFpForm(!showFpForm)}
             >
-              <Ban size={14} style={{ marginRight: 6 }} />
+              <Ban size={14} className="mr-1.5" />
               Mark as False Positive
             </Button>
           )}

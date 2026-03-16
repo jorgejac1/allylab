@@ -26,11 +26,11 @@ export function ScanHistory({
   // Filter state
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterUrl, setFilterUrl] = useState<string>('all');
-  
+
   // Compare state
   const [compareMode, setCompareMode] = useState(false);
   const [compareSelection, setCompareSelection] = useState<SavedScan[]>([]);
-  
+
   // Date range state
   const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>('all');
   const [customDateRange, setCustomDateRange] = useState<DateRange>({
@@ -163,7 +163,7 @@ export function ScanHistory({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Toolbar */}
       <ScanHistoryToolbar
         filterUrl={filterUrl}
@@ -186,17 +186,17 @@ export function ScanHistory({
       />
 
       {/* Scan List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="flex flex-col gap-3">
         {filteredScans.length === 0 ? (
           <Card>
-            <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
-              <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><Search size={32} /></div>
-              <p style={{ margin: 0 }}>No scans match your filters</p>
+            <div className="text-center py-10 px-10 text-slate-500">
+              <div className="mb-2 flex justify-center"><Search size={32} /></div>
+              <p className="m-0">No scans match your filters</p>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={handleClearAll}
-                style={{ marginTop: 12 }}
+                className="mt-3"
               >
                 Clear Filters
               </Button>
@@ -221,11 +221,11 @@ export function ScanHistory({
       </div>
 
       {/* Results Count */}
-      <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+      <div className="text-sm text-slate-500 text-center">
         Showing {filteredScans.length} of {scans.length} scans
         {dateRangeOption !== 'all' && (
-          <span style={{ marginLeft: 8 }}>
-            • {formatDateRangeLabel(dateRangeOption, customDateRange)}
+          <span className="ml-2">
+            &bull; {formatDateRangeLabel(dateRangeOption, customDateRange)}
           </span>
         )}
       </div>

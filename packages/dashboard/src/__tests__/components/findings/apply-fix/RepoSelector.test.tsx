@@ -174,10 +174,10 @@ describe("findings/apply-fix/RepoSelector", () => {
 
     // Find the button for the selected repo
     const selectedButton = screen.getByRole("button", { name: /owner\/test-repo/ });
-    expect(selectedButton).toHaveStyle({ background: "#f0f9ff" });
+    expect(selectedButton).toHaveClass("bg-sky-50");
   });
 
-  it("changes background on hover for non-selected repos", () => {
+  it("has hover class for non-selected repos", () => {
     render(
       <RepoSelector
         repos={[mockRepo, mockRepo2]}
@@ -191,14 +191,12 @@ describe("findings/apply-fix/RepoSelector", () => {
 
     const nonSelectedButton = screen.getByRole("button", { name: /owner\/another-repo/ });
 
-    fireEvent.mouseEnter(nonSelectedButton);
-    expect(nonSelectedButton).toHaveStyle({ background: "#f8fafc" });
-
-    fireEvent.mouseLeave(nonSelectedButton);
-    expect(nonSelectedButton).toHaveStyle({ background: "#fff" });
+    // Non-selected repos use Tailwind bg-white with hover:bg-slate-50
+    expect(nonSelectedButton).toHaveClass("bg-white");
+    expect(nonSelectedButton).toHaveClass("hover:bg-slate-50");
   });
 
-  it("maintains selected background on hover for selected repo", () => {
+  it("maintains selected background class for selected repo", () => {
     render(
       <RepoSelector
         repos={[mockRepo]}
@@ -212,12 +210,9 @@ describe("findings/apply-fix/RepoSelector", () => {
 
     const selectedButton = screen.getByRole("button", { name: /owner\/test-repo/ });
 
-    fireEvent.mouseEnter(selectedButton);
-    // Selected repo should keep its selected background
-    expect(selectedButton).toHaveStyle({ background: "#f0f9ff" });
-
-    fireEvent.mouseLeave(selectedButton);
-    expect(selectedButton).toHaveStyle({ background: "#f0f9ff" });
+    // Selected repo uses bg-sky-50 Tailwind class (no hover:bg-slate-50)
+    expect(selectedButton).toHaveClass("bg-sky-50");
+    expect(selectedButton).not.toHaveClass("hover:bg-slate-50");
   });
 
   it("renders repository label with icon", () => {

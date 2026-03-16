@@ -76,7 +76,7 @@ describe("charts/GoalProgress", () => {
   it("renders milestones by default", () => {
     const { container } = render(<GoalProgress currentScore={50} goalScore={100} />);
     // Milestones should be rendered as divs with position absolute
-    const milestoneMarkers = container.querySelectorAll('[style*="position: absolute"][style*="width: 2px"]');
+    const milestoneMarkers = container.querySelectorAll('.absolute.w-0\\.5');
     expect(milestoneMarkers.length).toBeGreaterThan(0);
   });
 
@@ -85,7 +85,7 @@ describe("charts/GoalProgress", () => {
       <GoalProgress currentScore={50} goalScore={100} showMilestones={false} />
     );
     // No milestone markers with width: 2px should exist
-    const milestoneMarkers = container.querySelectorAll('[style*="width: 2px"][style*="height: 100%"]');
+    const milestoneMarkers = container.querySelectorAll('.absolute.w-0\\.5');
     expect(milestoneMarkers.length).toBe(0);
   });
 
@@ -178,20 +178,20 @@ describe("charts/GoalProgress", () => {
     // 75, 90, 100 should be filtered out
     const { container } = render(<GoalProgress currentScore={30} goalScore={50} />);
     // Check that milestones are at 50% (25/50) and 100% (50/50) positions
-    const milestoneMarkers = container.querySelectorAll('[style*="position: absolute"][style*="width: 2px"]');
+    const milestoneMarkers = container.querySelectorAll('.absolute.w-0\\.5');
     // Should have 2 markers: at 25 (50%) and 50 (100%)
     expect(milestoneMarkers.length).toBe(2);
   });
 
   it("shows diff with green color for positive change", () => {
     const { container } = render(<GoalProgress currentScore={80} goalScore={100} previousScore={75} />);
-    const diffValue = container.querySelector('[style*="color: rgb(16, 185, 129)"]');
+    const diffValue = container.querySelector('.text-emerald-500');
     expect(diffValue).toBeInTheDocument();
   });
 
   it("shows diff with red color for negative change", () => {
     const { container } = render(<GoalProgress currentScore={70} goalScore={100} previousScore={75} />);
-    const diffValue = container.querySelector('[style*="color: rgb(239, 68, 68)"]');
+    const diffValue = container.querySelector('.text-red-500');
     expect(diffValue).toBeInTheDocument();
   });
 

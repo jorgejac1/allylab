@@ -204,7 +204,7 @@ describe("findings/FindingsRow", () => {
   it("applies strikethrough to title when false positive", () => {
     const finding = { ...baseFinding, falsePositive: true };
     const { container } = renderRow({ ...defaultProps, finding });
-    const title = container.querySelector('div[style*="line-through"]');
+    const title = container.querySelector('.line-through');
     expect(title).toBeInTheDocument();
     expect(title).toHaveTextContent("Test Rule");
   });
@@ -235,26 +235,18 @@ describe("findings/FindingsRow", () => {
     expect(row).toHaveStyle({ opacity: 1 });
   });
 
-  it("changes button style on mouse over for regular finding", () => {
+  it("has hover classes for regular finding button", () => {
     renderRow(defaultProps);
     const ignoreBtn = screen.getByRole("button", { name: /Mark as false positive/i });
 
-    fireEvent.mouseOver(ignoreBtn);
-    expect(ignoreBtn).toHaveStyle({ background: "#fef2f2", color: "#dc2626" });
-
-    fireEvent.mouseOut(ignoreBtn);
-    expect(ignoreBtn).toHaveStyle({ background: "none", color: "#94a3b8" });
+    expect(ignoreBtn).toHaveClass("text-slate-400", "hover:bg-red-50", "hover:text-red-600");
   });
 
-  it("changes button style on mouse over for false positive finding", () => {
+  it("has hover classes for false positive finding button", () => {
     const finding = { ...baseFinding, falsePositive: true };
     renderRow({ ...defaultProps, finding });
     const restoreBtn = screen.getByRole("button", { name: /Restore/ });
 
-    fireEvent.mouseOver(restoreBtn);
-    expect(restoreBtn).toHaveStyle({ background: "#f0fdf4", color: "#15803d" });
-
-    fireEvent.mouseOut(restoreBtn);
-    expect(restoreBtn).toHaveStyle({ background: "none", color: "#15803d" });
+    expect(restoreBtn).toHaveClass("text-green-700", "hover:bg-green-50");
   });
 });

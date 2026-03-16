@@ -50,19 +50,15 @@ function TooltipRow({
   color: string;
 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div className="flex justify-between gap-4">
+      <span className="flex items-center gap-1.5">
         <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: color,
-          }}
+          className="w-2 h-2 rounded-full"
+          style={{ background: color }}
         />
-        <span style={{ color: '#64748b', fontSize: 12 }}>{label}</span>
+        <span className="text-slate-500 text-xs">{label}</span>
       </span>
-      <span style={{ fontWeight: 600, color }}>{value}</span>
+      <span className="font-semibold" style={{ color }}>{value}</span>
     </div>
   );
 }
@@ -75,35 +71,18 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   const total = dataPoint?.total ?? 0;
 
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: 8,
-        padding: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 8, color: '#0f172a' }}>
+    <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-md">
+      <div className="font-semibold mb-2 text-slate-900">
         {label}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div className="flex flex-col gap-1">
         <TooltipRow label="Critical" value={dataPoint?.critical ?? 0} color={SEVERITY_COLORS.critical} />
         <TooltipRow label="Serious" value={dataPoint?.serious ?? 0} color={SEVERITY_COLORS.serious} />
         <TooltipRow label="Moderate" value={dataPoint?.moderate ?? 0} color={SEVERITY_COLORS.moderate} />
         <TooltipRow label="Minor" value={dataPoint?.minor ?? 0} color={SEVERITY_COLORS.minor} />
-        <div
-          style={{
-            borderTop: '1px solid #e2e8f0',
-            marginTop: 4,
-            paddingTop: 4,
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontWeight: 600,
-          }}
-        >
-          <span style={{ color: '#64748b' }}>Total</span>
-          <span style={{ color: '#0f172a' }}>{total}</span>
+        <div className="border-t border-slate-200 mt-1 pt-1 flex justify-between font-semibold">
+          <span className="text-slate-500">Total</span>
+          <span className="text-slate-900">{total}</span>
         </div>
       </div>
     </div>
@@ -118,7 +97,7 @@ export function IssueTrendChart({
 }: IssueTrendChartProps) {
   if (data.length < 2) {
     return (
-      <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+      <div className="text-center p-10 text-slate-500">
         Need at least 2 scans to show issue trends.
       </div>
     );
@@ -163,7 +142,7 @@ export function IssueTrendChart({
           <Legend
             wrapperStyle={{ paddingTop: 16 }}
             formatter={(value: string) => (
-              <span style={{ color: '#64748b', fontSize: 12 }}>{value}</span>
+              <span className="text-slate-500 text-xs">{value}</span>
             )}
           />
           <Area
@@ -224,7 +203,7 @@ export function IssueTrendChart({
         <Legend
           wrapperStyle={{ paddingTop: 16 }}
           formatter={(value: string) => (
-            <span style={{ color: '#64748b', fontSize: 12 }}>{value}</span>
+            <span className="text-slate-500 text-xs">{value}</span>
           )}
         />
         <Line

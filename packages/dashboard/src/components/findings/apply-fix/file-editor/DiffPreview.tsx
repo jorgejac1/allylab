@@ -5,11 +5,7 @@ interface DiffPreviewProps {
 
 export function DiffPreview({ originalCode, fixedCode }: DiffPreviewProps) {
   return (
-    <div style={{
-      border: '1px solid #e2e8f0',
-      borderRadius: 8,
-      overflow: 'hidden',
-    }}>
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
       <DiffHeader />
       <DiffContent originalCode={originalCode} fixedCode={fixedCode} />
     </div>
@@ -18,21 +14,11 @@ export function DiffPreview({ originalCode, fixedCode }: DiffPreviewProps) {
 
 function DiffHeader() {
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      fontSize: 11,
-      fontWeight: 600,
-    }}>
-      <div style={{
-        padding: '6px 12px',
-        background: '#fef2f2',
-        color: '#991b1b',
-        borderRight: '1px solid #e2e8f0',
-      }}>
+    <div className="grid grid-cols-2 text-[11px] font-semibold">
+      <div className="py-1.5 px-3 bg-red-50 text-red-800 border-r border-slate-200">
         ⊖ Current Code
       </div>
-      <div style={{ padding: '6px 12px', background: '#f0fdf4', color: '#166534' }}>
+      <div className="py-1.5 px-3 bg-green-50 text-green-800">
         ⊕ Fixed Code (JSX)
       </div>
     </div>
@@ -46,35 +32,12 @@ function DiffContent({
   originalCode: string;
   fixedCode: string;
 }) {
-  const preStyle = {
-    margin: 0,
-    padding: 10,
-    overflow: 'auto',
-    maxHeight: 120,
-    whiteSpace: 'pre-wrap' as const,
-    fontFamily: 'ui-monospace, monospace',
-    fontSize: 11,
-    lineHeight: 1.5,
-  };
-
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-    }}>
-      <pre style={{
-        ...preStyle,
-        background: '#fff5f5',
-        borderRight: '1px solid #e2e8f0',
-        color: '#991b1b',
-      }}>
+    <div className="grid grid-cols-2">
+      <pre className="m-0 p-2.5 overflow-auto max-h-[120px] whitespace-pre-wrap font-mono text-[11px] leading-normal bg-red-50 border-r border-slate-200 text-red-800">
         {originalCode}
       </pre>
-      <pre style={{
-        ...preStyle,
-        background: '#f0fff4',
-        color: '#166534',
-      }}>
+      <pre className="m-0 p-2.5 overflow-auto max-h-[120px] whitespace-pre-wrap font-mono text-[11px] leading-normal bg-green-50 text-green-800">
         {fixedCode}
       </pre>
     </div>

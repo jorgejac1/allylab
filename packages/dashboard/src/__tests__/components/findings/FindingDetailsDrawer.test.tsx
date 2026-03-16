@@ -136,7 +136,7 @@ describe("components/findings/FindingDetailsDrawer", () => {
 
   it("renders drawer with backdrop", () => {
     const { container } = render(<FindingDetailsDrawer {...defaultProps} />);
-    const backdrop = container.querySelector('[style*="position: fixed"]');
+    const backdrop = container.querySelector('.fixed.inset-0.bg-black\\/30');
     expect(backdrop).toBeInTheDocument();
   });
 
@@ -196,16 +196,12 @@ describe("components/findings/FindingDetailsDrawer", () => {
     const onClose = vi.fn();
     const { container } = render(<FindingDetailsDrawer {...defaultProps} onClose={onClose} />);
 
-    const backdrop = container.querySelector('[style*="rgba(0, 0, 0, 0.3)"]');
-    if (backdrop) {
-      fireEvent.click(backdrop);
-      await waitFor(() => {
-        expect(onClose).toHaveBeenCalled();
-      });
-    } else {
-      // If backdrop not found, test passes as component structure may have changed
-      expect(true).toBe(true);
-    }
+    const backdrop = container.querySelector('.fixed.inset-0.bg-black\\/30');
+    expect(backdrop).toBeInTheDocument();
+    fireEvent.click(backdrop!);
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalled();
+    });
   });
 
   it("closes drawer when close button clicked", () => {

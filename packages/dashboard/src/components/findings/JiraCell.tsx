@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Check, X, Link } from 'lucide-react';
 
 interface JiraCellProps {
@@ -22,26 +21,16 @@ export function JiraCell({
   onCancelLink,
   onRemoveLink,
 }: JiraCellProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   if (isLinking) {
     return (
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <div className="flex gap-1 items-center">
         <input
           type="text"
           value={linkInput}
           onChange={e => onLinkInputChange(e.target.value)}
           placeholder="PROJ-123"
           autoFocus
-          style={{
-            width: 80,
-            padding: '4px 8px',
-            fontSize: 11,
-            border: '1px solid #3b82f6',
-            borderRadius: 4,
-            outline: 'none',
-            boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.2)',
-          }}
+          className="w-20 py-1 px-2 text-xs border border-blue-500 rounded outline-none shadow-[0_0_0_2px_rgba(59,130,246,0.2)]"
           onKeyDown={e => {
             if (e.key === 'Enter') onSaveLink();
             if (e.key === 'Escape') onCancelLink();
@@ -50,38 +39,14 @@ export function JiraCell({
         <button
           onClick={onSaveLink}
           aria-label="Save JIRA link"
-          style={{
-            background: '#10b981',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            padding: '4px 6px',
-            fontSize: 10,
-            cursor: 'pointer',
-            transition: 'background 0.15s',
-          }}
-          onMouseOver={e => (e.currentTarget.style.background = '#059669')}
-          onMouseOut={e => (e.currentTarget.style.background = '#10b981')}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white border-none rounded py-1 px-1.5 text-[10px] cursor-pointer transition-colors duration-150"
         >
           <Check size={10} aria-hidden="true" />
         </button>
         <button
           onClick={onCancelLink}
           aria-label="Cancel"
-          style={{
-            background: '#f1f5f9',
-            color: '#64748b',
-            border: 'none',
-            borderRadius: 4,
-            padding: '4px 6px',
-            fontSize: 10,
-            cursor: 'pointer',
-            transition: 'background 0.15s',
-            display: 'inline-flex',
-            alignItems: 'center',
-          }}
-          onMouseOver={e => (e.currentTarget.style.background = '#e2e8f0')}
-          onMouseOut={e => (e.currentTarget.style.background = '#f1f5f9')}
+          className="bg-slate-100 hover:bg-slate-200 text-slate-500 border-none rounded py-1 px-1.5 text-[10px] cursor-pointer transition-colors duration-150 inline-flex items-center"
         >
           <X size={10} aria-hidden="true" />
         </button>
@@ -91,32 +56,11 @@ export function JiraCell({
 
   if (issueKey) {
     return (
-      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <div className="flex gap-1 items-center">
         <a
           href="#"
           onClick={e => e.preventDefault()}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            padding: '3px 8px',
-            background: '#dbeafe',
-            color: '#1d4ed8',
-            borderRadius: 4,
-            fontSize: 11,
-            fontWeight: 600,
-            textDecoration: 'none',
-            transition: 'all 0.15s',
-            border: '1px solid transparent',
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.background = '#bfdbfe';
-            e.currentTarget.style.borderColor = '#93c5fd';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.background = '#dbeafe';
-            e.currentTarget.style.borderColor = 'transparent';
-          }}
+          className="inline-flex items-center gap-1 py-0.5 px-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-semibold no-underline transition-all duration-150 border border-transparent hover:border-blue-300"
           title={`View ${issueKey} in JIRA`}
         >
           <Link size={12} /> {issueKey}
@@ -124,24 +68,7 @@ export function JiraCell({
         <button
           onClick={onRemoveLink}
           aria-label="Remove JIRA link"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#94a3b8',
-            cursor: 'pointer',
-            fontSize: 12,
-            padding: 2,
-            borderRadius: 4,
-            transition: 'all 0.15s',
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.color = '#ef4444';
-            e.currentTarget.style.background = '#fef2f2';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.color = '#94a3b8';
-            e.currentTarget.style.background = 'none';
-          }}
+          className="bg-none hover:bg-red-50 border-none text-slate-400 hover:text-red-500 cursor-pointer text-xs p-0.5 rounded transition-all duration-150"
           title="Remove link"
         >
           <X size={12} aria-hidden="true" />
@@ -153,23 +80,9 @@ export function JiraCell({
   return (
     <button
       onClick={onStartLink}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        background: isHovered ? '#f1f5f9' : '#f8fafc',
-        border: `1px dashed ${isHovered ? '#94a3b8' : '#d1d5db'}`,
-        borderRadius: 4,
-        padding: '4px 10px',
-        fontSize: 11,
-        color: isHovered ? '#475569' : '#64748b',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      className="bg-slate-50 hover:bg-slate-100 border border-dashed border-gray-300 hover:border-slate-400 rounded py-1 px-2.5 text-xs text-slate-500 hover:text-slate-600 cursor-pointer transition-all duration-150 inline-flex items-center gap-1"
     >
-      <span style={{ fontSize: 10 }}>+</span> Link
+      <span className="text-[10px]">+</span> Link
     </button>
   );
 }

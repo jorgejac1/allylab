@@ -31,7 +31,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
 
   const handleAdd = () => {
     if (!newUrl.trim()) return;
-    
+
     try {
       new URL(newUrl); // Validate URL
       addCompetitor(newUrl.trim(), newName.trim() || undefined);
@@ -58,13 +58,13 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Toast Container */}
       <Toast toasts={toasts} onClose={closeToast} />
 
       {/* Summary Cards */}
       {benchmarkData && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <SummaryCard
             label="Your Rank"
             value={`#${benchmarkData.summary.yourRank}`}
@@ -94,12 +94,12 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
 
       {/* Add Competitor */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
           <Plus size={18} />Add Competitor
         </h3>
 
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ flex: 2, minWidth: 200 }}>
+        <div className="flex gap-3 flex-wrap">
+          <div className="flex-[2] min-w-[200px]">
             <Input
               value={newUrl}
               onChange={e => setNewUrl(e.target.value)}
@@ -107,7 +107,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 150 }}>
+          <div className="flex-1 min-w-[150px]">
             <Input
               value={newName}
               onChange={e => setNewName(e.target.value)}
@@ -123,8 +123,8 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
 
       {/* Competitors List */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-base font-semibold m-0 flex items-center gap-2">
             <Trophy size={18} />Competitor Comparison ({competitors.length})
           </h3>
           {competitors.length > 0 && (
@@ -133,7 +133,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
               onClick={handleScanAll}
               disabled={isScanning}
             >
-              {isScanning ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Scanning...</> : <><RefreshCw size={14} style={{ marginRight: 6 }} />Scan All</>}
+              {isScanning ? <><Loader2 size={14} className="mr-1.5 animate-spin" />Scanning...</> : <><RefreshCw size={14} className="mr-1.5" />Scan All</>}
             </Button>
           )}
         </div>
@@ -145,7 +145,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
             description="Add competitor URLs above to compare accessibility scores"
           />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-3">
             {/* Your Site (if available) */}
             {yourSiteUrl && yourSiteScore !== undefined && (
               <CompetitorRow
@@ -178,7 +178,7 @@ export function CompetitorBenchmark({ yourSiteUrl, yourSiteScore }: CompetitorBe
       {/* Score Comparison Chart */}
       {benchmarkData && benchmarkData.competitors.length > 0 && (
         <Card>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
             <BarChart3 size={18} />Score Comparison
           </h3>
           <ScoreBarChart data={benchmarkData} />
@@ -201,17 +201,10 @@ interface SummaryCardProps {
 
 function SummaryCard({ label, value, subtext, color }: SummaryCardProps) {
   return (
-    <div
-      style={{
-        background: '#fff',
-        borderRadius: 12,
-        padding: 20,
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 32, fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: 12, color: '#94a3b8' }}>{subtext}</div>
+    <div className="bg-white rounded-xl p-5 border border-slate-200">
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className="text-[32px] font-bold" style={{ color }}>{value}</div>
+      <div className="text-xs text-slate-400">{subtext}</div>
     </div>
   );
 }
@@ -245,86 +238,68 @@ function CompetitorRow({
 
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 16,
-        padding: 16,
-        background: isYours ? '#eff6ff' : '#f8fafc',
-        borderRadius: 8,
-        border: isYours ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-      }}
+      className={`flex items-center gap-4 p-4 rounded-lg ${
+        isYours
+          ? 'bg-blue-50 border-2 border-blue-500'
+          : 'bg-slate-50 border border-slate-200'
+      }`}
     >
       {/* Site Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontWeight: 600 }}>{name}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{name}</span>
           {isYours && (
-            <span
-              style={{
-                fontSize: 10,
-                padding: '2px 6px',
-                background: '#3b82f6',
-                color: '#fff',
-                borderRadius: 4,
-              }}
-            >
+            <span className="text-[10px] px-1.5 py-0.5 bg-blue-500 text-white rounded">
               YOU
             </span>
           )}
         </div>
-        <div style={{ fontSize: 12, color: '#64748b' }}>{domain}</div>
+        <div className="text-xs text-slate-500">{domain}</div>
         {lastScanned && (
-          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+          <div className="text-[11px] text-slate-400 mt-0.5">
             Scanned: {new Date(lastScanned).toLocaleDateString()}
           </div>
         )}
       </div>
 
       {/* Score */}
-      <div style={{ textAlign: 'center', minWidth: 80 }}>
+      <div className="text-center min-w-[80px]">
         {score !== undefined ? (
           <>
             <div
-              style={{
-                fontSize: 28,
-                fontWeight: 700,
-                color: getScoreColor(score),
-              }}
+              className="text-2xl font-bold"
+              style={{ color: getScoreColor(score) }}
             >
               {score}
             </div>
             <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: getScoreColor(score),
-              }}
+              className="text-xs font-semibold"
+              style={{ color: getScoreColor(score) }}
             >
               {getScoreGrade(score)}
             </div>
           </>
         ) : (
-          <div style={{ fontSize: 14, color: '#94a3b8' }}>Not scanned</div>
+          <div className="text-sm text-slate-400">Not scanned</div>
         )}
       </div>
 
       {/* Actions */}
       {!isYours && (
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={onScan}
             disabled={isScanning}
           >
-            {isScanning ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={14} />}
+            {isScanning ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onDelete}
-            style={{ color: '#ef4444' }}
+            className="text-red-500"
           >
             <Trash2 size={14} />
           </Button>
@@ -351,27 +326,21 @@ function ScoreBarChart({ data }: ScoreBarChartProps) {
   const maxScore = Math.max(...allSites.map(s => s.score));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex flex-col gap-3">
       {allSites.map((site, index) => (
-        <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 120, fontSize: 13, fontWeight: site.isYours ? 600 : 400 }}>
+        <div key={index} className="flex items-center gap-3">
+          <div className={`w-[120px] text-sm ${site.isYours ? 'font-semibold' : 'font-normal'}`}>
             {site.name}
           </div>
-          <div style={{ flex: 1, background: '#e2e8f0', borderRadius: 4, height: 24 }}>
+          <div className="flex-1 bg-slate-200 rounded h-6">
             <div
+              className="rounded h-full flex items-center justify-end pr-2 min-w-[40px]"
               style={{
                 width: `${(site.score / maxScore) * 100}%`,
                 background: site.isYours ? '#3b82f6' : getScoreColor(site.score),
-                borderRadius: 4,
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                paddingRight: 8,
-                minWidth: 40,
               }}
             >
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#fff' }}>
+              <span className="text-xs font-semibold text-white">
                 {site.score}
               </span>
             </div>

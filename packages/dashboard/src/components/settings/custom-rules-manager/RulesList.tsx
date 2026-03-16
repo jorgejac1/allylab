@@ -6,18 +6,18 @@ import type { RulesListProps } from './types';
 export function RulesList({ rules, loading, onEdit, onDelete, onToggle }: RulesListProps) {
   return (
     <Card>
-      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <h3 className="text-base font-semibold mt-0 mb-4 flex items-center gap-2">
         <ClipboardList size={18} aria-hidden="true" />Rules ({rules.length})
       </h3>
 
       {loading && rules.length === 0 ? (
-        <p style={{ color: '#64748b', textAlign: 'center', padding: 24 }}>Loading rules...</p>
+        <p className="text-slate-500 text-center p-6">Loading rules...</p>
       ) : rules.length === 0 ? (
-        <p style={{ color: '#64748b', textAlign: 'center', padding: 24 }}>
+        <p className="text-slate-500 text-center p-6">
           No custom rules yet. Create one to get started!
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {rules.map(rule => (
             <RuleItem
               key={rule.id}

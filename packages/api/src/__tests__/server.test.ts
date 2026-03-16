@@ -14,6 +14,8 @@ async function loadServer(nodeEnv: "development" | "production") {
   const initScheduler = vi.fn();
   const shutdownScheduler = vi.fn();
   const corsPlugin = Symbol("cors");
+  const helmetPlugin = Symbol("helmet");
+  const cookiePlugin = Symbol("cookie");
   const rateLimitPlugin = Symbol("rateLimit");
   const swaggerPlugin = Symbol("swagger");
   const swaggerUiPlugin = Symbol("swagger-ui");
@@ -35,10 +37,14 @@ async function loadServer(nodeEnv: "development" | "production") {
       enableAiFixes: false,
       githubApiUrl: "https://api.github.com",
       enableRateLimiting: false,
+      corsOrigins: ['http://localhost:5173', 'http://localhost:3000'],
+      jwtSecret: 'test-secret-for-unit-tests-minimum-length-32-chars',
     },
   }));
 
   vi.doMock("@fastify/cors", () => ({ default: corsPlugin, __esModule: true }));
+  vi.doMock("@fastify/helmet", () => ({ default: helmetPlugin, __esModule: true }));
+  vi.doMock("@fastify/cookie", () => ({ default: cookiePlugin, __esModule: true }));
   vi.doMock("@fastify/rate-limit", () => ({ default: rateLimitPlugin, __esModule: true }));
   vi.doMock("@fastify/swagger", () => ({ default: swaggerPlugin, __esModule: true }));
   vi.doMock("@fastify/swagger-ui", () => ({ default: swaggerUiPlugin, __esModule: true }));
@@ -122,7 +128,7 @@ describe("server/createServer", () => {
     );
     expect(server.register).toHaveBeenCalledWith(
       corsPlugin,
-      expect.objectContaining({ origin: true, credentials: true })
+      expect.objectContaining({ origin: expect.any(Array), credentials: true })
     );
     expect(registerRoutes).toHaveBeenCalled();
     expect(initScheduler).toHaveBeenCalled();
@@ -164,7 +170,7 @@ describe("server/createServer", () => {
     );
     expect(server.register).toHaveBeenCalledWith(
       corsPlugin,
-      expect.objectContaining({ origin: true, credentials: true })
+      expect.objectContaining({ origin: expect.any(Array), credentials: true })
     );
   });
 });

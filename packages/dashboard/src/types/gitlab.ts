@@ -77,3 +77,20 @@ export interface GitLabCodeSearchResult {
   url: string;
   matchedLines: Array<{ lineNumber: number; content: string }>;
 }
+
+export interface GitLabMRTracking {
+  id: string;
+  findingIds: string[];
+  projectPath: string;
+  mrIid: number;
+  mrUrl: string;
+  sourceBranch: string;
+  targetBranch: string;
+  status: 'opened' | 'merged' | 'closed';
+  createdAt: string;
+  verificationStatus?: 'verified' | 'failed';
+  verifiedAt?: string;
+  scanUrl?: string;
+  scanStandard?: string;
+  scanViewport?: string;
+}

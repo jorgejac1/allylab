@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Schedule, ScheduleFrequency, ScheduleRunResult } from '../types';
 import { getApiBase } from '../utils/api';
+import { addAuditEntry } from '../utils/auditLog';
 
 interface UseSchedulesReturn {
   schedules: Schedule[];
@@ -59,6 +60,7 @@ export function useSchedules(): UseSchedulesReturn {
 
       const schedule = await response.json();
       setSchedules(prev => appendSchedule(prev, schedule));
+      addAuditEntry({ eventType: 'settings:updated', severity: 'info', action: `Created schedule for ${url} (${frequency})`, resourceType: 'schedule', resourceId: schedule.id, success: true });
       return schedule;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -84,6 +86,7 @@ export function useSchedules(): UseSchedulesReturn {
 
       const schedule = await response.json();
       setSchedules(prev => prev.map(s => s.id === id ? schedule : s));
+      addAuditEntry({ eventType: 'settings:updated', severity: 'info', action: `Updated schedule ${id}`, resourceType: 'schedule', resourceId: id, success: true });
       return schedule;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -103,6 +106,7 @@ export function useSchedules(): UseSchedulesReturn {
       }
 
       setSchedules(prev => prev.filter(s => s.id !== id));
+      addAuditEntry({ eventType: 'settings:updated', severity: 'warning', action: `Deleted schedule ${id}`, resourceType: 'schedule', resourceId: id, success: true });
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

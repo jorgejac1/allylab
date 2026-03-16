@@ -154,7 +154,7 @@ describe("file-path-mapper/ErrorMessage", () => {
   it("applies error styling", () => {
     const { container } = render(<ErrorMessage message="Error" />);
     const errorDiv = container.firstChild as HTMLElement;
-    expect(errorDiv).toHaveStyle({ background: "#fef2f2" });
+    expect(errorDiv).toHaveClass("bg-red-50");
   });
 });
 

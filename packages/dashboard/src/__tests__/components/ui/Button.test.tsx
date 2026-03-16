@@ -10,7 +10,7 @@ describe("ui/Button", () => {
     render(<Button>Click me</Button>);
     const btn = screen.getByRole("button", { name: "Click me" });
     expect(btn).toBeInTheDocument();
-    expect(btn).toHaveStyle({ background: "#2563eb", fontWeight: "600" });
+    expect(btn).toHaveClass("bg-blue-600", "text-white", "font-semibold");
   });
 
   it("applies variant, size and disabled styles", () => {
@@ -21,8 +21,8 @@ describe("ui/Button", () => {
     );
     const btn = screen.getByRole("button", { name: "Small" });
     expect(btn).toBeDisabled();
-    expect(btn).toHaveStyle({ cursor: "not-allowed", opacity: "0.5" });
-    expect(btn).toHaveStyle({ padding: "6px 12px" });
-    expect(btn).toHaveStyle({ background: "#f1f5f9" });
+    expect(btn).toHaveClass("disabled:opacity-50", "disabled:cursor-not-allowed");
+    expect(btn).toHaveClass("px-3", "py-1.5", "text-xs/[normal]");
+    expect(btn).toHaveClass("bg-slate-100", "text-slate-800");
   });
 });

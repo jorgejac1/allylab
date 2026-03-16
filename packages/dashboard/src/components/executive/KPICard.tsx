@@ -19,38 +19,24 @@ export const KPICard = memo(function KPICard({
   icon
 }: KPICardProps) {
   return (
-    <div style={{
-      background: '#fff',
-      borderRadius: 12,
-      padding: 20,
-      border: '1px solid #e5e7eb',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 8,
-    }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start' 
-      }}>
-        <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
-          {icon && <span style={{ marginRight: 6, display: 'flex', alignItems: 'center' }}>{icon}</span>}
+    <div className="bg-white rounded-xl p-5 border border-gray-200 flex flex-col gap-2">
+      <div className="flex justify-between items-start">
+        <span className="text-sm/[normal] text-gray-500 font-medium flex items-center">
+          {icon && <span className="mr-1.5 flex items-center">{icon}</span>}
           {label}
         </span>
         {trend && trend.length >= 2 && (
           <Sparkline data={trend} width={60} height={24} color="auto" />
         )}
       </div>
-      <div style={{ 
-        fontSize: 32, 
-        fontWeight: 700, 
-        color: color || '#111827',
-        lineHeight: 1 
-      }}>
+      <div
+        className="text-[32px] font-bold leading-none"
+        style={{ color: color || '#111827' }}
+      >
         {value}
       </div>
       {subValue && (
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>{subValue}</span>
+        <span className="text-xs text-gray-400">{subValue}</span>
       )}
     </div>
   );

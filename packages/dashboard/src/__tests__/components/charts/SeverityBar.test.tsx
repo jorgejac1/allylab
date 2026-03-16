@@ -101,7 +101,7 @@ describe("charts/SeverityBar", () => {
       <SeverityBar critical={1} serious={1} moderate={1} minor={1} />
     );
     // Should have 4 colored dots in labels
-    const dots = container.querySelectorAll('[style*="border-radius: 2px"]');
+    const dots = container.querySelectorAll('.rounded-sm');
     expect(dots.length).toBe(4);
   });
 
@@ -124,7 +124,7 @@ describe("charts/SeverityBar", () => {
     const { container } = render(
       <SeverityBar critical={5} serious={3} moderate={2} minor={1} />
     );
-    const barContainer = container.querySelector('[style*="overflow: hidden"]');
+    const barContainer = container.querySelector('.overflow-hidden');
     expect(barContainer).toBeInTheDocument();
   });
 
@@ -132,21 +132,21 @@ describe("charts/SeverityBar", () => {
     const { container } = render(
       <SeverityBar critical={5} serious={3} moderate={2} minor={1} />
     );
-    const barContainer = container.querySelector('[style*="background: rgb(226, 232, 240)"]');
+    const barContainer = container.querySelector('.bg-slate-200');
     expect(barContainer).toBeInTheDocument();
   });
 
   it("renders segments with white text color", () => {
     render(<SeverityBar critical={50} serious={0} moderate={0} minor={0} />);
     const criticalSegment = screen.getByTitle("critical: 50");
-    expect(criticalSegment).toHaveStyle({ color: "rgb(255, 255, 255)" });
+    expect(criticalSegment).toHaveClass("text-white");
   });
 
   it("renders labels with gap and flex-wrap", () => {
     const { container } = render(
       <SeverityBar critical={1} serious={1} moderate={1} minor={1} />
     );
-    const labelsContainer = container.querySelector('[style*="gap: 16px"]');
-    expect(labelsContainer).toHaveStyle({ flexWrap: "wrap" });
+    const labelsContainer = container.querySelector('.gap-4.flex-wrap');
+    expect(labelsContainer).toHaveClass("flex", "gap-4", "flex-wrap");
   });
 });

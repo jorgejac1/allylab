@@ -44,17 +44,17 @@ export function TrendsPDFButton({
   };
 
   return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 4 }}>
+    <div className="inline-flex flex-col gap-1">
       <Button
         variant="secondary"
         size="sm"
         onClick={handleExport}
         disabled={disabled || isGenerating || scans.length === 0}
       >
-        {isGenerating ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Generating...</> : <><FileText size={14} style={{ marginRight: 6 }} />Export PDF</>}
+        {isGenerating ? <><Loader2 size={14} className="mr-1.5 animate-spin" />Generating...</> : <><FileText size={14} className="mr-1.5" />Export PDF</>}
       </Button>
       {error && (
-        <span style={{ fontSize: 11, color: '#dc2626' }}>{error}</span>
+        <span className="text-xs text-red-600">{error}</span>
       )}
     </div>
   );

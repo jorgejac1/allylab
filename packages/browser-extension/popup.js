@@ -2,9 +2,13 @@
 
 let currentDomain = '';
 let allCookies = [];
+let dashboardUrl = 'http://localhost:5173';
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
+  // Load settings from storage
+  await loadSettings();
+
   // Get current tab info
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -24,12 +28,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     showStatus('error', 'Cannot read page URL');
   }
 
+  // Check dashboard connection
+  checkDashboardConnection();
+
   // Event listeners
   document.getElementById('capture-btn').addEventListener('click', captureCookies);
   document.getElementById('preview-btn').addEventListener('click', togglePreview);
   document.getElementById('include-subdomains').addEventListener('change', fetchCookies);
   document.getElementById('session-only').addEventListener('change', fetchCookies);
 });
+
+// Load settings from chrome.storage.sync
+async function loadSettings() {
+  return new Promise((resolve) => {
+    const defaults = {
+      dashboardUrl: 'http://localhost:5173',
+      apiUrl: 'http://localhost:3001',
+    };
+
+    chrome.storage.sync.get(defaults, (settings) => {
+      dashboardUrl = settings.dashboardUrl;
+      // Update footer link with configured dashboard URL
+      const footerLink = document.querySelector('.footer a');
+      if (footerLink) {
+        footerLink.href = dashboardUrl;
+      }
+      resolve();
+    });
+  });
+}
+
+// Check if the dashboard is reachable
+async function checkDashboardConnection() {
+  const indicator = document.getElementById('connection-status');
+  if (!indicator) return;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(dashboardUrl, {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    indicator.className = 'connection-dot connected';
+    indicator.title = `Connected to ${dashboardUrl}`;
+  } catch (error) {
+    indicator.className = 'connection-dot disconnected';
+    indicator.title = `Cannot reach ${dashboardUrl}`;
+  }
+}
 
 // Fetch cookies for current domain
 async function fetchCookies() {

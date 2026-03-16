@@ -18,6 +18,8 @@ vi.mock("../../routes/fixes", () => ({ fixesRoutes: vi.fn() }));
 vi.mock("../../routes/trends", () => ({ trendsRoutes: vi.fn() }));
 vi.mock("../../routes/rules", () => ({ rulesRoutes: vi.fn() }));
 vi.mock("../../routes/users", () => ({ userRoutes: vi.fn() }));
+vi.mock("../../routes/gitlab", () => ({ default: vi.fn() }));
+vi.mock("../../routes/sso", () => ({ ssoRoutes: vi.fn() }));
 
 describe("routes/index registerRoutes", () => {
   it("registers all route modules with fastify", async () => {
@@ -25,6 +27,6 @@ describe("routes/index registerRoutes", () => {
 
     await registerRoutes(fastify);
 
-    expect(mockRegister).toHaveBeenCalledTimes(14);
+    expect(mockRegister).toHaveBeenCalledTimes(16);
   });
 });

@@ -123,7 +123,7 @@ describe("findings/ExportDropdown", () => {
     fireEvent.click(screen.getByText("Export"));
     expect(screen.getByText("Export as CSV")).toBeInTheDocument();
 
-    const backdrop = document.querySelector('[style*="position: fixed"]');
+    const backdrop = document.querySelector('.fixed.inset-0.z-10');
     fireEvent.click(backdrop!);
     expect(screen.queryByText("Export as CSV")).not.toBeInTheDocument();
   });
@@ -239,23 +239,14 @@ describe("findings/ExportDropdown", () => {
     });
   });
 
-  // Test for lines 152-153: DropdownItem onMouseEnter/onMouseLeave (hover state)
-  it("changes background on hover for dropdown items", () => {
+  // Test for DropdownItem hover classes
+  it("has hover classes on dropdown items", () => {
     render(<ExportDropdown findings={mockFindings} scanUrl="https://test.com" scanDate="2024-01-01" />);
     fireEvent.click(screen.getByText("Export"));
 
     const csvButton = screen.getByText("Export as CSV").closest("button")!;
 
-    // Initially no hover background
-    expect(csvButton).toHaveStyle({ background: "none" });
-
-    // Hover - should change background
-    fireEvent.mouseEnter(csvButton);
-    expect(csvButton).toHaveStyle({ background: "rgb(248, 250, 252)" });
-
-    // Leave hover - should reset background
-    fireEvent.mouseLeave(csvButton);
-    expect(csvButton).toHaveStyle({ background: "none" });
+    expect(csvButton).toHaveClass("bg-white", "hover:bg-slate-50");
   });
 
   // Test for exportToExcel function (lines 177-260)
@@ -327,15 +318,11 @@ describe("findings/ExportDropdown", () => {
     const jsonButton = screen.getByText("Export as JSON").closest("button")!;
     const csvButton = screen.getByText("Export as CSV").closest("button")!;
 
-    // JSON is the last item - all border is none (border-style: none)
-    const jsonStyle = jsonButton.getAttribute("style") || "";
-    expect(jsonStyle).toContain("border-style: none");
+    // JSON is the last item - should NOT have border-b class
+    expect(jsonButton).not.toHaveClass("border-b");
 
-    // CSV is not the last - border-style includes 'solid' for the bottom border
-    const csvStyle = csvButton.getAttribute("style") || "";
-    expect(csvStyle).toContain("solid");
-    // The border color includes the border-bottom color
-    expect(csvStyle).toContain("rgb(241, 245, 249)");
+    // CSV is not the last - should have border-b border-slate-100
+    expect(csvButton).toHaveClass("border-b", "border-slate-100");
   });
 
   // Test successful CSV export shows success toast

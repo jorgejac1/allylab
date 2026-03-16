@@ -11,6 +11,7 @@ import {
 import { calculateScore } from '../utils/scoring.js';
 import { getWcagTags } from '../utils/wcag.js';
 import { evaluateCustomRules, getEnabledRulesCount } from './rule-evaluator.js';
+import { evaluateTVRules } from '../rules/tv-accessibility.js';
 import { config } from '../config/env.js';
 import type { Finding, ScanResult, Severity, Viewport, ScanAuthOptions } from '../types/index.js';
 import type { RuleViolation } from '../types/rules.js';
@@ -169,7 +170,7 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
   } = options;
 
   const startTime = Date.now();
-  const viewportLabel = viewport === 'desktop' ? '🖥️ Desktop' : viewport === 'tablet' ? '📱 Tablet' : '📲 Mobile';
+  const viewportLabel = viewport === 'desktop' ? '🖥️ Desktop' : viewport === 'tablet' ? '📱 Tablet' : viewport === 'tv-hd' ? '📺 TV HD' : viewport === 'tv-4k' ? '📺 TV 4K' : '📲 Mobile';
   const customRulesCount = includeCustomRules ? await getEnabledRulesCount() : 0;
 
   // Wrap scan in total timeout
@@ -316,9 +317,26 @@ export async function runScan(options: ScanOptions): Promise<ScanResult> {
         },
       });
 
-      onProgress?.({ 
-        percent: 85, 
-        message: `Custom rules found ${customViolations.length} issues` 
+      onProgress?.({
+        percent: 85,
+        message: `Custom rules found ${customViolations.length} issues`
+      });
+    }
+
+    // TV accessibility rules (only for TV viewports)
+    if (viewport === 'tv-hd' || viewport === 'tv-4k') {
+      onProgress?.({ percent: 87, message: 'Running TV accessibility rules...' });
+
+      const tvFindings = await evaluateTVRules(activePage);
+      for (const finding of tvFindings) {
+        findings.push(finding);
+        severityCounts[finding.impact]++;
+        onFinding?.(finding);
+      }
+
+      onProgress?.({
+        percent: 89,
+        message: `TV rules found ${tvFindings.length} issues`,
       });
     }
 

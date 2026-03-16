@@ -33,7 +33,7 @@ export function TrendCharts({
   if (filteredScans.length === 0) {
     return (
       <Card>
-        <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
+        <div className="text-center py-10 px-10 text-slate-500">
           No scan data available for trends.
         </div>
       </Card>
@@ -41,16 +41,10 @@ export function TrendCharts({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Header with Export Button */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+      <div className="flex justify-between items-center">
+        <h3 className="m-0 text-lg font-semibold flex items-center gap-2">
           <BarChart3 size={20} />Accessibility Trends
         </h3>
         <TrendsPDFButton
@@ -80,13 +74,7 @@ export function TrendCharts({
 
       {/* Stats Row */}
       {aggregateStats && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 16,
-          }}
-        >
+        <div className="grid grid-cols-4 gap-4">
           <StatCard
             label="Current Score"
             value={aggregateStats.currentScore}
@@ -110,34 +98,14 @@ export function TrendCharts({
 
       {/* Score Trend with Goal Line */}
       <Card>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-base font-semibold m-0 flex items-center gap-2">
             <TrendingUp size={18} />Score Trend
           </h4>
           {scoreGoal.showScoreGoal && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 12,
-                color: "#64748b",
-              }}
-            >
+            <div className="flex items-center gap-2 text-xs text-slate-500">
               <span
-                style={{
-                  width: 16,
-                  height: 2,
-                  background: "#f59e0b",
-                  borderTop: "2px dashed #f59e0b",
-                }}
+                className="w-4 h-0.5 bg-amber-500 border-t-2 border-dashed border-amber-500"
               />
               <span>Goal: {scoreGoal.scoreGoal}</span>
             </div>
@@ -151,7 +119,7 @@ export function TrendCharts({
             goalScore={scoreGoal.showScoreGoal ? scoreGoal.scoreGoal : undefined}
           />
         ) : (
-          <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
+          <div className="text-center py-10 px-10 text-slate-500">
             Need at least 2 scans to show trends.
           </div>
         )}
@@ -159,23 +127,16 @@ export function TrendCharts({
 
       {/* Issue Trend */}
       <Card>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h4 style={{ fontSize: 16, fontWeight: 600, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="text-base font-semibold m-0 flex items-center gap-2">
             <Bug size={18} />Issue Trend
           </h4>
-          <div style={{ display: "flex", gap: 4 }}>
+          <div className="flex gap-1">
             <Button
               variant={issueChartType === "area" ? "primary" : "secondary"}
               size="sm"
               onClick={() => setIssueChartType("area")}
-              style={{ padding: "4px 12px", fontSize: 12 }}
+              className="py-1 px-3 text-xs"
             >
               Stacked
             </Button>
@@ -183,7 +144,7 @@ export function TrendCharts({
               variant={issueChartType === "line" ? "primary" : "secondary"}
               size="sm"
               onClick={() => setIssueChartType("line")}
-              style={{ padding: "4px 12px", fontSize: 12 }}
+              className="py-1 px-3 text-xs"
             >
               Lines
             </Button>
@@ -196,16 +157,7 @@ export function TrendCharts({
         />
         {/* Issue Change Summary */}
         {aggregateStats && filteredScans.length >= 2 && (
-          <div
-            style={{
-              display: "flex",
-              gap: 16,
-              marginTop: 16,
-              paddingTop: 16,
-              borderTop: "1px solid #e2e8f0",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="flex gap-4 mt-4 pt-4 border-t border-slate-200 flex-wrap">
             <IssueChangeBadge
               label="Critical"
               change={aggregateStats.issueChanges.critical}
@@ -226,19 +178,11 @@ export function TrendCharts({
               change={aggregateStats.issueChanges.minor}
               color={SEVERITY_COLORS.minor}
             />
-            <div
-              style={{
-                marginLeft: "auto",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 12, color: "#64748b" }}>Net change:</span>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs text-slate-500">Net change:</span>
               <span
+                className="text-sm font-semibold"
                 style={{
-                  fontSize: 14,
-                  fontWeight: 600,
                   color:
                     aggregateStats.issueChange <= 0 ? "#10b981" : "#ef4444",
                 }}
@@ -252,10 +196,10 @@ export function TrendCharts({
       </Card>
 
       {/* Issue Distribution & Breakdown */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Donut Chart */}
         <Card>
-          <h4 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+          <h4 className="text-base font-semibold mt-0 mb-4 flex items-center gap-2">
             <Target size={18} />Current Issue Distribution
           </h4>
           {aggregateStats && (
@@ -289,11 +233,11 @@ export function TrendCharts({
 
         {/* Progress Over Time */}
         <Card>
-          <h4 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+          <h4 className="text-base font-semibold mt-0 mb-4 flex items-center gap-2">
             <BarChart3 size={18} />Progress Summary
           </h4>
           {aggregateStats && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div className="flex flex-col gap-4">
               <ProgressRow
                 label="Issues Fixed"
                 value={aggregateStats.totalIssuesFixed}

@@ -7,11 +7,11 @@ interface ScoreCircleProps {
   showGrade?: boolean;
 }
 
-export function ScoreCircle({ 
-  score, 
-  size = 100, 
+export function ScoreCircle({
+  score,
+  size = 100,
   strokeWidth,
-  showGrade = false 
+  showGrade = false
 }: ScoreCircleProps) {
   const stroke = strokeWidth || size * 0.08;
   const radius = (size - stroke) / 2;
@@ -20,8 +20,8 @@ export function ScoreCircle({
   const color = getScoreColor(score);
 
   return (
-    <div style={{ position: 'relative', width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -40,23 +40,15 @@ export function ScoreCircle({
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          className="transition-[stroke-dashoffset] duration-500 ease-out"
         />
       </svg>
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ fontSize: size * 0.28, fontWeight: 700, color, lineHeight: 1 }}>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="font-bold leading-none" style={{ fontSize: size * 0.28, color }}>
           {score}
         </div>
         {showGrade && (
-          <div style={{ fontSize: size * 0.14, color: '#64748b', marginTop: 2 }}>
+          <div className="text-slate-500 mt-0.5" style={{ fontSize: size * 0.14 }}>
             Grade {getScoreGrade(score)}
           </div>
         )}

@@ -85,7 +85,7 @@ describe("layout/PageContainer", () => {
       </PageContainer>
     );
 
-    const header = container.querySelector('div[style*="justify-content: space-between"]');
+    const header = container.querySelector('.mb-6');
     expect(header).toBeInTheDocument();
     expect(screen.getByText("Test Page")).toBeInTheDocument();
   });
@@ -99,7 +99,7 @@ describe("layout/PageContainer", () => {
       </PageContainer>
     );
 
-    const header = container.querySelector('div[style*="justify-content: space-between"]');
+    const header = container.querySelector('.mb-6');
     expect(header).toBeInTheDocument();
     expect(screen.getByText("Action")).toBeInTheDocument();
   });
@@ -111,7 +111,7 @@ describe("layout/PageContainer", () => {
       </PageContainer>
     );
 
-    const header = container.querySelector('div[style*="justify-content: space-between"]');
+    const header = container.querySelector('.mb-6');
     expect(header).not.toBeInTheDocument();
   });
 
@@ -165,13 +165,7 @@ describe("layout/PageContainer", () => {
     );
 
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv).toHaveStyle({
-      flex: 1,
-      padding: "24px",
-      background: "#f8fafc",
-      minHeight: "calc(100vh - 120px)",
-      overflow: "auto",
-    });
+    expect(outerDiv).toHaveClass("flex-1", "bg-slate-50", "overflow-auto");
   });
 
   it("renders subtitle only when title is also present", () => {

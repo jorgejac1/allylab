@@ -47,35 +47,17 @@ export function Sidebar({
 
   return (
     <aside
-      style={{
-        width: collapsed ? 64 : 240,
-        background: "#0f172a",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        transition: "width 0.2s ease",
-        flexShrink: 0,
-        minHeight: "100vh",
-        position: "sticky",
-        top: 0,
-        alignSelf: "flex-start",
-      }}
+      className={`${collapsed ? 'w-16' : 'w-60'} bg-slate-900 text-white flex flex-col transition-[width] duration-200 shrink-0 min-h-screen sticky top-0 self-start`}
     >
       {/* Logo */}
       <div
-        style={{
-          padding: collapsed ? "20px 12px" : "20px 16px",
-          borderBottom: "1px solid #1e293b",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}
+        className={`${collapsed ? 'py-5 px-3' : 'py-5 px-4'} border-b border-slate-800 flex items-center gap-3`}
       >
         <Microscope size={28} aria-hidden="true" />
         {!collapsed && (
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>AllyLab</div>
-            <div style={{ fontSize: 11, color: "#94a3b8" }}>
+            <div className="text-lg/[normal] font-bold">AllyLab</div>
+            <div className="text-[11px]/[normal] text-slate-400">
               Accessibility Scanner
             </div>
           </div>
@@ -87,22 +69,13 @@ export function Sidebar({
         id="main-navigation"
         aria-label="Main navigation"
         tabIndex={-1}
-        style={{ flex: 1, padding: "12px 8px", overflow: "auto", outline: "none" }}
+        className="flex-1 py-3 px-2 overflow-auto outline-none"
       >
         {groups.map((group, groupIndex) => (
-          <div key={groupIndex} style={{ marginBottom: 16 }}>
+          <div key={groupIndex} className="mb-4">
             {/* Group Title */}
             {group.title && !collapsed && (
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  padding: "8px 12px",
-                }}
-              >
+              <div className="text-[10px]/[normal] font-semibold text-slate-400 uppercase tracking-wide py-2 px-3">
                 {group.title}
               </div>
             )}
@@ -119,44 +92,25 @@ export function Sidebar({
                   title={collapsed ? item.label : undefined}
                   aria-label={item.label}
                   aria-current={isActive ? "page" : undefined}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    width: "100%",
-                    padding: collapsed ? "12px" : "10px 12px",
-                    background: isActive ? "#1e293b" : "transparent",
-                    border: "none",
-                    borderRadius: 8,
-                    cursor: item.disabled ? "not-allowed" : "pointer",
-                    color: item.disabled
-                      ? "#475569"
+                  className={`flex items-center gap-3 w-full ${collapsed ? 'p-3 justify-center' : 'py-2.5 px-3 justify-start'} ${
+                    isActive ? 'bg-slate-800' : 'bg-transparent'
+                  } border-0 rounded-lg text-sm/[normal] text-left mb-1 transition-all ${
+                    item.disabled
+                      ? 'cursor-not-allowed text-slate-600 opacity-50'
                       : isActive
-                      ? "#fff"
-                      : "#94a3b8",
-                    fontSize: 14,
-                    fontWeight: isActive ? 600 : 400,
-                    textAlign: "left",
-                    marginBottom: 4,
-                    transition: "all 0.2s",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    opacity: item.disabled ? 0.5 : 1,
-                  }}
+                      ? 'cursor-pointer text-white font-semibold'
+                      : 'cursor-pointer text-slate-400 font-normal'
+                  }`}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true">{item.icon}</span>
+                  <span className="flex items-center justify-center" aria-hidden="true">{item.icon}</span>
                   {!collapsed && (
                     <>
-                      <span style={{ flex: 1 }}>{item.label}</span>
+                      <span className="flex-1">{item.label}</span>
                       {item.badge !== undefined && (
                         <span
-                          style={{
-                            padding: "2px 8px",
-                            borderRadius: 10,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            background: isActive ? "#2563eb" : "#334155",
-                            color: "#fff",
-                          }}
+                          className={`py-0.5 px-2 rounded-[10px] text-[11px]/[normal] font-semibold text-white ${
+                            isActive ? 'bg-blue-600' : 'bg-slate-700'
+                          }`}
                         >
                           {item.badge}
                         </span>
@@ -172,46 +126,29 @@ export function Sidebar({
 
       {/* Footer */}
       {footer && (
-        <div style={{ padding: 16, borderTop: "1px solid #1e293b" }}>
+        <div className="p-4 border-t border-slate-800">
           {footer}
         </div>
       )}
 
       {/* Version & API Status */}
       {!collapsed && (
-        <div style={{ marginTop: "auto" }}>
+        <div className="mt-auto">
           {/* Version */}
-          <div
-            style={{
-              padding: "8px 16px",
-              fontSize: 10,
-              color: "#94a3b8",
-              borderTop: "1px solid #1e293b",
-            }}
-          >
+          <div className="py-2 px-4 text-[10px]/[normal] text-slate-400 border-t border-slate-800">
             AllyLab v1.0.0
           </div>
 
           {/* API Status */}
-          <div
-            style={{
-              padding: "12px 16px",
-              borderTop: "1px solid #1e293b",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
+          <div className="py-3 px-4 border-t border-slate-800 flex items-center gap-2">
             <div
+              className="w-2 h-2 rounded-full"
               style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
                 background: statusColors[apiStatus],
                 boxShadow: `0 0 6px ${statusColors[apiStatus]}`,
               }}
             />
-            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+            <span className="text-xs/[normal] text-slate-400">
               {statusLabels[apiStatus]}
             </span>
           </div>

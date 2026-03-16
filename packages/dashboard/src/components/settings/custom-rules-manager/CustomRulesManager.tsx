@@ -165,7 +165,7 @@ export function CustomRulesManager() {
   // ---- Render ----
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       <Toast toasts={toasts} onClose={closeToast} />
       <ConfirmDialog
         isOpen={isOpen}
@@ -191,8 +191,8 @@ export function CustomRulesManager() {
 
       {/* Error */}
       {error && (
-        <Card style={{ borderColor: '#fecaca', background: '#fef2f2' }}>
-          <p role="alert" style={{ color: '#dc2626', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Card className="border-red-300 bg-red-50">
+          <p role="alert" className="text-red-600 m-0 flex items-center gap-2">
             <AlertTriangle size={16} aria-hidden="true" />{error}
           </p>
         </Card>

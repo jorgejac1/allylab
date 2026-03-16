@@ -21,57 +21,29 @@ export function FilePathRow({
   const hasMappedPath = item.filePath.trim().length > 0;
 
   return (
-    <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+    <div className="border-b border-slate-200">
       {/* Main Row */}
-      <div
-        style={{
-          padding: '10px 12px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 10,
-        }}
-      >
+      <div className="py-2.5 px-3 flex items-start gap-2.5">
         {/* Status indicator */}
-        <div style={{ paddingTop: 2, display: 'flex', alignItems: 'center' }}>
+        <div className="pt-0.5 flex items-center">
           {hasMappedPath ? (
-            <CheckCircle size={14} style={{ color: '#16a34a' }} aria-hidden="true" />
+            <CheckCircle size={14} className="text-green-600" aria-hidden="true" />
           ) : (
             <SeverityDot severity={item.finding.impact} />
           )}
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="flex-1 min-w-0">
           {/* Title row */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            marginBottom: 4,
-          }}>
-            <span style={{
-              fontSize: 13,
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">
               {item.finding.ruleTitle}
             </span>
 
             {/* Text preview badge */}
             {textPreview && (
-              <span style={{
-                fontSize: 11,
-                color: '#64748b',
-                background: '#f1f5f9',
-                padding: '1px 6px',
-                borderRadius: 4,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: 120,
-              }}>
+              <span className="text-[11px] text-slate-500 bg-slate-100 px-1.5 py-px rounded whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">
                 "{textPreview}"
               </span>
             )}
@@ -83,21 +55,14 @@ export function FilePathRow({
           </div>
 
           {/* File path input */}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <div className="flex gap-1.5 items-center">
             <input
               type="text"
               placeholder="src/components/Example.tsx"
               value={item.filePath}
               onChange={e => onFilePathChange(e.target.value)}
               aria-label={`File path for ${item.finding.ruleTitle}`}
-              style={{
-                flex: 1,
-                padding: '6px 8px',
-                border: '1px solid #e2e8f0',
-                borderRadius: 4,
-                fontSize: 12,
-                fontFamily: 'ui-monospace, monospace',
-              }}
+              className="flex-1 py-1.5 px-2 border border-slate-200 rounded text-xs font-mono"
             />
 
             {/* Search/Detect button */}
@@ -105,29 +70,16 @@ export function FilePathRow({
               <button
                 onClick={onDetect}
                 disabled={isDetecting}
-                style={{
-                  padding: '6px 10px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 4,
-                  fontSize: 11,
-                  cursor: isDetecting ? 'wait' : 'pointer',
-                  color: '#475569',
-                  whiteSpace: 'nowrap',
-                }}
+                className={`py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-600 whitespace-nowrap ${isDetecting ? 'cursor-wait' : 'cursor-pointer'}`}
               >
-                {isDetecting ? <Spinner size={12} /> : <><Search size={12} aria-hidden="true" style={{ marginRight: 4 }} />Search</>}
+                {isDetecting ? <Spinner size={12} /> : <><Search size={12} aria-hidden="true" className="mr-1" />Search</>}
               </button>
             )}
           </div>
 
           {/* Detection result hint */}
           {result && !hasMappedPath && result.reason && (
-            <div style={{
-              fontSize: 11,
-              color: '#94a3b8',
-              marginTop: 4,
-            }}>
+            <div className="text-[11px] text-slate-400 mt-1">
               {result.reason}
             </div>
           )}
@@ -136,23 +88,12 @@ export function FilePathRow({
           {item.fix && (
             <button
               onClick={onTogglePreview}
-              style={{
-                marginTop: 6,
-                background: 'none',
-                border: 'none',
-                color: '#3b82f6',
-                fontSize: 11,
-                cursor: 'pointer',
-                padding: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
+              className="mt-1.5 bg-none border-none text-blue-500 text-[11px] cursor-pointer p-0 flex items-center gap-1"
             >
               {showPreview ? (
-                <ChevronDown size={12} aria-hidden="true" style={{ marginRight: 4 }} />
+                <ChevronDown size={12} aria-hidden="true" className="mr-1" />
               ) : (
-                <ChevronRight size={12} aria-hidden="true" style={{ marginRight: 4 }} />
+                <ChevronRight size={12} aria-hidden="true" className="mr-1" />
               )}
               Preview fix
             </button>
@@ -163,13 +104,7 @@ export function FilePathRow({
         <button
           onClick={onRemove}
           aria-label={`Remove ${item.finding.ruleTitle} from PR`}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#94a3b8',
-            cursor: 'pointer',
-            padding: 4,
-          }}
+          className="bg-none border-none text-slate-400 cursor-pointer p-1"
           title="Remove from PR"
         >
           <X size={16} aria-hidden="true" />

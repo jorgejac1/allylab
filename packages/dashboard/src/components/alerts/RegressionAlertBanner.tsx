@@ -9,62 +9,36 @@ interface RegressionAlertBannerProps {
 
 export function RegressionAlertBanner({ regressions }: RegressionAlertBannerProps) {
   return (
-    <Card
-      style={{
-        background: '#fef3c7',
-        border: '1px solid #f59e0b',
-        padding: 16,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <span
-          style={{ display: 'flex', alignItems: 'center', color: '#f59e0b' }}
-        >
+    <Card className="bg-amber-100 border border-amber-500 p-4">
+      <div className="flex items-start gap-3">
+        <span className="flex items-center text-amber-500">
           <AlertTriangle size={24} />
         </span>
-        <div style={{ flex: 1 }}>
-          <h4
-            style={{
-              margin: '0 0 8px',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#92400e',
-            }}
-          >
+        <div className="flex-1">
+          <h4 className="m-0 mb-2 text-sm font-semibold text-amber-800">
             Score Regression Detected
           </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="flex flex-col gap-1.5">
             {regressions.slice(0, 3).map((regression) => (
               <div
                 key={regression.scanId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontSize: 13,
-                  color: '#78350f',
-                }}
+                className="flex items-center gap-2 text-sm text-amber-900"
               >
-                <span style={{ fontWeight: 500 }}>{regression.url}</span>
+                <span className="font-medium">{regression.url}</span>
                 <span>dropped</span>
-                <span
-                  style={{
-                    fontWeight: 700,
-                    color: '#dc2626',
-                  }}
-                >
+                <span className="font-bold text-red-600">
                   {regression.scoreDrop} points
                 </span>
-                <span style={{ color: '#92400e' }}>
+                <span className="text-amber-800">
                   ({regression.previousScore} → {regression.currentScore})
                 </span>
-                <span style={{ color: '#a16207', fontSize: 12 }}>
+                <span className="text-amber-700 text-xs">
                   • {formatDate(regression.timestamp)}
                 </span>
               </div>
             ))}
             {regressions.length > 3 && (
-              <div style={{ fontSize: 12, color: '#a16207' }}>
+              <div className="text-xs text-amber-700">
                 +{regressions.length - 3} more regressions
               </div>
             )}

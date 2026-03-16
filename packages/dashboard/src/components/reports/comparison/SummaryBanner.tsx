@@ -17,24 +17,22 @@ export function SummaryBanner({ comparison }: SummaryBannerProps) {
 
   return (
     <div
-      style={{
-        padding: 16,
-        borderRadius: 8,
-        background: improved ? '#f0fdf4' : declined ? '#fef2f2' : '#f8fafc',
-        border: `1px solid ${
-          improved ? '#bbf7d0' : declined ? '#fecaca' : '#e2e8f0'
-        }`,
-      }}
+      className={`p-4 rounded-lg ${
+        improved
+          ? 'bg-green-50 border border-green-200'
+          : declined
+            ? 'bg-red-50 border border-red-200'
+            : 'bg-slate-50 border border-slate-200'
+      }`}
     >
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          fontSize: 14,
-          fontWeight: 500,
-          color: improved ? '#166534' : declined ? '#991b1b' : '#64748b',
-        }}
+        className={`flex items-center gap-3 text-sm font-medium ${
+          improved
+            ? 'text-green-800'
+            : declined
+              ? 'text-red-900'
+              : 'text-slate-500'
+        }`}
       >
         <span>
           {improved ? (

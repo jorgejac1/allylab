@@ -11,43 +11,23 @@ interface DateRangePickerProps {
 
 export function DateRangePicker({ dateRange, onDateChange, onClear }: DateRangePickerProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: 12,
-        background: '#f8fafc',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <span style={{ fontSize: 13, color: '#64748b', fontWeight: 500 }}>
+    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+      <span className="text-sm text-slate-500 font-medium">
         Date Range:
       </span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex items-center gap-2">
         <input
           type="date"
           value={formatDateForInput(dateRange.start)}
           onChange={e => onDateChange('start', e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid #e2e8f0',
-            borderRadius: 6,
-            fontSize: 13,
-          }}
+          className="py-2 px-3 border border-slate-200 rounded-md text-sm"
         />
-        <span style={{ color: '#64748b' }}>to</span>
+        <span className="text-slate-500">to</span>
         <input
           type="date"
           value={formatDateForInput(dateRange.end)}
           onChange={e => onDateChange('end', e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid #e2e8f0',
-            borderRadius: 6,
-            fontSize: 13,
-          }}
+          className="py-2 px-3 border border-slate-200 rounded-md text-sm"
         />
       </div>
       {dateRange.start && dateRange.end && (
@@ -55,7 +35,7 @@ export function DateRangePicker({ dateRange, onDateChange, onClear }: DateRangeP
           variant="ghost"
           size="sm"
           onClick={onClear}
-          style={{ color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          className="text-slate-500 inline-flex items-center gap-1"
         >
           <X size={12} /> Clear
         </Button>

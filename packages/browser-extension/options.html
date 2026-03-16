@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AllyLab Options</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; max-width: 500px; margin: 0 auto; color: #1e293b; }
+    h1 { font-size: 20px; margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+    input[type="text"], input[type="url"] { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+    input[type="text"]:focus, input[type="url"]:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .checkbox-field { display: flex; align-items: center; gap: 8px; }
+    .checkbox-field input { width: 16px; height: 16px; }
+    select { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+    button { padding: 8px 20px; background: #1e293b; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
+    button:hover { background: #334155; }
+    .status { margin-top: 12px; font-size: 13px; color: #10b981; display: none; }
+    .status.visible { display: block; }
+    .help { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>AllyLab Extension Settings</h1>
+
+  <div class="field">
+    <label for="dashboardUrl">Dashboard URL</label>
+    <input type="url" id="dashboardUrl" placeholder="http://localhost:5173">
+    <p class="help">The URL where your AllyLab dashboard is running</p>
+  </div>
+
+  <div class="field">
+    <label for="apiUrl">API Endpoint</label>
+    <input type="url" id="apiUrl" placeholder="http://localhost:3001">
+    <p class="help">The AllyLab API server URL</p>
+  </div>
+
+  <div class="field">
+    <label for="standard">Default Scan Standard</label>
+    <select id="standard">
+      <option value="wcag2aa">WCAG 2.0 AA</option>
+      <option value="wcag21aa" selected>WCAG 2.1 AA</option>
+      <option value="wcag22aa">WCAG 2.2 AA</option>
+    </select>
+  </div>
+
+  <div class="field checkbox-field">
+    <input type="checkbox" id="autoScan">
+    <label for="autoScan">Auto-scan on page load</label>
+  </div>
+
+  <button id="save">Save Settings</button>
+  <div class="status" id="status">Settings saved!</div>
+
+  <script src="options.js"></script>
+</body>
+</html>

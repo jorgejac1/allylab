@@ -17,11 +17,11 @@ export function GoalProgress({
   const progressPercent = Math.min((currentScore / goalScore) * 100, 100);
   const pointsToGoal = Math.max(goalScore - currentScore, 0);
   const goalReached = currentScore >= goalScore;
-  
+
   // Calculate estimated scans to reach goal based on recent progress
   const recentProgress = previousScore ? currentScore - previousScore : 0;
-  const estimatedScans = recentProgress > 0 
-    ? Math.ceil(pointsToGoal / recentProgress) 
+  const estimatedScans = recentProgress > 0
+    ? Math.ceil(pointsToGoal / recentProgress)
     : null;
 
   // Milestone markers
@@ -29,57 +29,32 @@ export function GoalProgress({
 
   return (
     <Card>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="m-0 text-sm font-semibold inline-flex items-center gap-1.5">
           <Target size={16} /> Goal Progress
         </h4>
         {goalReached ? (
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "4px 12px",
-              background: "#dcfce7",
-              color: "#166534",
-              borderRadius: 20,
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
+          <span className="flex items-center gap-1.5 py-1 px-3 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
             <Check size={14} />
             Goal Reached!
           </span>
         ) : (
-          <span style={{ fontSize: 12, color: "#64748b" }}>
+          <span className="text-xs text-slate-500">
             {pointsToGoal} points to goal
           </span>
         )}
       </div>
 
       {/* Progress Bar */}
-      <div
-        style={{
-          position: "relative",
-          height: 24,
-          background: "#f1f5f9",
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
-      >
+      <div className="relative h-6 bg-slate-100 rounded-xl overflow-hidden">
         {/* Filled Progress */}
         <div
+          className="absolute left-0 top-0 h-full rounded-xl transition-[width] duration-500 ease-out"
           style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            height: "100%",
             width: `${progressPercent}%`,
             background: goalReached
               ? "linear-gradient(90deg, #10b981, #34d399)"
               : "linear-gradient(90deg, #3b82f6, #60a5fa)",
-            borderRadius: 12,
-            transition: "width 0.5s ease-out",
           }}
         />
 
@@ -90,14 +65,10 @@ export function GoalProgress({
           return (
             <div
               key={milestone}
+              className="absolute top-0 h-full w-0.5 -translate-x-px"
               style={{
-                position: "absolute",
                 left: `${position}%`,
-                top: 0,
-                height: "100%",
-                width: 2,
                 background: reached ? "rgba(255,255,255,0.5)" : "#cbd5e1",
-                transform: "translateX(-1px)",
               }}
             />
           );
@@ -105,13 +76,10 @@ export function GoalProgress({
 
         {/* Score Label */}
         <div
+          className="absolute -translate-x-1/2 -translate-y-1/2 text-xs font-bold"
           style={{
-            position: "absolute",
             left: `${Math.min(progressPercent, 95)}%`,
             top: "50%",
-            transform: "translate(-50%, -50%)",
-            fontSize: 11,
-            fontWeight: 700,
             color: progressPercent > 15 ? "#fff" : "#475569",
             textShadow: progressPercent > 15 ? "0 1px 2px rgba(0,0,0,0.2)" : "none",
           }}
@@ -121,38 +89,27 @@ export function GoalProgress({
       </div>
 
       {/* Stats Row */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 12,
-          paddingTop: 12,
-          borderTop: "1px solid #e2e8f0",
-        }}
-      >
-        <div style={{ display: "flex", gap: 24 }}>
+      <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
+        <div className="flex gap-6">
           <div>
-            <span style={{ fontSize: 11, color: "#64748b" }}>Current</span>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#0f172a" }}>
+            <span className="text-xs text-slate-500">Current</span>
+            <div className="text-lg font-bold text-slate-900">
               {currentScore}
             </div>
           </div>
           <div>
-            <span style={{ fontSize: 11, color: "#64748b" }}>Goal</span>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#f59e0b" }}>
+            <span className="text-xs text-slate-500">Goal</span>
+            <div className="text-lg font-bold text-amber-500">
               {goalScore}
             </div>
           </div>
           {previousScore !== undefined && (
             <div>
-              <span style={{ fontSize: 11, color: "#64748b" }}>Last Scan</span>
+              <span className="text-xs text-slate-500">Last Scan</span>
               <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: currentScore >= previousScore ? "#10b981" : "#ef4444",
-                }}
+                className={`text-lg font-bold ${
+                  currentScore >= previousScore ? 'text-emerald-500' : 'text-red-500'
+                }`}
               >
                 {currentScore > previousScore && "+"}
                 {currentScore - previousScore}
@@ -163,9 +120,9 @@ export function GoalProgress({
 
         {/* Estimated Scans */}
         {!goalReached && estimatedScans && estimatedScans > 0 && estimatedScans < 100 && (
-          <div style={{ textAlign: "right" }}>
-            <span style={{ fontSize: 11, color: "#64748b" }}>Est. scans to goal</span>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#6366f1" }}>
+          <div className="text-right">
+            <span className="text-xs text-slate-500">Est. scans to goal</span>
+            <div className="text-lg font-bold text-indigo-500">
               ~{estimatedScans}
             </div>
           </div>

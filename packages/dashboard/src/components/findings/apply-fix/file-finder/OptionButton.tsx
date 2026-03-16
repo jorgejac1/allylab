@@ -21,53 +21,27 @@ export function OptionButton({
   return (
     <button
       onClick={onClick}
-      style={{
-        width: '100%',
-        padding: '10px 12px',
-        border: isHighlighted ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-        borderRadius: 6,
-        background: isHighlighted ? '#eff6ff' : '#fff',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        fontSize: 14,
-        position: 'relative',
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = isHighlighted ? '#dbeafe' : '#f0f9ff'}
-      onMouseLeave={e => e.currentTarget.style.background = isHighlighted ? '#eff6ff' : '#fff'}
+      className={`w-full py-2.5 px-3 rounded-md cursor-pointer flex items-center gap-2.5 text-sm relative ${
+        isHighlighted
+          ? 'border-2 border-blue-500 bg-blue-50 hover:bg-blue-100'
+          : 'border border-slate-200 bg-white hover:bg-sky-50'
+      }`}
     >
       <span>{icon}</span>
-      <div style={{ textAlign: 'left', flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 500 }}>{title}</div>
-        <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>
+      <div className="text-left flex-1">
+        <div className="text-[13px] font-medium">{title}</div>
+        <div className="text-[11px] text-slate-500 font-mono">
           {subtitle}
         </div>
       </div>
       {badge === 'recommended' && (
-        <span style={{
-          fontSize: 10,
-          background: '#3b82f6',
-          color: '#fff',
-          padding: '2px 6px',
-          borderRadius: 4,
-          fontWeight: 600,
-        }}>
+        <span className="text-[10px] bg-blue-500 text-white py-0.5 px-1.5 rounded font-semibold">
           Recommended
         </span>
       )}
       {badge === 'last-worked' && (
-        <span style={{
-          fontSize: 10,
-          background: '#22c55e',
-          color: '#fff',
-          padding: '2px 6px',
-          borderRadius: 4,
-          fontWeight: 600,
-          display: 'inline-flex',
-          alignItems: 'center',
-        }}>
-          <Check size={10} style={{ marginRight: 4 }} aria-hidden="true" /> Last worked
+        <span className="text-[10px] bg-green-500 text-white py-0.5 px-1.5 rounded font-semibold inline-flex items-center">
+          <Check size={10} className="mr-1" aria-hidden="true" /> Last worked
         </span>
       )}
     </button>

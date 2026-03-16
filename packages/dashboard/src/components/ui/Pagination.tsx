@@ -16,8 +16,8 @@ export function Pagination({
   onPageSizeChange,
 }: PaginationProps) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center py-3">
+      <div className="flex items-center gap-2">
         <Button
           variant="secondary"
           size="sm"
@@ -26,7 +26,7 @@ export function Pagination({
         >
           Prev
         </Button>
-        <span style={{ fontSize: 14, color: '#64748b' }}>
+        <span className="text-sm/[normal] text-slate-500">
           Page {currentPage} of {totalPages}
         </span>
         <Button
@@ -38,17 +38,12 @@ export function Pagination({
           Next
         </Button>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 14, color: '#64748b' }}>Rows:</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm/[normal] text-slate-500">Rows:</span>
         <select
           value={pageSize}
           onChange={e => onPageSizeChange(Number(e.target.value))}
-          style={{
-            padding: '6px 10px',
-            borderRadius: 6,
-            border: '1px solid #e2e8f0',
-            fontSize: 14,
-          }}
+          className="px-2.5 py-1.5 rounded-md border border-slate-200 text-sm/[normal]"
         >
           {[10, 25, 50, 100].map(size => (
             <option key={size} value={size}>{size}</option>

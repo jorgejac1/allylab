@@ -24,8 +24,8 @@ describe("executive/KPIGrid", () => {
     );
 
     const grid = container.firstChild as HTMLElement;
+    expect(grid).toHaveClass("grid");
     expect(grid).toHaveStyle({
-      display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
       gap: "16px",
       marginBottom: "24px",
@@ -117,8 +117,8 @@ describe("executive/KPIGrid", () => {
     );
 
     const grid = container.firstChild as HTMLElement;
+    expect(grid).toHaveClass("grid");
     expect(grid).toHaveStyle({
-      display: "grid",
       gridTemplateColumns: "repeat(2, 1fr)",
       gap: "20px",
       marginBottom: "40px",

@@ -8,49 +8,32 @@ interface PageContainerProps {
   maxWidth?: number;
 }
 
-export function PageContainer({ 
-  children, 
-  title, 
-  subtitle, 
+export function PageContainer({
+  children,
+  title,
+  subtitle,
   actions,
-  maxWidth = 1400 
+  maxWidth = 1400
 }: PageContainerProps) {
   return (
-    <div
-      style={{
-        flex: 1,
-        padding: 24,
-        background: '#f8fafc',
-        minHeight: 'calc(100vh - 120px)',
-        overflow: 'auto',
-      }}
-    >
-      <div style={{ maxWidth, margin: '0 auto' }}>
+    <div className="flex-1 p-4 sm:p-6 bg-slate-50 min-h-[calc(100vh_-_120px)] overflow-auto">
+      <div className="mx-auto" style={{ maxWidth }}>
         {/* Page Header */}
         {(title || actions) && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: 24,
-              flexWrap: 'wrap',
-              gap: 16,
-            }}
-          >
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-between sm:items-start mb-6">
             {title && (
               <div>
-                <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 4px', color: '#0f172a' }}>
+                <h2 className="text-xl/[normal] sm:text-2xl/[normal] font-bold m-0 mb-1 text-slate-900">
                   {title}
                 </h2>
                 {subtitle && (
-                  <p style={{ fontSize: 14, color: '#64748b', margin: 0 }}>
+                  <p className="text-sm/[normal] text-slate-500 m-0">
                     {subtitle}
                   </p>
                 )}
               </div>
             )}
-            {actions && <div style={{ display: 'flex', gap: 12 }}>{actions}</div>}
+            {actions && <div className="flex gap-3">{actions}</div>}
           </div>
         )}
 

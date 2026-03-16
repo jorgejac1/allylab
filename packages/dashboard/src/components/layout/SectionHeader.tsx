@@ -9,28 +9,21 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ title, subtitle, icon, actions }: SectionHeaderProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {icon && <span style={{ fontSize: 20 }}>{icon}</span>}
+    <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-4">
+      <div className="flex items-center gap-2.5">
+        {icon && <span className="text-xl/[normal]">{icon}</span>}
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#0f172a' }}>
+          <h3 className="text-base/[normal] font-semibold m-0 text-slate-900">
             {title}
           </h3>
           {subtitle && (
-            <p style={{ fontSize: 13, color: '#64748b', margin: '2px 0 0' }}>
+            <p className="text-[13px] text-slate-500 m-0 mt-0.5">
               {subtitle}
             </p>
           )}
         </div>
       </div>
-      {actions && <div style={{ display: 'flex', gap: 8 }}>{actions}</div>}
+      {actions && <div className="flex gap-2">{actions}</div>}
     </div>
   );
 }

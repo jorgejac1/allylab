@@ -9,21 +9,12 @@ interface ProgressRowProps {
 
 export function ProgressRow({ label, value, icon, color }: ProgressRowProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 16px',
-        background: '#f8fafc',
-        borderRadius: 8,
-      }}
-    >
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, color }}>
-        <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
-        <span style={{ fontSize: 14, color: '#1e293b' }}>{label}</span>
+    <div className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-lg">
+      <span className="flex items-center gap-2" style={{ color }}>
+        <span className="flex items-center">{icon}</span>
+        <span className="text-sm/[normal] text-slate-800">{label}</span>
       </span>
-      <span style={{ fontSize: 20, fontWeight: 700, color }}>{value}</span>
+      <span className="text-xl/[normal] font-bold" style={{ color }}>{value}</span>
     </div>
   );
 }

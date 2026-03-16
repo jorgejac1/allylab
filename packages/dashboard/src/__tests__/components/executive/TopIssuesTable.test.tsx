@@ -129,14 +129,14 @@ describe("executive/TopIssuesTable", () => {
     render(<TopIssuesTable issues={mockIssues} onClickIssue={handleClick} />);
 
     const row = screen.getByText("Color Contrast").closest("tr");
-    expect(row).toHaveStyle({ cursor: "pointer" });
+    expect(row).toHaveClass("cursor-pointer");
   });
 
   it("applies default cursor when not clickable", () => {
     render(<TopIssuesTable issues={mockIssues} />);
 
     const row = screen.getByText("Color Contrast").closest("tr");
-    expect(row).toHaveStyle({ cursor: "default" });
+    expect(row).toHaveClass("cursor-default");
   });
 
   it("applies hover effect on mouse enter when clickable", () => {
@@ -144,9 +144,7 @@ describe("executive/TopIssuesTable", () => {
     render(<TopIssuesTable issues={mockIssues} onClickIssue={handleClick} />);
 
     const row = screen.getByText("Color Contrast").closest("tr");
-    fireEvent.mouseEnter(row!);
-
-    expect(row).toHaveStyle({ background: "#f0f9ff" });
+    expect(row).toHaveClass("hover:bg-blue-50");
   });
 
   it("resets hover effect on mouse leave when clickable", () => {
@@ -154,34 +152,31 @@ describe("executive/TopIssuesTable", () => {
     render(<TopIssuesTable issues={mockIssues} onClickIssue={handleClick} />);
 
     const row = screen.getByText("Color Contrast").closest("tr");
-    fireEvent.mouseEnter(row!);
-    fireEvent.mouseLeave(row!);
-
-    expect(row).toHaveStyle({ background: "#fff" });
+    // First row is even, so it has bg-white class
+    expect(row).toHaveClass("bg-white");
   });
 
   it("does not apply hover effect when not clickable", () => {
     render(<TopIssuesTable issues={mockIssues} />);
 
     const row = screen.getByText("Color Contrast").closest("tr");
-    const initialBackground = row!.style.background;
     fireEvent.mouseEnter(row!);
-
-    expect(row).toHaveStyle({ background: initialBackground });
+    // Not clickable, so no hover class
+    expect(row).not.toHaveClass("hover:bg-blue-50");
   });
 
   it("alternates row backgrounds - even row", () => {
     render(<TopIssuesTable issues={mockIssues} />);
 
     const firstRow = screen.getByText("Color Contrast").closest("tr");
-    expect(firstRow).toHaveStyle({ background: "#fff" });
+    expect(firstRow).toHaveClass("bg-white");
   });
 
   it("alternates row backgrounds - odd row", () => {
     render(<TopIssuesTable issues={mockIssues} />);
 
     const secondRow = screen.getByText("Images must have alt text").closest("tr");
-    expect(secondRow).toHaveStyle({ background: "#fafafa" });
+    expect(secondRow).toHaveClass("bg-[#fafafa]");
   });
 
   it("handles click on issue when onClickIssue is undefined", () => {
@@ -198,7 +193,7 @@ describe("executive/TopIssuesTable", () => {
     const row = screen.getByText("Color Contrast").closest("tr");
     // Should not change background
     fireEvent.mouseEnter(row!);
-    expect(row).toHaveStyle({ background: "#fff" });
+    expect(row).toHaveClass("bg-white");
   });
 
   it("handles mouse leave when not clickable", () => {
@@ -207,7 +202,7 @@ describe("executive/TopIssuesTable", () => {
     const row = screen.getByText("Color Contrast").closest("tr");
     fireEvent.mouseLeave(row!);
     // Should not throw and maintain original background
-    expect(row).toHaveStyle({ background: "#fff" });
+    expect(row).toHaveClass("bg-white");
   });
 
   it("renders minor severity correctly", () => {

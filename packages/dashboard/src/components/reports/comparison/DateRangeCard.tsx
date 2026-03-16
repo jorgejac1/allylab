@@ -7,25 +7,15 @@ interface DateRangeCardProps {
 export function DateRangeCard({ label, range, color }: DateRangeCardProps) {
   return (
     <div
+      className="p-4 bg-white rounded-lg text-center"
       style={{
-        padding: 16,
-        background: '#fff',
         border: `2px solid ${color}20`,
-        borderRadius: 8,
-        textAlign: 'center',
       }}
     >
-      <div
-        style={{
-          fontSize: 11,
-          color: '#64748b',
-          marginBottom: 4,
-          textTransform: 'uppercase',
-        }}
-      >
+      <div className="text-xs text-slate-500 mb-1 uppercase">
         {label}
       </div>
-      <div style={{ fontSize: 14, fontWeight: 600, color }}>{range}</div>
+      <div className="text-sm font-semibold" style={{ color }}>{range}</div>
     </div>
   );
 }

@@ -242,7 +242,7 @@ export function ApplyFixModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span className="flex items-center gap-2">
           <Wrench size={18} aria-hidden="true" />Apply Fix
         </span>
       }

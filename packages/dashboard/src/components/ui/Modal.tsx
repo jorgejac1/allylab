@@ -10,11 +10,11 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const SIZES = {
-  sm: 400,
-  md: 500,
-  lg: 640,
-  xl: 800,
+const sizeClasses = {
+  sm: 'max-w-[400px]',
+  md: 'max-w-[500px]',
+  lg: 'max-w-[640px]',
+  xl: 'max-w-[800px]',
 };
 
 // Get all focusable elements within a container
@@ -123,16 +123,7 @@ export function Modal({
       <div
         onClick={handleBackdropClick}
         aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          animation: 'fadeIn 0.2s ease-out',
-        }}
+        className="fixed inset-0 bg-black/50 z-[1000] animate-[fadeIn_0.2s_ease-out]"
       />
 
       {/* Modal */}
@@ -144,24 +135,7 @@ export function Modal({
         tabIndex={-1}
         onKeyDown={handleKeyDown}
         onClick={handleModalClick}
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: SIZES[size],
-          maxHeight: '90vh',
-          background: '#fff',
-          borderRadius: 12,
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.2)',
-          zIndex: 1001,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          animation: 'scaleIn 0.2s ease-out',
-          outline: 'none',
-        }}
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] sm:w-[90%] ${sizeClasses[size]} max-h-[90vh] bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[1001] flex flex-col overflow-hidden animate-[scaleIn_0.2s_ease-out] outline-none`}
       >
         <style>{`
           @keyframes fadeIn {
@@ -175,51 +149,26 @@ export function Modal({
         `}</style>
 
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e2e8f0',
-          }}
-        >
-          <h3 id={titleId} style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{title}</h3>
+        <div className="flex justify-between items-center px-4 py-3 sm:px-5 sm:py-4 border-b border-slate-200">
+          <h3 id={titleId} className="text-lg/[normal] font-semibold m-0">{title}</h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: 24,
-              cursor: 'pointer',
-              color: '#94a3b8',
-              lineHeight: 1,
-              padding: 4,
-            }}
+            className="bg-none border-none text-2xl cursor-pointer text-slate-400 leading-none p-1"
           >
             ×
           </button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
+        <div className="flex-1 overflow-auto p-4 sm:p-5">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 12,
-              padding: '16px 20px',
-              borderTop: '1px solid #e2e8f0',
-              background: '#f8fafc',
-            }}
-          >
+          <div className="flex justify-end gap-3 px-4 py-3 sm:px-5 sm:py-4 border-t border-slate-200 bg-slate-50">
             {footer}
           </div>
         )}
@@ -273,7 +222,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <p style={{ fontSize: 14, color: '#64748b', margin: 0, lineHeight: 1.6 }}>
+      <p className="text-sm text-slate-500 m-0 leading-relaxed">
         {message}
       </p>
     </Modal>

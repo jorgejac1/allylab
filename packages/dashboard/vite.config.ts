@@ -1,5 +1,6 @@
 import { defineConfig, createLogger } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 const logger = createLogger();
@@ -11,7 +12,7 @@ logger.warn = (msg, options) => {
 };
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -41,6 +42,14 @@ export default defineConfig({
         // Suppress unresolved import warnings for optional peer deps
         if (warning.code === 'UNRESOLVED_IMPORT') return;
         warn(warning);
+      },
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-export': ['exceljs', 'jspdf'],
+          'vendor-icons': ['lucide-react'],
+        },
       },
     },
   },

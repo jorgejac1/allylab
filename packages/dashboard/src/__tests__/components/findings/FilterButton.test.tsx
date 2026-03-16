@@ -24,22 +24,14 @@ describe("findings/FilterButton", () => {
       const { container } = render(<FilterButton active={true} onClick={vi.fn()} label="Test" />);
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        background: "#fff",
-        color: "#0f172a",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-      });
+      expect(button).toHaveClass("bg-white", "text-slate-900", "shadow-sm");
     });
 
     it("applies inactive styling when not active", () => {
       const { container } = render(<FilterButton active={false} onClick={vi.fn()} label="Test" />);
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        background: "transparent",
-        color: "#64748b",
-        boxShadow: "none",
-      });
+      expect(button).toHaveClass("bg-transparent", "text-slate-500");
     });
   });
 
@@ -62,10 +54,8 @@ describe("findings/FilterButton", () => {
       const { container } = render(<PillButton active={true} onClick={vi.fn()} label="Pill" />);
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        background: "rgb(37, 99, 235)",
-        color: "rgb(255, 255, 255)",
-      });
+      expect(button).toHaveStyle({ background: "rgb(37, 99, 235)" });
+      expect(button).toHaveClass("text-white");
     });
 
     it("applies active styling with custom color", () => {
@@ -74,30 +64,23 @@ describe("findings/FilterButton", () => {
       );
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        background: "rgb(255, 0, 0)",
-        color: "rgb(255, 255, 255)",
-      });
+      expect(button).toHaveStyle({ background: "rgb(255, 0, 0)" });
+      expect(button).toHaveClass("text-white");
     });
 
     it("applies inactive styling", () => {
       const { container } = render(<PillButton active={false} onClick={vi.fn()} label="Pill" />);
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        background: "rgb(255, 255, 255)",
-        color: "rgb(100, 116, 139)",
-      });
+      expect(button).toHaveStyle({ background: "#fff" });
+      expect(button).toHaveClass("text-slate-500");
     });
 
     it("applies pill border radius", () => {
       const { container } = render(<PillButton active={false} onClick={vi.fn()} label="Pill" />);
 
       const button = container.querySelector("button");
-      expect(button).toHaveStyle({
-        borderRadius: "20px",
-        padding: "4px 12px",
-      });
+      expect(button).toHaveClass("rounded-full", "py-1", "px-3");
     });
   });
 
@@ -107,12 +90,7 @@ describe("findings/FilterButton", () => {
 
       const divider = container.firstChild as HTMLElement;
       expect(divider).toBeInTheDocument();
-      expect(divider).toHaveStyle({
-        width: "1px",
-        height: "20px",
-        background: "#e2e8f0",
-        margin: "0 4px",
-      });
+      expect(divider).toHaveClass("w-px", "h-5", "bg-slate-200", "mx-1");
     });
   });
 });

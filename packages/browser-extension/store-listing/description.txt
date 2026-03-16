@@ -1,0 +1,24 @@
+AllyLab Cookie Capture — Accessibility Testing Extension
+
+Capture session cookies from any website for authenticated accessibility scanning with AllyLab.
+
+FEATURES:
+• One-click cookie capture from any website
+• Automatic session transfer to AllyLab dashboard
+• Supports all authentication methods (session cookies, JWT tokens)
+• Configurable dashboard and API endpoints
+• Privacy-focused: cookies are only sent to your own AllyLab instance
+
+HOW TO USE:
+1. Navigate to the website you want to scan
+2. Log in with your credentials
+3. Click the AllyLab extension icon
+4. Click "Capture Cookies" to grab the session
+5. Open AllyLab dashboard to start an authenticated scan
+
+REQUIREMENTS:
+• AllyLab dashboard instance (self-hosted or cloud)
+• Access to the website you want to scan
+
+PRIVACY:
+Cookie data is only transmitted to your configured AllyLab instance. No data is sent to third parties. See our privacy policy for details.

@@ -609,7 +609,7 @@ describe("components/findings/JiraExportModal", () => {
     // Check that error is displayed with correct styling
     const errorMessage = screen.getByText("API rate limit exceeded");
     expect(errorMessage).toBeInTheDocument();
-    expect(errorMessage).toHaveStyle({ color: "#ef4444" });
+    expect(errorMessage).toHaveClass("text-red-500");
   });
 
   it("applies red background to failed export result rows", async () => {
@@ -645,7 +645,7 @@ describe("components/findings/JiraExportModal", () => {
     // The failed result should show error message with error styling
     const errorMessage = screen.getByText("Connection timeout");
     expect(errorMessage).toBeInTheDocument();
-    expect(errorMessage).toHaveStyle({ color: "#ef4444" });
+    expect(errorMessage).toHaveClass("text-red-500");
   });
 
   it("applies green background to successful export result rows", async () => {

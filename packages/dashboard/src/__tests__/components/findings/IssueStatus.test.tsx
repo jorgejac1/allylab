@@ -31,30 +31,21 @@ describe("findings/IssueStatus", () => {
       const { container } = render(<IssueStatus status="new" size="sm" />);
 
       const badge = container.firstChild as HTMLElement;
-      expect(badge).toHaveStyle({
-        padding: "2px 6px",
-        fontSize: "10px",
-      });
+      expect(badge).toHaveClass("py-0.5", "px-1.5", "text-[10px]");
     });
 
     it("renders medium size badge", () => {
       const { container } = render(<IssueStatus status="new" size="md" />);
 
       const badge = container.firstChild as HTMLElement;
-      expect(badge).toHaveStyle({
-        padding: "4px 10px",
-        fontSize: "12px",
-      });
+      expect(badge).toHaveClass("py-1", "px-2.5", "text-xs");
     });
 
     it("renders large size badge", () => {
       const { container } = render(<IssueStatus status="new" size="lg" />);
 
       const badge = container.firstChild as HTMLElement;
-      expect(badge).toHaveStyle({
-        padding: "6px 14px",
-        fontSize: "14px",
-      });
+      expect(badge).toHaveClass("py-1.5", "px-3.5", "text-sm");
     });
 
     it("hides label when showLabel is false", () => {
@@ -149,13 +140,7 @@ describe("findings/IssueStatus", () => {
       const { container } = render(<IssueStatusSummary newCount={5} recurringCount={3} fixedCount={2} />);
 
       const summaryContainer = container.firstChild as HTMLElement;
-      expect(summaryContainer).toHaveStyle({
-        display: "flex",
-        gap: "16px",
-        padding: "12px 16px",
-        background: "rgb(248, 250, 252)",
-        borderRadius: "8px",
-      });
+      expect(summaryContainer).toHaveClass("flex", "gap-4", "py-3", "px-4", "bg-slate-50", "rounded-lg");
     });
   });
 });

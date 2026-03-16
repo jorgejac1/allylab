@@ -17,13 +17,13 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card>
-      <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>
+      <div className="text-xs/[normal] text-slate-500 mb-1">
         {label}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: color || '#0f172a' }}>
+      <div className="text-[28px] font-bold" style={{ color: color || '#0f172a' }}>
         {prefix}
         {value}
-        <span style={{ fontSize: 14, fontWeight: 400, color: '#64748b' }}>
+        <span className="text-sm/[normal] font-normal text-slate-500">
           {suffix}
         </span>
       </div>

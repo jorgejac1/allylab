@@ -22,11 +22,11 @@ const icons: Record<ToastType, ReactNode> = {
   info: <Info size={18} />,
 };
 
-const colors: Record<ToastType, { bg: string; border: string; text: string }> = {
-  success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
-  error: { bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
-  warning: { bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
-  info: { bg: '#eff6ff', border: '#93c5fd', text: '#1e40af' },
+const typeStyles: Record<ToastType, string> = {
+  success: 'bg-green-50 border-green-300 text-green-800',
+  error: 'bg-red-50 border-red-200 text-red-800',
+  warning: 'bg-amber-50 border-amber-200 text-amber-800',
+  info: 'bg-blue-50 border-blue-300 text-blue-800',
 };
 
 function ToastItem({
@@ -58,42 +58,22 @@ function ToastItem({
     }
   };
 
-  const { bg, border, text } = colors[type];
-
   return (
     <div
+      className={`flex items-center gap-3 px-4 py-3 border rounded-lg shadow-md w-[calc(100vw_-_2.5rem)] sm:w-auto sm:min-w-[300px] max-w-[450px] ${typeStyles[type]}`}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '12px 16px',
-        background: bg,
-        border: `1px solid ${border}`,
-        borderRadius: 8,
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        minWidth: 300,
-        maxWidth: 450,
         animation: (isExiting || shouldAutoClose) ? 'toastExit 0.2s ease-out forwards' : 'toastEnter 0.2s ease-out',
       }}
       onAnimationEnd={handleAnimationEnd}
       role="alert"
     >
-      <span style={{ display: 'flex', alignItems: 'center', color: text }}>{icons[type]}</span>
-      <p style={{ flex: 1, margin: 0, fontSize: 14, color: text, fontWeight: 500 }}>
+      <span className="flex items-center">{icons[type]}</span>
+      <p className="flex-1 m-0 text-sm/[normal] font-medium">
         {message}
       </p>
       <button
         onClick={handleClose}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 4,
-          color: text,
-          opacity: 0.6,
-          display: 'flex',
-          alignItems: 'center',
-        }}
+        className="bg-none border-none cursor-pointer p-1 opacity-60 flex items-center"
         aria-label="Close"
       >
         <X size={16} />
@@ -106,17 +86,7 @@ export function Toast({ toasts, onClose }: ToastProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 20,
-        right: 20,
-        zIndex: 10000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}
-    >
+    <div className="fixed top-5 right-5 z-[10000] flex flex-col gap-2">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} {...toast} onClose={onClose} />
       ))}

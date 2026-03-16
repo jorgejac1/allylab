@@ -42,3 +42,14 @@ export { useDateRanges, formatDateRange } from './useDateRanges';
 export type { PresetPeriod, DateRanges } from './useDateRanges';
 export { useTrendData } from './useTrendData';
 export type { TrendAggregateStats, TrendDataResult } from './useTrendData';
+
+// Feature hooks
+export { useAuditLog } from './useAuditLog';
+export type { UseAuditLogResult } from './useAuditLog';
+export { useFilterPresets } from './useFilterPresets';
+export type { UseFilterPresetsResult } from './useFilterPresets';
+export { useDashboardLayout } from './useDashboardLayout';
+export type { UseDashboardLayoutResult } from './useDashboardLayout';
+export { useGitLabMR } from './useGitLabMR';
+export type { UseGitLabMRResult, GitLabVerificationResult } from './useGitLabMR';
+export { usePlanLimits } from './usePlanLimits';

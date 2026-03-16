@@ -16,11 +16,13 @@ export const TABS: TabConfig[] = [
   { id: 'alerts', label: 'Alerts' },
   { id: 'schedules', label: 'Scheduled Scans' },
   { id: 'auth', label: 'Authentication' },
+  { id: 'sso', label: 'SSO' },
   { id: 'webhooks', label: 'Notifications' },
   { id: 'jira', label: 'JIRA' },
   { id: 'git', label: 'Git' },
   { id: 'cicd', label: 'CI/CD' },
   { id: 'api', label: 'API' },
+  { id: 'audit', label: 'Audit Log' },
 ];
 
 export const WCAG_OPTIONS = [

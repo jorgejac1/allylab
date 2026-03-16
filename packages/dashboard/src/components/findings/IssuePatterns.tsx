@@ -14,13 +14,13 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
 
   return (
     <Card>
-      <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
         <Brain size={18} /> Smart Issue Analysis
-        <span style={{ fontSize: 12, fontWeight: 400, color: '#64748b' }}>Pattern detection & deduplication</span>
+        <span className="text-xs font-normal text-slate-500">Pattern detection & deduplication</span>
       </h3>
 
       {/* Stats Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <StatBox label="TOTAL ISSUES FOUND" value={findings.length} />
         <StatBox label="UNIQUE ISSUE TYPES" value={patterns.length} />
         <StatBox label="EFFICIENCY GAIN" value={`${efficiencyGain}%`} subtext={`Fix ${patterns.length} to solve ${findings.length}`} />
@@ -28,42 +28,42 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
       </div>
 
       {/* Patterns Table */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>All Issue Patterns</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="mb-4">
+        <div className="text-sm font-semibold mb-3">All Issue Patterns</div>
+        <table className="w-full border-collapse">
           <thead>
-            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-              <th style={thStyle}>Issue</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}>Type</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}>Count</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}>Pages</th>
-              <th style={thStyle}>Fix Strategy</th>
+            <tr className="border-b border-slate-200">
+              <th className="p-3 text-left text-[11px] font-semibold text-slate-500 uppercase">Issue</th>
+              <th className="p-3 text-center text-[11px] font-semibold text-slate-500 uppercase">Type</th>
+              <th className="p-3 text-center text-[11px] font-semibold text-slate-500 uppercase">Count</th>
+              <th className="p-3 text-center text-[11px] font-semibold text-slate-500 uppercase">Pages</th>
+              <th className="p-3 text-left text-[11px] font-semibold text-slate-500 uppercase">Fix Strategy</th>
             </tr>
           </thead>
           <tbody>
             {patterns.slice(0, 10).map(pattern => (
-              <tr key={pattern.ruleId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={tdStyle}>
-                  <div style={{ fontWeight: 500 }}>{pattern.ruleTitle}</div>
+              <tr key={pattern.ruleId} className="border-b border-slate-50">
+                <td className="p-3 align-middle">
+                  <div className="font-medium">{pattern.ruleTitle}</div>
                   <SeverityBadge severity={pattern.severity} />
                 </td>
-                <td style={{ ...tdStyle, textAlign: 'center' }}>
-                  <span style={{
-                    padding: '4px 8px',
-                    borderRadius: 4,
-                    fontSize: 11,
-                    background: pattern.type === 'template' ? '#dbeafe' : '#f1f5f9',
-                    color: pattern.type === 'template' ? '#1d4ed8' : '#64748b',
-                  }}>
-                    {pattern.type === 'template' ? <><RefreshCw size={10} style={{ marginRight: 4 }} />Template</> : pattern.type === 'global' ? <><Globe size={10} style={{ marginRight: 4 }} />Global</> : <><FileText size={10} style={{ marginRight: 4 }} />Page</>}
+                <td className="p-3 align-middle text-center">
+                  <span
+                    className="py-1 px-2 rounded text-[11px]"
+                    style={{
+                      background: pattern.type === 'template' ? '#dbeafe' : '#f1f5f9',
+                      color: pattern.type === 'template' ? '#1d4ed8' : '#64748b',
+                    }}
+                  >
+                    {pattern.type === 'template' ? <><RefreshCw size={10} className="mr-1" />Template</> : pattern.type === 'global' ? <><Globe size={10} className="mr-1" />Global</> : <><FileText size={10} className="mr-1" />Page</>}
                   </span>
                 </td>
-                <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, fontSize: 18 }}>
+                <td className="p-3 align-middle text-center font-bold text-lg">
                   {pattern.count}
                 </td>
-                <td style={{ ...tdStyle, textAlign: 'center' }}>{pattern.pages}</td>
-                <td style={tdStyle}>
-                  <span style={{ color: '#2563eb', fontSize: 13 }}>{pattern.fixStrategy}</span>
+                <td className="p-3 align-middle text-center">{pattern.pages}</td>
+                <td className="p-3 align-middle">
+                  <span className="text-blue-600 text-[13px]">{pattern.fixStrategy}</span>
                 </td>
               </tr>
             ))}
@@ -72,9 +72,9 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
       </div>
 
       {/* Recommended Fix Order */}
-      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: 'inline-flex', alignItems: 'center', gap: 6 }}><Sparkles size={14} /> Recommended Fix Order</div>
-        <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: '#1e40af', lineHeight: 1.8 }}>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="text-[13px] font-semibold mb-2 inline-flex items-center gap-1.5"><Sparkles size={14} /> Recommended Fix Order</div>
+        <ol className="m-0 pl-5 text-[13px] text-blue-800 leading-[1.8]">
           <li><strong>Component Issues ({templateIssues}):</strong> Highest ROI - fix {patterns.filter(p => p.type === 'template').length} issues to resolve {templateIssues} total occurrences</li>
           <li><strong>Global Issues ({patterns.filter(p => p.type === 'global').length}):</strong> Systematic fixes affecting all pages</li>
           <li><strong>Remaining Issues:</strong> Address page-by-page in order of severity</li>
@@ -86,24 +86,10 @@ export function IssuePatterns({ findings }: IssuePatternsProps) {
 
 function StatBox({ label, value, subtext }: { label: string; value: string | number; subtext?: string }) {
   return (
-    <div style={{ textAlign: 'center', padding: 16, background: '#f8fafc', borderRadius: 8 }}>
-      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 32, fontWeight: 700 }}>{value}</div>
-      {subtext && <div style={{ fontSize: 11, color: '#64748b' }}>{subtext}</div>}
+    <div className="text-center p-4 bg-slate-50 rounded-lg">
+      <div className="text-[11px] text-slate-500 mb-1">{label}</div>
+      <div className="text-[32px] font-bold">{value}</div>
+      {subtext && <div className="text-[11px] text-slate-500">{subtext}</div>}
     </div>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  padding: '12px',
-  textAlign: 'left',
-  fontSize: 11,
-  fontWeight: 600,
-  color: '#64748b',
-  textTransform: 'uppercase',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '12px',
-  verticalAlign: 'middle',
-};

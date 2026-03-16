@@ -13,9 +13,9 @@ interface ComparisonViewProps {
   hasRegression?: (scanId: string) => RegressionInfo | undefined;
 }
 
-export function ComparisonView({ 
-  olderScan, 
-  newerScan, 
+export function ComparisonView({
+  olderScan,
+  newerScan,
   onClose,
   hasRegression,
 }: ComparisonViewProps) {
@@ -47,40 +47,22 @@ export function ComparisonView({
   return (
     <Card>
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24,
-        }}
-      >
-        <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold m-0 flex items-center gap-2">
           <BarChart3 size={20} />Scan Comparison
         </h3>
         <Button variant="secondary" size="sm" onClick={onClose}>
-          <X size={14} style={{ marginRight: 4 }} />Close
+          <X size={14} className="mr-1" />Close
         </Button>
       </div>
 
       {/* Regression Alert */}
       {hasAnyRegression && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: 12,
-            marginBottom: 24,
-            borderRadius: 8,
-            background: '#fef3c7',
-            border: '1px solid #f59e0b',
-          }}
-        >
-          <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center' }}><AlertTriangle size={20} /></span>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#92400e' }}>
-              {newerRegression 
+        <div className="flex items-center gap-3 p-3 mb-6 rounded-lg bg-amber-100 border border-amber-500">
+          <span className="text-amber-500 flex items-center"><AlertTriangle size={20} /></span>
+          <div className="flex-1">
+            <span className="text-sm font-medium text-amber-800">
+              {newerRegression
                 ? `The "After" scan shows a regression of ${newerRegression.scoreDrop} points from a previous scan.`
                 : `The "Before" scan shows a regression of ${olderRegression?.scoreDrop} points from an earlier scan.`
               }
@@ -90,33 +72,16 @@ export function ComparisonView({
       )}
 
       {/* Comparison Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          gap: 24,
-          alignItems: 'center',
-        }}
-      >
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-center">
         {/* Older Scan */}
-        <ScanCard 
-          scan={olderScan} 
-          label="Before" 
+        <ScanCard
+          scan={olderScan}
+          label="Before"
           regression={olderRegression}
         />
 
         {/* Diff Column */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-            padding: '20px 24px',
-            background: '#f8fafc',
-            borderRadius: 12,
-            minWidth: 140,
-          }}
-        >
+        <div className="flex flex-col gap-4 py-5 px-6 bg-slate-50 rounded-xl min-w-[140px]">
           <DiffRow
             label="Score"
             diff={formatScoreDiff(scoreDiff)}
@@ -127,7 +92,7 @@ export function ComparisonView({
             diff={formatDiff(issuesDiff)}
             icon={issuesDiff < 0 ? <CheckCircle size={14} /> : issuesDiff > 0 ? <AlertTriangle size={14} /> : <Minus size={14} />}
           />
-          <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+          <hr className="border-none border-t border-slate-200 my-1" />
           <DiffRow
             label="Critical"
             diff={formatDiff(criticalDiff)}
@@ -151,34 +116,24 @@ export function ComparisonView({
         </div>
 
         {/* Newer Scan */}
-        <ScanCard 
-          scan={newerScan} 
-          label="After" 
+        <ScanCard
+          scan={newerScan}
+          label="After"
           regression={newerRegression}
         />
       </div>
 
       {/* Summary */}
       <div
+        className={`mt-6 p-4 rounded-lg ${scoreDiff >= 0 ? 'bg-green-50' : 'bg-red-50'}`}
         style={{
-          marginTop: 24,
-          padding: 16,
-          borderRadius: 8,
-          background: scoreDiff >= 0 ? '#f0fdf4' : '#fef2f2',
           border: `1px solid ${scoreDiff >= 0 ? '#bbf7d0' : '#fecaca'}`,
         }}
       >
         <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            fontSize: 14,
-            fontWeight: 500,
-            color: scoreDiff >= 0 ? '#166534' : '#991b1b',
-          }}
+          className={`flex items-center gap-3 text-sm font-medium ${scoreDiff >= 0 ? 'text-green-800' : 'text-red-900'}`}
         >
-          <span style={{ display: 'flex', alignItems: 'center' }}>{scoreDiff >= 0 ? <PartyPopper size={24} /> : <AlertTriangle size={24} />}</span>
+          <span className="flex items-center">{scoreDiff >= 0 ? <PartyPopper size={24} /> : <AlertTriangle size={24} />}</span>
           <span>
             {scoreDiff > 0
               ? `Score improved by ${scoreDiff} points! ${issuesDiff < 0 ? `Fixed ${Math.abs(issuesDiff)} issues.` : ''}`
@@ -192,62 +147,37 @@ export function ComparisonView({
   );
 }
 
-function ScanCard({ 
-  scan, 
+function ScanCard({
+  scan,
   label,
   regression,
-}: { 
-  scan: SavedScan; 
+}: {
+  scan: SavedScan;
   label: string;
   regression?: RegressionInfo;
 }) {
   return (
     <div
-      style={{
-        padding: 20,
-        background: regression ? '#fef3c7' : '#f8fafc',
-        borderRadius: 12,
-        border: regression ? '2px solid #f59e0b' : '1px solid #e2e8f0',
-      }}
+      className={`p-5 rounded-xl ${regression ? 'bg-amber-100 border-2 border-amber-500' : 'bg-slate-50 border border-slate-200'}`}
     >
-      <div 
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          marginBottom: 12,
-        }}
-      >
-        <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-slate-500 font-semibold">
           {label.toUpperCase()}
         </span>
         {regression && (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '2px 8px',
-              borderRadius: 4,
-              background: '#fef3c7',
-              border: '1px solid #f59e0b',
-              color: '#92400e',
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
+          <span className="inline-flex items-center gap-1 py-0.5 px-2 rounded bg-amber-100 border border-amber-500 text-amber-800 text-xs font-semibold">
             <TrendingDown size={12} />-{regression.scoreDrop} from previous
           </span>
         )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+      <div className="flex items-center gap-4 mb-4">
         <ScoreCircle score={scan.score} size={64} />
         <div>
-          <div style={{ fontWeight: 600 }}>{new URL(scan.url).hostname}</div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>
+          <div className="font-semibold">{new URL(scan.url).hostname}</div>
+          <div className="text-xs text-slate-500">
             {new Date(scan.timestamp).toLocaleDateString()}
           </div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>
+          <div className="text-xs text-slate-500">
             {new Date(scan.timestamp).toLocaleTimeString()}
           </div>
         </div>
@@ -260,7 +190,7 @@ function ScanCard({
         height={16}
         showLabels={false}
       />
-      <div style={{ marginTop: 12, fontSize: 13, color: '#64748b' }}>
+      <div className="mt-3 text-sm text-slate-500">
         Total: {scan.totalIssues} issues
       </div>
     </div>
@@ -279,19 +209,13 @@ function DiffRow({
   color?: string;
 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontSize: 12, color: color || '#64748b' }}>{label}</span>
+    <div className="flex justify-between items-center">
+      <span className="text-xs" style={{ color: color || '#64748b' }}>{label}</span>
       <span
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          fontSize: 14,
-          fontWeight: 600,
-          color: diff.color,
-        }}
+        className="flex items-center gap-1 text-sm font-semibold"
+        style={{ color: diff.color }}
       >
-        {icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
+        {icon && <span className="flex items-center">{icon}</span>}
         {diff.text}
       </span>
     </div>

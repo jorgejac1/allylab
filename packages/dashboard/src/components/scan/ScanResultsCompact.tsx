@@ -13,37 +13,28 @@ interface ScanResultsCompactProps {
 export function ScanResultsCompact({ scan, onClick, selected = false }: ScanResultsCompactProps) {
   return (
     <Card
+      className={`transition-all duration-200 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
       style={{
-        cursor: onClick ? 'pointer' : 'default',
         border: selected ? '2px solid #2563eb' : '1px solid #e2e8f0',
-        transition: 'all 0.2s',
       }}
       onClick={onClick}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="flex items-center gap-4">
         {/* Score */}
         <ScoreCircle score={scan.score} size={56} />
 
         {/* Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 600,
-              marginBottom: 4,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
             {new URL(scan.url).hostname}
           </div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>
+          <div className="text-xs text-slate-500">
             {new Date(scan.timestamp).toLocaleString()}
           </div>
         </div>
 
         {/* Severity Counts */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex gap-2">
           {scan.critical > 0 && (
             <SeverityCount severity="critical" count={scan.critical} />
           )}
@@ -57,7 +48,7 @@ export function ScanResultsCompact({ scan, onClick, selected = false }: ScanResu
             <SeverityCount severity="minor" count={scan.minor} />
           )}
           {scan.totalIssues === 0 && (
-            <span style={{ fontSize: 12, color: '#10b981', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <span className="text-xs text-emerald-500 font-semibold inline-flex items-center gap-1">
               <CheckCircle size={14} /> No issues
             </span>
           )}
@@ -72,24 +63,14 @@ function SeverityCount({ severity, count }: { severity: string; count: number })
   
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 8px',
-        borderRadius: 6,
-        background: `${color}15`,
-      }}
+      className="flex items-center gap-1 py-1 px-2 rounded-md"
+      style={{ background: `${color}15` }}
     >
       <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: color,
-        }}
+        className="w-2 h-2 rounded-full"
+        style={{ background: color }}
       />
-      <span style={{ fontSize: 12, fontWeight: 600, color }}>{count}</span>
+      <span className="text-xs font-semibold" style={{ color }}>{count}</span>
     </div>
   );
 }

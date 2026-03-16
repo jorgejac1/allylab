@@ -25,18 +25,9 @@ export const CodeViewer = forwardRef<HTMLDivElement, CodeViewerProps>(
     return (
       <div
         ref={ref}
-        style={{
-          border: '1px solid #e2e8f0',
-          borderRadius: 8,
-          maxHeight: 300,
-          overflow: 'auto',
-        }}
+        className="border border-slate-200 rounded-lg max-h-[300px] overflow-auto"
       >
-        <div style={{
-          fontFamily: 'ui-monospace, monospace',
-          fontSize: 12,
-          lineHeight: 1.6,
-        }}>
+        <div className="font-mono text-xs leading-relaxed">
           {lines.map((line, idx) => {
             const lineNum = idx + 1;
             const isSelected = selectedLines &&
@@ -91,33 +82,27 @@ function CodeLine({
   return (
     <div
       onClick={onClick}
+      className="flex transition-colors duration-100"
       style={{
-        display: 'flex',
         background: isSelected ? '#fef3c7' : isEvenLine ? '#fff' : '#fafafa',
         cursor: manualMode ? 'pointer' : 'default',
         borderLeft: isSelected ? '3px solid #f59e0b' : '3px solid transparent',
-        transition: 'background 0.1s',
       }}
     >
-      <span style={{
-        width: 50,
-        padding: '2px 8px',
-        textAlign: 'right',
-        color: isSelected ? '#92400e' : '#94a3b8',
-        background: isSelected ? '#fde68a' : '#f1f5f9',
-        userSelect: 'none',
-        flexShrink: 0,
-        fontWeight: isMatchStart ? 700 : 400,
-      }}>
+      <span
+        className="w-[50px] py-0.5 px-2 text-right select-none shrink-0"
+        style={{
+          color: isSelected ? '#92400e' : '#94a3b8',
+          background: isSelected ? '#fde68a' : '#f1f5f9',
+          fontWeight: isMatchStart ? 700 : 400,
+        }}
+      >
         {lineNum}
       </span>
-      <span style={{
-        padding: '2px 12px',
-        whiteSpace: 'pre',
-        overflow: 'auto',
-        flex: 1,
-        color: isSelected ? '#78350f' : '#334155',
-      }}>
+      <span
+        className="py-0.5 px-3 whitespace-pre overflow-auto flex-1"
+        style={{ color: isSelected ? '#78350f' : '#334155' }}
+      >
         {highlightMatches(line, originalCode, textContent)}
       </span>
     </div>
@@ -142,11 +127,7 @@ function highlightMatches(
     return (
       <>
         {parts[0]}
-        <mark style={{
-          background: '#fde047',
-          padding: '0 2px',
-          borderRadius: 2
-        }}>
+        <mark className="bg-yellow-300 px-0.5 rounded-sm">
           {textContent}
         </mark>
         {parts.slice(1).join(textContent)}
@@ -161,11 +142,7 @@ function highlightMatches(
       return (
         <>
           {parts[0]}
-          <mark style={{
-            background: '#bfdbfe',
-            padding: '0 2px',
-            borderRadius: 2
-          }}>
+          <mark className="bg-blue-200 px-0.5 rounded-sm">
             {cls}
           </mark>
           {parts.slice(1).join(cls)}

@@ -8,6 +8,7 @@ describe("findings/SourceFilter", () => {
   const counts = {
     axeCore: 10,
     customRule: 5,
+    tvRule: 0,
     total: 15,
   };
 
@@ -20,7 +21,7 @@ describe("findings/SourceFilter", () => {
   });
 
   it("returns null when no custom rules exist", () => {
-    const noCustomCounts = { axeCore: 15, customRule: 0, total: 15 };
+    const noCustomCounts = { axeCore: 15, customRule: 0, tvRule: 0, total: 15 };
     const { container } = render(<SourceFilter value="all" onChange={vi.fn()} counts={noCustomCounts} />);
 
     expect(container.firstChild).toBeNull();
@@ -29,8 +30,8 @@ describe("findings/SourceFilter", () => {
   it("highlights active filter", () => {
     render(<SourceFilter value="axe-core" onChange={vi.fn()} counts={counts} />);
 
-    const axeCoreButton = screen.getByText(/axe-core \(10\)/);
-    expect(axeCoreButton).toHaveStyle({ color: "rgb(255, 255, 255)" });
+    const axeCoreButton = screen.getByText(/axe-core \(10\)/).closest("button");
+    expect(axeCoreButton).toHaveClass("text-white");
   });
 
   it("calls onChange with correct value when All is clicked", () => {
@@ -61,51 +62,42 @@ describe("findings/SourceFilter", () => {
     render(<SourceFilter value="axe-core" onChange={vi.fn()} counts={counts} />);
 
     const axeCoreButton = screen.getByText(/axe-core \(10\)/).closest("button");
-    expect(axeCoreButton).toHaveStyle({
-      background: "#6366f1",
-      color: "#fff",
-    });
+    expect(axeCoreButton).toHaveStyle({ background: "#6366f1" });
+    expect(axeCoreButton).toHaveClass("text-white");
   });
 
   it("applies correct styling to inactive button", () => {
     render(<SourceFilter value="all" onChange={vi.fn()} counts={counts} />);
 
     const axeCoreButton = screen.getByText(/axe-core \(10\)/).closest("button");
-    expect(axeCoreButton).toHaveStyle({
-      background: "transparent",
-      color: "#64748b",
-    });
+    expect(axeCoreButton).toHaveClass("bg-transparent", "text-slate-500");
   });
 
   it("uses custom color for custom-rule button", () => {
     render(<SourceFilter value="custom-rule" onChange={vi.fn()} counts={counts} />);
 
     const customButton = screen.getByText(/Custom \(5\)/).closest("button");
-    expect(customButton).toHaveStyle({
-      background: "#0891b2",
-      color: "#fff",
-    });
+    expect(customButton).toHaveStyle({ background: "#0891b2" });
+    expect(customButton).toHaveClass("text-white");
   });
 
   it("uses default color for All button", () => {
     render(<SourceFilter value="all" onChange={vi.fn()} counts={counts} />);
 
     const allButton = screen.getByText("All (15)").closest("button");
-    expect(allButton).toHaveStyle({
-      background: "#2563eb",
-      color: "#fff",
-    });
+    expect(allButton).toHaveStyle({ background: "#2563eb" });
+    expect(allButton).toHaveClass("text-white");
   });
 
   it("handles zero custom rule count correctly", () => {
-    const zeroCounts = { axeCore: 10, customRule: 0, total: 10 };
+    const zeroCounts = { axeCore: 10, customRule: 0, tvRule: 0, total: 10 };
     const { container } = render(<SourceFilter value="all" onChange={vi.fn()} counts={zeroCounts} />);
 
     expect(container.firstChild).toBeNull();
   });
 
   it("handles case where total equals axe-core", () => {
-    const equalCounts = { axeCore: 15, customRule: 0, total: 15 };
+    const equalCounts = { axeCore: 15, customRule: 0, tvRule: 0, total: 15 };
     const { container } = render(<SourceFilter value="all" onChange={vi.fn()} counts={equalCounts} />);
 
     expect(container.firstChild).toBeNull();

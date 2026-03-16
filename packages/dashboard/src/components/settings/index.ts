@@ -9,3 +9,5 @@ export { ReportSettings } from './ReportSettings';
 export { ScheduleManager } from './ScheduleManager';
 export { WebhookManager } from './WebhookManager';
 export { CustomRulesManager } from "./CustomRulesManager";
+export { SSOSettings } from './SSOSettings';
+export { AuthProfilesManager } from './AuthProfilesManager';

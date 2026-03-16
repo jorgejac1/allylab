@@ -13,15 +13,8 @@ export const SeverityBadge = memo(function SeverityBadge({ severity }: { severit
 
   return (
     <span
-      style={{
-        padding: '4px 10px',
-        borderRadius: 20,
-        fontSize: 12,
-        fontWeight: 600,
-        color: config.color,
-        background: config.background,
-        textTransform: 'capitalize',
-      }}
+      className="py-1 px-2.5 rounded-full text-xs font-semibold capitalize"
+      style={{ color: config.color, background: config.background }}
     >
       {config.label}
     </span>

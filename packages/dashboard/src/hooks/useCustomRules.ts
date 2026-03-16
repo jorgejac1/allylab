@@ -9,6 +9,7 @@ import type {
   RuleTestResponse,
   RuleExportResponse,
 } from '../types/rules';
+import { addAuditEntry } from '../utils/auditLog';
 
 interface UseCustomRulesReturn {
   rules: CustomRule[];
@@ -88,6 +89,7 @@ export function useCustomRules(): UseCustomRulesReturn {
       
       if (data.success) {
         await fetchRules(); // Refresh the list
+        addAuditEntry({ eventType: 'rule:created', severity: 'info', action: `Created custom rule "${rule.name}"`, resourceType: 'rule', resourceId: data.data.id, success: true });
         return data.data;
       } else {
         setError(data.error || 'Failed to create rule');
@@ -116,6 +118,7 @@ export function useCustomRules(): UseCustomRulesReturn {
       
       if (data.success) {
         await fetchRules(); // Refresh the list
+        addAuditEntry({ eventType: 'rule:updated', severity: 'info', action: `Updated custom rule "${id}"`, resourceType: 'rule', resourceId: id, success: true });
         return data.data;
       } else {
         setError(data.error || 'Failed to update rule');
@@ -142,6 +145,7 @@ export function useCustomRules(): UseCustomRulesReturn {
       
       if (data.success) {
         await fetchRules(); // Refresh the list
+        addAuditEntry({ eventType: 'rule:deleted', severity: 'warning', action: `Deleted custom rule "${id}"`, resourceType: 'rule', resourceId: id, success: true });
         return true;
       } else {
         setError(data.error || 'Failed to delete rule');

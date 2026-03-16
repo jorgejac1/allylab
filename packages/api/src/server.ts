@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
+import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -65,11 +66,25 @@ export async function createServer() {
 
   // CORS configuration
   await server.register(cors, {
-    origin: true,
+    origin: config.corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Request-ID'],
     exposedHeaders: ['X-Request-ID', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+  });
+
+  // Security headers
+  await server.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+    // Disable CSP for Swagger UI docs route
+    ...(config.nodeEnv === 'development' ? { contentSecurityPolicy: false } : {}),
   });
 
   // Cookie support for auth
@@ -143,7 +158,7 @@ export async function createServer() {
     }
   });
 
-  server.addHook('onError', async (request, _reply, error) => {
+  server.addHook('onError', async (_request, _reply, error) => {
     // Record error metrics
     recordError('http', error.name || 'UnknownError');
   });

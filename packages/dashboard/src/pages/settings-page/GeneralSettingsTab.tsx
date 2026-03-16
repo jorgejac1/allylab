@@ -21,46 +21,33 @@ export function GeneralSettingsTab({
   onClearData,
 }: GeneralSettingsTabProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-      }}
-    >
+    <div className="flex flex-col gap-6">
       {/* Scanning Settings */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
           <Search size={18} aria-hidden="true" />
           Scanning Preferences
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           <SettingRow label="Default WCAG Standard">
             <Select
               value={settings.defaultStandard}
               onChange={(e) => onChange('defaultStandard', e.target.value as WCAGStandard)}
               options={WCAG_OPTIONS}
-              style={{ width: 250 }}
+              className="w-[250px]"
             />
           </SettingRow>
 
           <SettingRow label="Include Warnings">
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                cursor: 'pointer',
-              }}
-            >
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={settings.includeWarnings}
                 onChange={(e) => onChange('includeWarnings', e.target.checked)}
-                style={{ width: 18, height: 18 }}
+                className="w-[18px] h-[18px]"
               />
-              <span style={{ fontSize: 14, color: '#64748b' }}>
+              <span className="text-sm text-slate-500">
                 Show potential issues that need manual review
               </span>
             </label>
@@ -70,28 +57,21 @@ export function GeneralSettingsTab({
 
       {/* Storage Settings */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
           <HardDrive size={18} aria-hidden="true" />
           Storage Settings
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           <SettingRow label="Auto-save Scans">
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                cursor: 'pointer',
-              }}
-            >
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={settings.autoSave}
                 onChange={(e) => onChange('autoSave', e.target.checked)}
-                style={{ width: 18, height: 18 }}
+                className="w-[18px] h-[18px]"
               />
-              <span style={{ fontSize: 14, color: '#64748b' }}>
+              <span className="text-sm text-slate-500">
                 Automatically save scan results to history
               </span>
             </label>
@@ -104,47 +84,37 @@ export function GeneralSettingsTab({
               onChange={(e) => onChange('maxScansStored', parseInt(e.target.value) || 100)}
               min={10}
               max={500}
-              style={{ width: 100 }}
+              className="w-[100px]"
             />
           </SettingRow>
         </div>
       </Card>
 
       {/* Danger Zone */}
-      <Card style={{ borderColor: '#fecaca' }}>
-        <h3
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            margin: '0 0 16px',
-            color: '#dc2626',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
+      <Card className="border-red-200">
+        <h3 className="text-base font-semibold m-0 mb-4 text-red-600 flex items-center gap-2">
           <AlertTriangle size={18} aria-hidden="true" />
           Danger Zone
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <p style={{ fontSize: 14, color: '#64748b', margin: 0 }}>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm text-slate-500 m-0">
             Clear all stored scan data and issue tracking history. This action cannot be undone.
           </p>
           <Button variant="danger" onClick={onClearData}>
-            <Trash2 size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+            <Trash2 size={14} aria-hidden="true" className="mr-1.5" />
             Clear All Data
           </Button>
         </div>
       </Card>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+      <div className="flex gap-3 justify-end">
         <Button variant="secondary" onClick={onReset}>
           Reset to Defaults
         </Button>
         <Button onClick={onSave}>
-          {saved ? <><Check size={14} aria-hidden="true" style={{ marginRight: 6 }} />Saved!</> : 'Save Settings'}
+          {saved ? <><Check size={14} aria-hidden="true" className="mr-1.5" />Saved!</> : 'Save Settings'}
         </Button>
       </div>
     </div>

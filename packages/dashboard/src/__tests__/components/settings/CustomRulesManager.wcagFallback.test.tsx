@@ -41,6 +41,20 @@ const createHookReturn = () => ({
 });
 
 // Mock useRuleForm to return undefined wcagTags
+vi.mock('../../../contexts', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', email: 'admin@test.com', name: 'Admin', role: 'admin' },
+      organization: { id: 'org1', name: 'Test', plan: 'enterprise', settings: { maxScansPerMonth: -1, maxAiFixesPerMonth: -1, maxGitHubPRsPerMonth: -1, scheduledScans: true, maxCustomRules: -1, jiraIntegration: true, exportFormats: ['csv', 'pdf', 'json'] } },
+      isAuthenticated: true,
+      can: () => true,
+      hasRole: () => true,
+    }),
+  };
+});
+
 vi.mock("../../../hooks", async (importOriginal) => {
   const actual = await importOriginal();
   return {

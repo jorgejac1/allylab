@@ -30,16 +30,16 @@ const SCHEDULE_OPTIONS = [
 ];
 
 function generateGitHubActions(config: CICDConfig): string {
-  const schedule = config.schedule === 'daily' 
-    ? `\n  schedule:\n    - cron: '0 6 * * *'` 
+  const schedule = config.schedule === 'daily'
+    ? `\n  schedule:\n    - cron: '0 6 * * *'`
     : config.schedule === 'weekly'
     ? `\n  schedule:\n    - cron: '0 6 * * 1'`
     : '';
-  
-  const trigger = config.schedule === 'manual' 
-    ? 'workflow_dispatch' 
-    : config.schedule === 'push' 
-    ? 'push' 
+
+  const trigger = config.schedule === 'manual'
+    ? 'workflow_dispatch'
+    : config.schedule === 'push'
+    ? 'push'
     : 'workflow_dispatch';
 
   return `name: Accessibility Scan
@@ -50,22 +50,22 @@ on:
 jobs:
   accessibility-scan:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install Playwright browsers
         run: npx playwright install chromium
-      
+
       - name: Run Accessibility Scan
         id: scan
         run: |
@@ -73,20 +73,20 @@ jobs:
           THRESHOLD=${config.threshold}
           FAIL_ON_CRITICAL=${config.failOnCritical}
           FAIL_ON_SERIOUS=${config.failOnSerious}
-          
+
           for url in $URLS; do
             echo "Scanning $url..."
             npx @axe-core/cli "$url" --exit
           done
         continue-on-error: true
-      
+
       ${config.uploadArtifacts ? `- name: Upload Results
         uses: actions/upload-artifact@v4
         with:
           name: accessibility-report
           path: accessibility-results/
           retention-days: 30` : ''}
-      
+
       - name: Check Results
         if: steps.scan.outcome == 'failure'
         run: |
@@ -96,8 +96,8 @@ jobs:
 }
 
 function generateGitLabCI(config: CICDConfig): string {
-  const schedule = config.schedule === 'daily' 
-    ? `\n    - schedules` 
+  const schedule = config.schedule === 'daily'
+    ? `\n    - schedules`
     : config.schedule === 'weekly'
     ? `\n    - schedules`
     : '';
@@ -108,11 +108,11 @@ function generateGitLabCI(config: CICDConfig): string {
 accessibility-scan:
   stage: accessibility
   image: mcr.microsoft.com/playwright:v1.40.0-focal
-  
+
   variables:
     URLS: "${config.urls.join(' ')}"
     THRESHOLD: "${config.threshold}"
-  
+
   script:
     - npm ci
     - npx playwright install chromium
@@ -121,17 +121,17 @@ accessibility-scan:
         echo "Scanning $url..."
         npx @axe-core/cli "$url" --save accessibility-results/
       done
-  
+
   ${config.uploadArtifacts ? `artifacts:
     paths:
       - accessibility-results/
     expire_in: 30 days
     when: always` : ''}
-  
+
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"${schedule}
     - if: $CI_PIPELINE_SOURCE == "web"
-  
+
   ${config.failOnCritical ? '' : 'allow_failure: true'}
 `;
 }
@@ -142,7 +142,7 @@ function generateHarness(config: CICDConfig): string {
   identifier: accessibility_scan
   projectIdentifier: \${project}
   orgIdentifier: \${org}
-  
+
   stages:
     - stage:
         name: Scan
@@ -168,7 +168,7 @@ function generateHarness(config: CICDConfig): string {
                     command: |
                       npm ci
                       npx playwright install chromium
-              
+
               - step:
                   type: Run
                   name: Run Accessibility Scan
@@ -179,7 +179,7 @@ function generateHarness(config: CICDConfig): string {
                     shell: Bash
                     command: |
                       URLS="${config.urls.join(' ')}"
-                      
+
                       for url in $URLS; do
                         echo "Scanning $url..."
                         npx @axe-core/cli "$url" --save results/
@@ -189,7 +189,7 @@ function generateHarness(config: CICDConfig): string {
                       - onFailure:
                           action:
                             type: Ignore`}
-              
+
               ${config.uploadArtifacts ? `- step:
                   type: S3Upload
                   name: Upload Results
@@ -198,7 +198,7 @@ function generateHarness(config: CICDConfig): string {
                     connectorRef: \${aws_connector}
                     bucket: accessibility-reports
                     sourcePath: results/` : ''}
-  
+
   properties:
     ci:
       codebase:
@@ -236,7 +236,7 @@ function getFileName(platform: Platform): string {
 
 export function CICDGenerator() {
   const savedUrls = getScannedUrls();
-  
+
   const [config, setConfig] = useState<CICDConfig>({
     platform: 'github',
     urls: savedUrls.slice(0, 3),
@@ -246,10 +246,10 @@ export function CICDGenerator() {
     schedule: 'push',
     threshold: 70,
   });
-  
+
   const [urlInput, setUrlInput] = useState('');
   const [copied, setCopied] = useState(false);
-  
+
   const generatedConfig = generateConfig(config);
 
   const handleAddUrl = () => {
@@ -279,17 +279,17 @@ export function CICDGenerator() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Configuration */}
-      <Card style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mt-0 mb-5 flex items-center gap-2">
           <Settings size={20} />CI/CD Configuration
         </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Platform */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+            <label className="block text-sm font-medium mb-1.5">
               Platform
             </label>
             <Select
@@ -301,7 +301,7 @@ export function CICDGenerator() {
 
           {/* Schedule */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+            <label className="block text-sm font-medium mb-1.5">
               Schedule
             </label>
             <Select
@@ -313,7 +313,7 @@ export function CICDGenerator() {
 
           {/* Threshold */}
           <div>
-            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+            <label className="block text-sm font-medium mb-1.5">
               Minimum Score Threshold
             </label>
             <Input
@@ -326,40 +326,40 @@ export function CICDGenerator() {
           </div>
 
           {/* Checkboxes */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.failOnCritical}
                 onChange={(e) => setConfig({ ...config, failOnCritical: e.target.checked })}
               />
-              <span style={{ fontSize: 14 }}>Fail build on critical issues</span>
+              <span className="text-sm">Fail build on critical issues</span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.failOnSerious}
                 onChange={(e) => setConfig({ ...config, failOnSerious: e.target.checked })}
               />
-              <span style={{ fontSize: 14 }}>Fail build on serious issues</span>
+              <span className="text-sm">Fail build on serious issues</span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.uploadArtifacts}
                 onChange={(e) => setConfig({ ...config, uploadArtifacts: e.target.checked })}
               />
-              <span style={{ fontSize: 14 }}>Upload results as artifact</span>
+              <span className="text-sm">Upload results as artifact</span>
             </label>
           </div>
         </div>
 
         {/* URLs */}
-        <div style={{ marginTop: 20 }}>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
+        <div className="mt-5">
+          <label className="block text-sm font-medium mb-1.5">
             URLs to Scan
           </label>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div className="flex gap-2 mb-3">
             <Input
               placeholder="https://example.com"
               value={urlInput}
@@ -371,35 +371,20 @@ export function CICDGenerator() {
               Add
             </Button>
           </div>
-          
+
           {config.urls.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="flex flex-wrap gap-2">
               {config.urls.map((url) => (
                 <div
                   key={url}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 12px',
-                    background: '#f1f5f9',
-                    borderRadius: 6,
-                    fontSize: 13,
-                  }}
+                  className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-md text-sm"
                 >
-                  <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
                     {url}
                   </span>
                   <button
                     onClick={() => handleRemoveUrl(url)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#64748b',
-                      padding: 0,
-                      fontSize: 16,
-                    }}
+                    className="bg-transparent border-none cursor-pointer text-slate-500 p-0 text-base"
                   >
                     ×
                   </button>
@@ -407,8 +392,8 @@ export function CICDGenerator() {
               ))}
             </div>
           ) : (
-            <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
-              {savedUrls.length > 0 
+            <p className="text-sm text-slate-500 m-0">
+              {savedUrls.length > 0
                 ? `Add URLs or choose from your scanned sites: ${savedUrls.slice(0, 3).map(u => new URL(u).hostname).join(', ')}`
                 : 'Add URLs to include in the scan pipeline'
               }
@@ -418,42 +403,29 @@ export function CICDGenerator() {
       </Card>
 
       {/* Generated Config */}
-      <Card style={{ padding: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <Card className="p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 className="text-lg font-semibold m-0 flex items-center gap-2">
               <FileText size={20} />Generated Configuration
             </h3>
-            <p style={{ fontSize: 13, color: '#64748b', margin: '4px 0 0' }}>
-              Save as <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            <p className="text-sm text-slate-500 mt-1 mb-0">
+              Save as <code className="bg-slate-100 py-0.5 px-1.5 rounded">
                 {getFileName(config.platform)}
               </code>
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <Button variant="secondary" onClick={handleCopy}>
-              {copied ? <><Check size={14} style={{ marginRight: 6 }} />Copied!</> : <><Clipboard size={14} style={{ marginRight: 6 }} />Copy</>}
+              {copied ? <><Check size={14} className="mr-1.5" />Copied!</> : <><Clipboard size={14} className="mr-1.5" />Copy</>}
             </Button>
             <Button onClick={handleDownload}>
-              <Download size={14} style={{ marginRight: 6 }} />Download
+              <Download size={14} className="mr-1.5" />Download
             </Button>
           </div>
         </div>
-        
-        <div
-          style={{
-            background: '#1e293b',
-            color: '#e2e8f0',
-            padding: 16,
-            borderRadius: 8,
-            fontFamily: 'monospace',
-            fontSize: 13,
-            lineHeight: 1.6,
-            overflow: 'auto',
-            maxHeight: 500,
-            whiteSpace: 'pre',
-          }}
-        >
+
+        <div className="bg-slate-800 text-slate-200 p-4 rounded-lg font-mono text-sm leading-relaxed overflow-auto max-h-[500px] whitespace-pre">
           {generatedConfig}
         </div>
       </Card>

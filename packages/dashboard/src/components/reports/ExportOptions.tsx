@@ -43,11 +43,11 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
   return (
     <>
       <Card>
-        <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <h4 className="text-base font-semibold mt-0 mb-4 inline-flex items-center gap-2">
           <Upload size={18} /> Export Options
         </h4>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="flex flex-col gap-3">
           <ExportButton
             icon={<FileText size={24} />}
             title="Export Current Scan"
@@ -78,16 +78,16 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
         title="Choose Export Format"
         size="sm"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="flex flex-col gap-3">
           <Button
             variant="secondary"
             onClick={() => handleExport('csv')}
-            style={{ justifyContent: 'flex-start', padding: 16, display: 'flex', alignItems: 'center' }}
+            className="justify-start p-4 flex items-center"
           >
-            <span style={{ marginRight: 12 }}><BarChart3 size={20} /></span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600 }}>CSV Format</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>
+            <span className="mr-3"><BarChart3 size={20} /></span>
+            <div className="text-left">
+              <div className="font-semibold">CSV Format</div>
+              <div className="text-xs text-slate-500">
                 Best for spreadsheets and data analysis
               </div>
             </div>
@@ -96,12 +96,12 @@ export function ExportOptions({ scans, selectedScan }: ExportOptionsProps) {
           <Button
             variant="secondary"
             onClick={() => handleExport('json')}
-            style={{ justifyContent: 'flex-start', padding: 16, display: 'flex', alignItems: 'center' }}
+            className="justify-start p-4 flex items-center"
           >
-            <span style={{ marginRight: 12 }}><Wrench size={20} /></span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600 }}>JSON Format</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>
+            <span className="mr-3"><Wrench size={20} /></span>
+            <div className="text-left">
+              <div className="font-semibold">JSON Format</div>
+              <div className="text-xs text-slate-500">
                 Best for developers and integrations
               </div>
             </div>
@@ -129,24 +129,16 @@ function ExportButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: 16,
-        background: disabled ? '#f8fafc' : '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: 8,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-        textAlign: 'left',
-        width: '100%',
-      }}
+      className={`flex items-center gap-3 p-4 border border-slate-200 rounded-lg text-left w-full ${
+        disabled
+          ? 'bg-slate-50 cursor-not-allowed opacity-50'
+          : 'bg-white cursor-pointer hover:bg-slate-50'
+      }`}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{icon}</span>
+      <span className="inline-flex items-center">{icon}</span>
       <div>
-        <div style={{ fontWeight: 600, color: '#0f172a' }}>{title}</div>
-        <div style={{ fontSize: 12, color: '#64748b' }}>{description}</div>
+        <div className="font-semibold text-slate-900">{title}</div>
+        <div className="text-xs text-slate-500">{description}</div>
       </div>
     </button>
   );

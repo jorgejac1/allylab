@@ -11,32 +11,16 @@ export function IssueChangeBadge({ label, change, color }: IssueChangeBadgeProps
   const isNegative = change < 0;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 6,
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-      }}
-    >
+    <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-md bg-slate-50 border border-slate-200">
       <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: color,
-        }}
+        className="w-2 h-2 rounded-full"
+        style={{ background: color }}
       />
-      <span style={{ fontSize: 12, color: '#64748b' }}>{label}</span>
+      <span className="text-xs text-slate-500">{label}</span>
       <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: isNegative ? '#10b981' : isPositive ? '#ef4444' : '#64748b',
-        }}
+        className={`text-xs font-semibold ${
+          isNegative ? 'text-emerald-500' : isPositive ? 'text-red-500' : 'text-slate-500'
+        }`}
       >
         {change > 0 ? '+' : ''}
         {change}

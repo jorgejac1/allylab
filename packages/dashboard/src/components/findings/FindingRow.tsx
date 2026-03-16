@@ -11,33 +11,33 @@ interface FindingRowProps {
 
 export const FindingRow = memo(function FindingRow({ finding, onViewDetails, selected, onSelect }: FindingRowProps) {
   return (
-    <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+    <tr className="border-b border-slate-100">
       {/* Checkbox (if selectable) */}
       {onSelect && (
-        <td style={tdStyle}>
+        <td className="py-3 px-4 align-middle">
           <input
             type="checkbox"
             checked={selected}
             onChange={e => onSelect(finding.id, e.target.checked)}
-            style={{ width: 16, height: 16, cursor: 'pointer' }}
+            className="w-4 h-4 cursor-pointer"
           />
         </td>
       )}
 
       {/* Severity */}
-      <td style={tdStyle}>
+      <td className="py-3 px-4 align-middle">
         <SeverityBadge severity={finding.impact} />
       </td>
 
       {/* Tracking Status */}
-      <td style={tdStyle}>
+      <td className="py-3 px-4 align-middle">
         <StatusBadge status={finding.status} />
       </td>
 
       {/* Issue */}
-      <td style={tdStyle}>
-        <div style={{ fontWeight: 500, marginBottom: 4 }}>{finding.ruleTitle}</div>
-        <div style={{ fontSize: 12, color: '#64748b', maxWidth: 400 }}>
+      <td className="py-3 px-4 align-middle">
+        <div className="font-medium mb-1">{finding.ruleTitle}</div>
+        <div className="text-xs text-slate-500 max-w-[400px]">
           {finding.description.length > 100
             ? finding.description.slice(0, 100) + '...'
             : finding.description}
@@ -45,26 +45,16 @@ export const FindingRow = memo(function FindingRow({ finding, onViewDetails, sel
       </td>
 
       {/* WCAG */}
-      <td style={tdStyle}>
-        <span style={{ fontSize: 12, color: '#64748b' }}>
+      <td className="py-3 px-4 align-middle">
+        <span className="text-xs text-slate-500">
           {finding.wcagTags.length > 0 ? finding.wcagTags.join(', ') : '—'}
         </span>
       </td>
 
       {/* Element */}
-      <td style={tdStyle}>
+      <td className="py-3 px-4 align-middle">
         <code
-          style={{
-            fontSize: 11,
-            background: '#f1f5f9',
-            padding: '2px 6px',
-            borderRadius: 4,
-            display: 'inline-block',
-            maxWidth: 200,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+          className="text-xs bg-slate-100 py-0.5 px-1.5 rounded inline-block max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap"
           title={finding.selector}
         >
           {finding.selector.length > 30
@@ -75,12 +65,12 @@ export const FindingRow = memo(function FindingRow({ finding, onViewDetails, sel
 
       {/* Page */}
       {finding.page && (
-        <td style={tdStyle}>
+        <td className="py-3 px-4 align-middle">
         <a
             href={finding.page}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ fontSize: 12, color: '#2563eb' }}
+            className="text-xs text-blue-600"
           >
             {new URL(finding.page).pathname}
           </a>
@@ -88,7 +78,7 @@ export const FindingRow = memo(function FindingRow({ finding, onViewDetails, sel
       )}
 
       {/* Actions */}
-      <td style={tdStyle}>
+      <td className="py-3 px-4 align-middle">
         <Button variant="ghost" size="sm" onClick={() => onViewDetails(finding)}>
           Details
         </Button>
@@ -96,8 +86,3 @@ export const FindingRow = memo(function FindingRow({ finding, onViewDetails, sel
     </tr>
   );
 });
-
-const tdStyle: React.CSSProperties = {
-  padding: '12px 16px',
-  verticalAlign: 'middle',
-};

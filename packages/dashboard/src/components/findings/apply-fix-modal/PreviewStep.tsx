@@ -65,15 +65,9 @@ export function PreviewStep({
   getFileContent,
 }: PreviewStepProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Issue Summary */}
-      <div style={{
-        padding: '10px 12px',
-        background: '#fef3c7',
-        borderRadius: 8,
-        fontSize: 13,
-        color: '#92400e',
-      }}>
+      <div className="py-2.5 px-3 bg-amber-100 rounded-lg text-[13px] text-amber-800">
         <strong>Issue:</strong> {findingRuleTitle}
       </div>
 
@@ -84,20 +78,20 @@ export function PreviewStep({
       />
 
       {/* Copy Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="flex justify-end">
         <Button
           variant={copied ? 'primary' : 'secondary'}
           onClick={onCopyFix}
         >
           {copied ? (
-            <><Check size={14} aria-hidden="true" style={{ marginRight: 6 }} />Copied!</>
+            <><Check size={14} aria-hidden="true" className="mr-1.5" />Copied!</>
           ) : (
-            <><Clipboard size={14} aria-hidden="true" style={{ marginRight: 6 }} />Copy Fixed Code</>
+            <><Clipboard size={14} aria-hidden="true" className="mr-1.5" />Copy Fixed Code</>
           )}
         </Button>
       </div>
 
-      <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+      <hr className="border-none border-t border-slate-200 my-1" />
 
       {/* Repo Selector */}
       <RepoSelector
@@ -112,25 +106,14 @@ export function PreviewStep({
       {/* File Finder */}
       {selectedRepo && (
         <div>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 8,
-          }}>
-            <label style={{ fontSize: 13, fontWeight: 500, color: '#475569', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-[13px] font-medium text-slate-600 flex items-center gap-1.5">
               <FileText size={14} aria-hidden="true" />File Path
             </label>
             {filePath && !showFileFinder && (
               <button
                 onClick={onOpenFileFinder}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#3b82f6',
-                  fontSize: 12,
-                  cursor: 'pointer',
-                }}
+                className="bg-none border-none text-blue-500 text-xs cursor-pointer"
               >
                 Change
               </button>
@@ -154,17 +137,7 @@ export function PreviewStep({
               onAutoSelect={onAutoSelectFile}
             />
           ) : (
-            <div style={{
-              padding: '10px 12px',
-              background: '#f0fdf4',
-              borderRadius: 6,
-              fontSize: 13,
-              fontFamily: 'monospace',
-              color: '#166534',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}>
+            <div className="py-2.5 px-3 bg-green-50 rounded-md text-[13px] font-mono text-green-800 flex items-center gap-2">
               <FileText size={14} aria-hidden="true" />{filePath}
             </div>
           )}
@@ -175,27 +148,14 @@ export function PreviewStep({
       {prError && (
         <div
           role="alert"
-          style={{
-            padding: 12,
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 8,
-            color: '#dc2626',
-            fontSize: 13,
-          }}
+          className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-[13px]"
         >
           {prError}
         </div>
       )}
 
       {/* Actions */}
-      <div style={{
-        display: 'flex',
-        gap: 12,
-        justifyContent: 'flex-end',
-        paddingTop: 8,
-        borderTop: '1px solid #e2e8f0',
-      }}>
+      <div className="flex gap-3 justify-end pt-2 border-t border-slate-200">
         <Button variant="secondary" onClick={onClose}>
           Close
         </Button>
@@ -204,7 +164,7 @@ export function PreviewStep({
           onClick={onOpenOnGitHub}
           disabled={!selectedRepo}
         >
-          <FolderOpen size={14} aria-hidden="true" style={{ marginRight: 6 }} />Open on GitHub
+          <FolderOpen size={14} aria-hidden="true" className="mr-1.5" />Open on GitHub
         </Button>
         <Button
           variant="primary"
@@ -212,14 +172,14 @@ export function PreviewStep({
           disabled={!selectedRepo || !filePath || isLoadingFile}
         >
           {isLoadingFile ? (
-            <><Loader2 size={14} aria-hidden="true" style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Loading...</>
+            <><Loader2 size={14} aria-hidden="true" className="mr-1.5" style={{ animation: 'spin 1s linear infinite' }} />Loading...</>
           ) : (
-            <><Sparkles size={14} aria-hidden="true" style={{ marginRight: 6 }} />Edit & Create PR</>
+            <><Sparkles size={14} aria-hidden="true" className="mr-1.5" />Edit & Create PR</>
           )}
         </Button>
       </div>
 
-      <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, textAlign: 'center' }}>
+      <p className="text-xs text-slate-400 m-0 text-center">
         Select a file to create a PR, or open on GitHub to apply manually.
       </p>
     </div>

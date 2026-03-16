@@ -18,8 +18,8 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
     .filter(([_, code]) => code)
     .map(([key]) => key as Framework);
 
-  const currentCode = viewMode === 'original' 
-    ? fix.original.code 
+  const currentCode = viewMode === 'original'
+    ? fix.original.code
     : viewMode === 'diff'
     ? fix.diff
     : fix.fixes[activeFramework] || fix.fixes.html;
@@ -37,68 +37,47 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
   };
 
   const effortLabels = {
-    trivial: <><Zap size={12} style={{ marginRight: 4 }} /> Trivial</>,
-    easy: <><Circle size={12} style={{ marginRight: 4, color: '#22c55e' }} /> Easy</>,
-    medium: <><Circle size={12} style={{ marginRight: 4, color: '#eab308' }} /> Medium</>,
-    complex: <><Circle size={12} style={{ marginRight: 4, color: '#ef4444' }} /> Complex</>,
+    trivial: <><Zap size={12} className="mr-1" /> Trivial</>,
+    easy: <><Circle size={12} className="mr-1 text-green-500" /> Easy</>,
+    medium: <><Circle size={12} className="mr-1 text-yellow-500" /> Medium</>,
+    complex: <><Circle size={12} className="mr-1 text-red-500" /> Complex</>,
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex flex-col gap-3">
       {/* Confidence & Effort Badges */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{
-          padding: '4px 10px',
-          background: confidenceColors[fix.confidence].bg,
-          color: confidenceColors[fix.confidence].color,
-          borderRadius: 6,
-          fontSize: 11,
-          fontWeight: 500,
-        }}>
+      <div className="flex gap-2 flex-wrap">
+        <span
+          className="py-1 px-2.5 rounded-md text-[11px] font-medium"
+          style={{
+            background: confidenceColors[fix.confidence].bg,
+            color: confidenceColors[fix.confidence].color,
+          }}
+        >
           {confidenceColors[fix.confidence].label}
         </span>
-        <span style={{
-          padding: '4px 10px',
-          background: '#f1f5f9',
-          color: '#475569',
-          borderRadius: 6,
-          fontSize: 11,
-          fontWeight: 500,
-        }}>
+        <span className="py-1 px-2.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-medium">
           {effortLabels[fix.effort]}
         </span>
       </div>
 
       {/* Explanation */}
-      <div style={{
-        padding: 12,
-        background: '#f0fdf4',
-        border: '1px solid #bbf7d0',
-        borderRadius: 8,
-        fontSize: 13,
-        color: '#166534',
-      }}>
-        <Lightbulb size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />{fix.explanation}
+      <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-[13px] text-green-900">
+        <Lightbulb size={14} className="inline align-middle mr-1.5" />{fix.explanation}
       </div>
 
       {/* Framework Tabs */}
       {availableFrameworks.length > 1 && (
-        <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #e2e8f0', paddingBottom: 8 }}>
+        <div className="flex gap-1 border-b border-slate-200 pb-2">
           {availableFrameworks.map(fw => (
             <button
               key={fw}
               onClick={() => setActiveFramework(fw)}
-              style={{
-                padding: '6px 12px',
-                border: 'none',
-                borderRadius: 6,
-                background: activeFramework === fw ? '#3b82f6' : 'transparent',
-                color: activeFramework === fw ? '#fff' : '#64748b',
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: 'pointer',
-                textTransform: 'uppercase',
-              }}
+              className={`py-1.5 px-3 border-none rounded-md text-xs font-medium cursor-pointer uppercase ${
+                activeFramework === fw
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-transparent text-slate-500'
+              }`}
             >
               {fw}
             </button>
@@ -107,41 +86,31 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
       )}
 
       {/* View Mode Toggle */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div className="flex gap-1">
         {(['fixed', 'diff', 'original'] as const).map(mode => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            style={{
-              padding: '4px 10px',
-              border: '1px solid #e2e8f0',
-              borderRadius: 4,
-              background: viewMode === mode ? '#f1f5f9' : '#fff',
-              color: viewMode === mode ? '#1e293b' : '#64748b',
-              fontSize: 11,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
+            className={`py-1 px-2.5 border border-slate-200 rounded text-[11px] font-medium cursor-pointer ${
+              viewMode === mode
+                ? 'bg-slate-100 text-slate-800'
+                : 'bg-white text-slate-500'
+            }`}
           >
-            {mode === 'fixed' ? <><CheckCircle size={10} style={{ marginRight: 4 }} />Fixed</> : mode === 'diff' ? <><BarChart3 size={10} style={{ marginRight: 4 }} />Diff</> : <><FileText size={10} style={{ marginRight: 4 }} />Original</>}
+            {mode === 'fixed' ? <><CheckCircle size={10} className="mr-1" />Fixed</> : mode === 'diff' ? <><BarChart3 size={10} className="mr-1" />Diff</> : <><FileText size={10} className="mr-1" />Original</>}
           </button>
         ))}
       </div>
 
       {/* Code Preview */}
-      <div style={{ position: 'relative' }}>
-        <pre style={{
-          padding: 16,
-          background: '#0f172a',
-          color: viewMode === 'diff' ? undefined : '#e2e8f0',
-          borderRadius: 8,
-          fontSize: 12,
-          overflow: 'auto',
-          maxHeight: 300,
-          margin: 0,
-          fontFamily: 'ui-monospace, "Cascadia Code", "Source Code Pro", monospace',
-          lineHeight: 1.5,
-        }}>
+      <div className="relative">
+        <pre
+          className="p-4 bg-slate-900 rounded-lg text-xs overflow-auto max-h-[300px] m-0 leading-relaxed"
+          style={{
+            color: viewMode === 'diff' ? undefined : '#e2e8f0',
+            fontFamily: 'ui-monospace, "Cascadia Code", "Source Code Pro", monospace',
+          }}
+        >
           {viewMode === 'diff' ? (
             <DiffView diff={fix.diff} />
           ) : (
@@ -150,41 +119,22 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
         </pre>
         <button
           onClick={handleCopy}
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            padding: '6px 12px',
-            background: '#334155',
-            border: 'none',
-            borderRadius: 4,
-            color: '#fff',
-            fontSize: 11,
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
+          className="absolute top-2 right-2 py-1.5 px-3 bg-slate-700 border-none rounded text-white text-[11px] font-medium cursor-pointer"
         >
-          {copied ? <><Check size={10} style={{ marginRight: 4 }} />Copied!</> : <><Clipboard size={10} style={{ marginRight: 4 }} />Copy</>}
+          {copied ? <><Check size={10} className="mr-1" />Copied!</> : <><Clipboard size={10} className="mr-1" />Copy</>}
         </button>
       </div>
 
       {/* WCAG References */}
       {fix.wcagCriteria.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="flex gap-1.5 flex-wrap">
           {fix.wcagCriteria.map(tag => (
             <a
               key={tag}
               href={`https://www.w3.org/WAI/WCAG21/Understanding/${tag.toLowerCase().replace(/\./g, '')}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                padding: '2px 8px',
-                background: '#eff6ff',
-                color: '#2563eb',
-                borderRadius: 4,
-                fontSize: 11,
-                textDecoration: 'none',
-              }}
+              className="py-0.5 px-2 bg-blue-50 text-blue-600 rounded text-[11px] no-underline"
             >
               {tag} ↗
             </a>
@@ -197,13 +147,13 @@ export function FixCodePreview({ fix, onCopy }: FixCodePreviewProps) {
 
 function DiffView({ diff }: { diff: string }) {
   const lines = diff.split('\n');
-  
+
   return (
     <code>
       {lines.map((line, i) => {
         let color = '#e2e8f0';
         let bg = 'transparent';
-        
+
         if (line.startsWith('+')) {
           color = '#4ade80';
           bg = 'rgba(74, 222, 128, 0.1)';
@@ -211,16 +161,14 @@ function DiffView({ diff }: { diff: string }) {
           color = '#f87171';
           bg = 'rgba(248, 113, 113, 0.1)';
         }
-        
+
         return (
           <div
             key={i}
+            className="px-1 -mx-1"
             style={{
               color,
               background: bg,
-              padding: '0 4px',
-              marginLeft: -4,
-              marginRight: -4,
             }}
           >
             {line || ' '}

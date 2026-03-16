@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Modal, Button } from "../ui";
 import { Link2, PartyPopper } from "lucide-react";
 import { useGitHub } from "../../hooks/useGitHub";
+import { useGitLabMR } from "../../hooks/useGitLabMR";
 import { usePRTracking } from "../../hooks/usePRTracking";
 import { getApiBase } from "../../utils/api";
+import { GitPlatformSelector } from "./GitPlatformSelector";
 import {
   FixGenerationList,
   RepoSelector,
@@ -26,17 +28,19 @@ interface BatchPRModalProps {
 
 type Step = "fixes" | "repo" | "files" | "confirm";
 
-export function BatchPRModal({ 
-  isOpen, 
-  onClose, 
+export function BatchPRModal({
+  isOpen,
+  onClose,
   findings,
   scanUrl,
   scanStandard,
   scanViewport,
 }: BatchPRModalProps) {
-  const { connection, getRepos, getBranches, searchCode, getFileContent, createPR } = useGitHub();
+  const github = useGitHub();
+  const gitlab = useGitLabMR();
   const { trackPR } = usePRTracking();
 
+  const [platform, setPlatform] = useState<'github' | 'gitlab'>('github');
   const [step, setStep] = useState<Step>("fixes");
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [branches, setBranches] = useState<GitHubBranch[]>([]);
@@ -50,6 +54,8 @@ export function BatchPRModal({
   const [prTitle, setPrTitle] = useState("");
   const [prDescription, setPrDescription] = useState("");
   const [prResult, setPrResult] = useState<BatchPRResult | null>(null);
+  // Track the original GitLab project path for MR creation
+  const [gitlabProjectPath, setGitlabProjectPath] = useState<string>("");
 
   // Ref to always have access to latest findingsWithFixes
   const findingsRef = useRef<FindingWithFix[]>([]);
@@ -58,11 +64,16 @@ export function BatchPRModal({
   // Simple flag to prevent re-initialization during the same modal session
   const isInitializedRef = useRef(false);
 
+  // Determine if any platform is connected
+  const isConnected = platform === 'github'
+    ? github.connection.connected
+    : gitlab.connection.connected;
+
   // Initialize findings ONCE when modal opens
   useEffect(() => {
     if (isOpen && findings.length > 0 && !isInitializedRef.current) {
       isInitializedRef.current = true;
-      
+
       setFindingsWithFixes(
         findings.map((f) => ({
           finding: f,
@@ -76,7 +87,7 @@ export function BatchPRModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]); // ONLY depend on isOpen - intentionally ignore findings changes after init
-  
+
   // Reset flag when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -147,7 +158,7 @@ export function BatchPRModal({
   const generateAllFixes = useCallback(async () => {
     // Use ref to get current state without stale closure issues
     const currentFindings = findingsRef.current;
-    
+
     const unfixed = currentFindings
       .map((f, i) => ({ ...f, index: i }))
       .filter((f) => !f.fix && !f.isGenerating);
@@ -157,13 +168,31 @@ export function BatchPRModal({
     }
   }, [generateFix]);
 
-  // Load repos
+  // Load repos (platform-aware)
   const loadRepos = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const repoList = await getRepos();
-      setRepos(repoList);
+      if (platform === 'gitlab') {
+        const projects = await gitlab.getProjects();
+        // Map GitLab projects to GitHubRepo shape for the RepoSelector component
+        const mapped: GitHubRepo[] = projects.map((p) => ({
+          id: p.id,
+          name: p.name,
+          full_name: p.path_with_namespace,
+          owner: {
+            login: p.path_with_namespace.split('/')[0] || p.name,
+            avatar_url: '',
+          },
+          default_branch: p.default_branch || 'main',
+          private: p.visibility === 'private',
+          html_url: p.web_url || '',
+        }));
+        setRepos(mapped);
+      } else {
+        const repoList = await github.getRepos();
+        setRepos(repoList);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       console.error("[BatchPRModal] Failed to load repos:", message);
@@ -171,19 +200,29 @@ export function BatchPRModal({
     } finally {
       setIsLoading(false);
     }
-  }, [getRepos]);
+  }, [platform, github, gitlab]);
 
-  // Load branches
+  // Load branches (platform-aware)
   const loadBranches = useCallback(async () => {
     /* istanbul ignore if -- @preserve defensive guard, unreachable via UI */
     if (!selectedRepo) return;
     setIsLoading(true);
     try {
-      const branchList = await getBranches(
-        selectedRepo.owner.login,
-        selectedRepo.name
-      );
-      setBranches(branchList);
+      if (platform === 'gitlab') {
+        const glBranches = await gitlab.getBranches(selectedRepo.full_name);
+        // Map GitLab branches to GitHubBranch shape
+        const mapped: GitHubBranch[] = glBranches.map((b) => ({
+          name: b.name,
+          sha: b.commit.id,
+        }));
+        setBranches(mapped);
+      } else {
+        const branchList = await github.getBranches(
+          selectedRepo.owner.login,
+          selectedRepo.name
+        );
+        setBranches(branchList);
+      }
       setSelectedBranch(selectedRepo.default_branch);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -192,13 +231,13 @@ export function BatchPRModal({
     } finally {
       setIsLoading(false);
     }
-  }, [getBranches, selectedRepo]);
+  }, [platform, github, gitlab, selectedRepo]);
 
   useEffect(() => {
-    if (step === "repo" && connection.connected) {
+    if (step === "repo" && isConnected) {
       loadRepos();
     }
-  }, [step, connection.connected, loadRepos]);
+  }, [step, isConnected, loadRepos]);
 
   useEffect(() => {
     if (selectedRepo) {
@@ -211,6 +250,10 @@ export function BatchPRModal({
 
   const handleRepoSelect = (repo: GitHubRepo) => {
     setSelectedRepo(repo);
+    // Store the GitLab project path (full_name maps to path_with_namespace)
+    if (platform === 'gitlab') {
+      setGitlabProjectPath(repo.full_name);
+    }
     setStep("files");
   };
 
@@ -224,30 +267,41 @@ export function BatchPRModal({
     setFindingsWithFixes((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Wrapper for searchCode to return simpler results
+  // Wrapper for searchCode to return simpler results (platform-aware)
   const searchCodeWrapper = useCallback(async (
-    owner: string, 
-    repo: string, 
+    owner: string,
+    repo: string,
     query: string
   ): Promise<Array<{ path: string }>> => {
     try {
-      const results = await searchCode(owner, repo, query);
-      return results.map(r => ({ path: r.path }));
+      if (platform === 'gitlab') {
+        // For GitLab, the "full_name" is path_with_namespace
+        const projectPath = `${owner}/${repo}`;
+        const results = await gitlab.searchCode(projectPath, query);
+        return results.map(r => ({ path: r.path }));
+      } else {
+        const results = await github.searchCode(owner, repo, query);
+        return results.map(r => ({ path: r.path }));
+      }
     } catch (err) {
       console.error('[BatchPRModal] Search failed:', err);
       return [];
     }
-  }, [searchCode]);
+  }, [platform, github, gitlab]);
 
-  // Wrapper for getFileContent
+  // Wrapper for getFileContent (platform-aware)
   const getFileContentWrapper = useCallback(async (
     owner: string,
     repo: string,
     path: string,
     branch: string
   ): Promise<string | null> => {
-    return getFileContent(owner, repo, path, branch);
-  }, [getFileContent]);
+    if (platform === 'gitlab') {
+      const projectPath = `${owner}/${repo}`;
+      return gitlab.getFileContent(projectPath, path, branch);
+    }
+    return github.getFileContent(owner, repo, path, branch);
+  }, [platform, github, gitlab]);
 
   const handleCreatePR = async () => {
     if (!selectedRepo || !selectedBranch) {
@@ -279,40 +333,59 @@ export function BatchPRModal({
       // Generate smart branch name
       const branchName = generateSmartBranchName(fixesWithPaths);
 
-      const result = await createPR(
-        selectedRepo.owner.login,
-        selectedRepo.name,
-        selectedBranch,
-        fixes,
-        prTitle,
-        prDescription || generateBatchDescription(fixesWithPaths, scanUrl),
-        branchName
-      );
-
-      if (result.success && result.prUrl && result.prNumber) {
-        // Track the PR with all finding IDs for verification
-        const findingIds = fixesWithPaths.map((f) => f.finding.id);
-        trackPR(
-          result,
-          selectedRepo.owner.login,
-          selectedRepo.name,
-          findingIds,
-          {
-            scanUrl,
-            scanStandard,
-            scanViewport,
-          }
+      if (platform === 'gitlab') {
+        const result = await gitlab.createTrackedMR(
+          gitlabProjectPath,
+          selectedBranch,
+          fixes,
+          prTitle,
+          prDescription || generateBatchDescription(fixesWithPaths, scanUrl),
+          branchName
         );
 
-        setPrResult({ prUrl: result.prUrl, prNumber: result.prNumber });
-        setStep("confirm");
+        if (result.success && result.mr) {
+          setPrResult({ prUrl: result.mr.web_url, prNumber: result.mr.iid });
+          setStep("confirm");
+        } else {
+          console.error("[BatchPRModal] MR creation failed:", result.error);
+          setError(result.error || "Failed to create MR");
+        }
       } else {
-        console.error("[BatchPRModal] PR creation failed:", result.error);
-        setError(result.error || "Failed to create PR");
+        const result = await github.createPR(
+          selectedRepo.owner.login,
+          selectedRepo.name,
+          selectedBranch,
+          fixes,
+          prTitle,
+          prDescription || generateBatchDescription(fixesWithPaths, scanUrl),
+          branchName
+        );
+
+        if (result.success && result.prUrl && result.prNumber) {
+          // Track the PR with all finding IDs for verification
+          const findingIds = fixesWithPaths.map((f) => f.finding.id);
+          trackPR(
+            result,
+            selectedRepo.owner.login,
+            selectedRepo.name,
+            findingIds,
+            {
+              scanUrl,
+              scanStandard,
+              scanViewport,
+            }
+          );
+
+          setPrResult({ prUrl: result.prUrl, prNumber: result.prNumber });
+          setStep("confirm");
+        } else {
+          console.error("[BatchPRModal] PR creation failed:", result.error);
+          setError(result.error || "Failed to create PR");
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      console.error("[BatchPRModal] Failed to create PR:", message);
+      console.error("[BatchPRModal] Failed to create PR/MR:", message);
       setError(message);
     } finally {
       setIsLoading(false);
@@ -321,6 +394,7 @@ export function BatchPRModal({
 
   const handleClose = () => {
     setStep("fixes");
+    setPlatform("github");
     setSelectedRepo(null);
     setSelectedBranch("");
     setFindingsWithFixes([]);
@@ -328,9 +402,25 @@ export function BatchPRModal({
     setPrDescription("");
     setPrResult(null);
     setError(null);
+    setGitlabProjectPath("");
     // Reset flag so next open will reinitialize
     isInitializedRef.current = false;
     onClose();
+  };
+
+  // When platform changes, reset repo selection
+  const handlePlatformChange = (newPlatform: 'github' | 'gitlab') => {
+    setPlatform(newPlatform);
+    setSelectedRepo(null);
+    setSelectedBranch("");
+    setRepos([]);
+    setBranches([]);
+    setGitlabProjectPath("");
+    setError(null);
+    // If we're on the repo step, reload repos for the new platform
+    if (step === "repo") {
+      // loadRepos will be triggered by the useEffect
+    }
   };
 
   const fixedCount = findingsWithFixes.filter((f) => f.fix).length;
@@ -338,20 +428,23 @@ export function BatchPRModal({
     (f) => f.fix && f.filePath.trim()
   ).length;
 
-  if (!connection.connected) {
+  const isGitLab = platform === 'gitlab';
+  const prOrMr = isGitLab ? 'Merge Request' : 'Pull Request';
+
+  if (!github.connection.connected && !gitlab.connection.connected) {
     return (
       <Modal
         isOpen={isOpen}
         onClose={onClose}
         title="Create Batch Pull Request"
       >
-        <div style={{ textAlign: "center", padding: 20 }}>
-          <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}><Link2 size={48} style={{ color: "#64748b" }} /></div>
-          <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>
-            GitHub Not Connected
+        <div className="text-center p-5">
+          <div className="mb-4 flex justify-center"><Link2 size={48} className="text-slate-500" /></div>
+          <h3 className="m-0 mb-2 text-base">
+            Git Not Connected
           </h3>
-          <p style={{ color: "#64748b", fontSize: 14, marginBottom: 16 }}>
-            Connect your GitHub account in Settings to create Pull Requests.
+          <p className="text-slate-500 text-sm mb-4">
+            Connect your GitHub or GitLab account in Settings to create Pull Requests or Merge Requests.
           </p>
           <Button onClick={onClose}>Close</Button>
         </div>
@@ -366,9 +459,9 @@ export function BatchPRModal({
       case "repo":
         return "Select Repository";
       case "files":
-        return "Configure Files & PR";
+        return isGitLab ? "Configure Files & MR" : "Configure Files & PR";
       case "confirm":
-        return <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PartyPopper size={20} /> Pull Request Created!</span>;
+        return <span className="inline-flex items-center gap-2"><PartyPopper size={20} /> {prOrMr} Created!</span>;
     }
   };
 
@@ -385,13 +478,29 @@ export function BatchPRModal({
       )}
 
       {step === "repo" && (
-        <RepoSelector
-          repos={repos}
-          isLoading={isLoading}
-          fixCount={fixedCount}
-          onSelect={handleRepoSelect}
-          onBack={() => setStep("fixes")}
-        />
+        <>
+          <GitPlatformSelector
+            value={platform}
+            onChange={handlePlatformChange}
+            githubConnected={github.connection.connected}
+            gitlabConnected={gitlab.connection.connected}
+          />
+          {!isConnected ? (
+            <div className="text-center p-5">
+              <p className="text-slate-500 text-sm">
+                {isGitLab ? 'GitLab' : 'GitHub'} is not connected. Connect in Settings or select the other platform.
+              </p>
+            </div>
+          ) : (
+            <RepoSelector
+              repos={repos}
+              isLoading={isLoading}
+              fixCount={fixedCount}
+              onSelect={handleRepoSelect}
+              onBack={() => setStep("fixes")}
+            />
+          )}
+        </>
       )}
 
       {step === "files" && selectedRepo && (
@@ -423,6 +532,7 @@ export function BatchPRModal({
           result={prResult}
           fixCount={withPathCount}
           onClose={handleClose}
+          platform={platform}
         />
       )}
     </Modal>

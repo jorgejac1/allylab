@@ -15,34 +15,25 @@ export function SeverityBreakdown({ counts }: SeverityBreakdownProps) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+    <div className="flex gap-4 flex-wrap">
       {SEVERITY_CONFIG.map(({ key, label, color }) => {
         const count = counts[key] || 0;
         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-        
+
         return (
-          <div key={key} style={{ flex: '1 1 120px', minWidth: 100 }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              marginBottom: 4 
-            }}>
-              <span style={{ fontSize: 13, color: '#6b7280' }}>{label}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color }}>{count}</span>
+          <div key={key} className="flex-[1_1_120px] min-w-[100px]">
+            <div className="flex justify-between mb-1">
+              <span className="text-sm/[normal] text-gray-500">{label}</span>
+              <span className="text-sm/[normal] font-semibold" style={{ color }}>{count}</span>
             </div>
-            <div style={{ 
-              height: 6, 
-              background: '#f3f4f6', 
-              borderRadius: 3,
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${pct}%`,
-                background: color,
-                borderRadius: 3,
-                transition: 'width 0.3s ease',
-              }} />
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300 ease-in-out"
+                style={{
+                  width: `${pct}%`,
+                  background: color,
+                }}
+              />
             </div>
           </div>
         );

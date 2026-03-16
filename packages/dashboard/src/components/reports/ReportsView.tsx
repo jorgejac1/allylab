@@ -22,9 +22,9 @@ interface ReportsViewProps {
 
 type TabId = 'history' | 'trends' | 'compare' | 'export';
 
-export function ReportsView({ 
-  scans, 
-  onDeleteScan, 
+export function ReportsView({
+  scans,
+  onDeleteScan,
   onRescan,
   recentRegressions = [],
   hasRegression,
@@ -38,10 +38,10 @@ export function ReportsView({
   } | null>(null);
 
   const tabs: { id: string; label: ReactNode; count?: number }[] = [
-    { id: 'history', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ClipboardList size={14} />Scan History</span>, count: scans.length },
-    { id: 'trends', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} />Trends</span> },
-    { id: 'compare', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Calendar size={14} />Period Compare</span> },
-    { id: 'export', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={14} />Export</span> },
+    { id: 'history', label: <span className="flex items-center gap-1.5"><ClipboardList size={14} />Scan History</span>, count: scans.length },
+    { id: 'trends', label: <span className="flex items-center gap-1.5"><TrendingUp size={14} />Trends</span> },
+    { id: 'compare', label: <span className="flex items-center gap-1.5"><Calendar size={14} />Period Compare</span> },
+    { id: 'export', label: <span className="flex items-center gap-1.5"><Upload size={14} />Export</span> },
   ];
 
   const handleSelectScan = (scan: SavedScan) => {
@@ -82,26 +82,20 @@ export function ReportsView({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 4px' }}>
+          <h2 className="text-2xl font-bold mt-0 mb-1">
             Reports & History
           </h2>
-          <p style={{ fontSize: 14, color: '#64748b', margin: 0 }}>
+          <p className="text-sm text-slate-500 m-0">
             View scan history, track trends, and export your data
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div style={{ display: 'flex', gap: 16 }}>
+        <div className="flex gap-4">
           <QuickStat label="Total Scans" value={scans.length} />
           <QuickStat
             label="Avg Score"
@@ -123,9 +117,9 @@ export function ReportsView({
       />
 
       {/* Content */}
-      <div style={{ display: 'flex', gap: 24 }}>
+      <div className="flex gap-6">
         {/* Main Content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="flex-1 min-w-0">
           {activeTab === 'history' && (
             <>
               {comparisonScans ? (
@@ -138,14 +132,14 @@ export function ReportsView({
                   />
                 </Suspense>
               ) : selectedScan ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="flex flex-col gap-4">
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={handleCloseDetails}
-                    style={{ alignSelf: 'flex-start' }}
+                    className="self-start"
                   >
-                    ← Back to History
+                    &larr; Back to History
                   </Button>
                   <Suspense fallback={<TabLoader />}>
                     <ScanResults
@@ -187,7 +181,7 @@ export function ReportsView({
 
           {activeTab === 'export' && (
             <Suspense fallback={<TabLoader />}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ExportOptions scans={scans} selectedScan={selectedScan || undefined} />
                 <ReportsSummary scans={scans} />
               </div>
@@ -197,9 +191,9 @@ export function ReportsView({
 
         {/* Sidebar - Recent Activity */}
         {activeTab === 'history' && !selectedScan && !comparisonScans && (
-          <div style={{ width: 300, flexShrink: 0 }}>
-            <RecentActivity 
-              scans={scans.slice(0, 5)} 
+          <div className="w-[300px] shrink-0 hidden sm:block">
+            <RecentActivity
+              scans={scans.slice(0, 5)}
               onSelect={handleSelectScan}
               hasRegression={hasRegression}
             />
@@ -224,20 +218,12 @@ function QuickStat({
   suffix?: string;
 }) {
   return (
-    <div
-      style={{
-        padding: '12px 20px',
-        background: '#f8fafc',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-        textAlign: 'center',
-      }}
-    >
-      <div style={{ fontSize: 24, fontWeight: 700, color: '#0f172a' }}>
+    <div className="py-3 px-5 bg-slate-50 rounded-lg border border-slate-200 text-center">
+      <div className="text-2xl font-bold text-slate-900">
         {value}
-        <span style={{ fontSize: 12, fontWeight: 400, color: '#64748b' }}>{suffix}</span>
+        <span className="text-xs font-normal text-slate-500">{suffix}</span>
       </div>
-      <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>
+      <div className="text-xs text-slate-500 uppercase">
         {label}
       </div>
     </div>
@@ -257,71 +243,46 @@ interface RecentActivityProps {
 function RecentActivity({ scans, onSelect, hasRegression }: RecentActivityProps) {
   return (
     <Card>
-      <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <h4 className="text-sm font-semibold mt-0 mb-4 flex items-center gap-2">
         <Clock size={16} />Recent Activity
       </h4>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="flex flex-col gap-3">
         {scans.map(scan => {
           const regression = hasRegression?.(scan.id);
-          
+
           return (
             <button
               key={scan.id}
               onClick={() => onSelect(scan)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: 12,
-                background: regression ? '#fef3c7' : '#f8fafc',
-                border: regression ? '1px solid #f59e0b' : '1px solid #e2e8f0',
-                borderRadius: 8,
-                cursor: 'pointer',
-                textAlign: 'left',
-                width: '100%',
-              }}
+              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer text-left w-full ${
+                regression
+                  ? 'bg-amber-100 border border-amber-500'
+                  : 'bg-slate-50 border border-slate-200 hover:bg-slate-100'
+              }`}
             >
               <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm"
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
                   background: scan.score >= 70 ? '#dcfce7' : scan.score >= 40 ? '#fef9c3' : '#fee2e2',
                   color: scan.score >= 70 ? '#166534' : scan.score >= 40 ? '#854d0e' : '#991b1b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: 14,
                 }}
               >
                 {scan.score}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontWeight: 500,
-                    fontSize: 13,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 font-medium text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                   {new URL(scan.url).hostname}
                   {regression && (
-                    <span style={{ fontSize: 11, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <span className="text-xs text-red-600 flex items-center gap-0.5">
                       <TrendingDown size={12} />-{regression.scoreDrop}
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>
+                <div className="text-xs text-slate-500">
                   {formatRelativeTime(new Date(scan.timestamp))}
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>
+              <div className="text-xs text-slate-500">
                 {scan.totalIssues} issues
               </div>
             </button>
@@ -355,10 +316,10 @@ function ReportsSummary({ scans }: ReportsSummaryProps) {
 
   return (
     <Card>
-      <h4 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <h4 className="text-base font-semibold mt-0 mb-4 flex items-center gap-2">
         <BarChart3 size={18} />Summary Statistics
       </h4>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="flex flex-col gap-3">
         <SummaryRow label="Total Scans" value={scans.length.toString()} />
         <SummaryRow label="Unique Sites" value={uniqueSites.toString()} />
         <SummaryRow label="Total Issues Found" value={totalIssues.toString()} />
@@ -372,7 +333,7 @@ function ReportsSummary({ scans }: ReportsSummaryProps) {
           value={seriousIssues.toString()}
           color="#ea580c"
         />
-        <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+        <hr className="border-none border-t border-slate-200 my-1" />
         {firstScan && (
           <SummaryRow label="First Scan" value={firstScan.toLocaleDateString()} />
         )}
@@ -394,18 +355,9 @@ function SummaryRow({
   color?: string;
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '8px 12px',
-        background: '#f8fafc',
-        borderRadius: 6,
-      }}
-    >
-      <span style={{ fontSize: 13, color: '#64748b' }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 600, color: color || '#0f172a' }}>
+    <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-md">
+      <span className="text-sm text-slate-500">{label}</span>
+      <span className="text-sm font-semibold" style={{ color: color || '#0f172a' }}>
         {value}
       </span>
     </div>

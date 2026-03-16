@@ -40,54 +40,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <div
-          style={{
-            padding: 24,
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 8,
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              marginBottom: 12,
-              color: '#dc2626',
-            }}
-          >
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-center">
+          <div className="flex items-center justify-center gap-2 mb-3 text-red-600">
             <AlertTriangle size={24} />
-            <span style={{ fontSize: 16, fontWeight: 600 }}>Something went wrong</span>
+            <span className="text-base/[normal] font-semibold">Something went wrong</span>
           </div>
 
           {this.props.section && (
-            <p style={{ color: '#991b1b', fontSize: 14, marginBottom: 8 }}>
+            <p className="text-red-800 text-sm/[normal] mb-2">
               Error in: {this.props.section}
             </p>
           )}
 
-          <p style={{ color: '#7f1d1d', fontSize: 13, marginBottom: 16 }}>
+          <p className="text-red-900 text-[13px] mb-4">
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
 
           <button
             onClick={this.handleReset}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 16px',
-              background: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white border-none rounded-md text-sm/[normal] font-medium cursor-pointer"
           >
             <RefreshCw size={14} />
             Try Again

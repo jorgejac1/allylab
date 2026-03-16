@@ -43,102 +43,73 @@ export const FindingsRow = memo(function FindingsRow({
   const isFalsePositive = finding.falsePositive;
 
   return (
-    <tr 
-      style={{ 
+    <tr
+      style={{
         borderBottom: '1px solid #f1f5f9',
         opacity: isFalsePositive ? 0.6 : 1,
-        background: isSelected 
-          ? '#f0f9ff' 
-          : isFalsePositive 
-            ? '#fafafa' 
+        background: isSelected
+          ? '#f0f9ff'
+          : isFalsePositive
+            ? '#fafafa'
             : 'transparent',
       }}
     >
       {/* Checkbox */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onToggleSelect(finding.id)}
-          style={{ cursor: 'pointer', width: 16, height: 16 }}
+          className="cursor-pointer w-4 h-4"
         />
       </td>
 
       {/* Severity */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         <SeverityBadge severity={finding.impact} />
       </td>
 
       {/* Tracking Status */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         <StatusBadge status={finding.status} />
       </td>
 
       {/* Issue Title + Description */}
-      <td style={{ ...tdStyle, maxWidth: 400 }}>
-        <div style={{ 
-          fontWeight: 600, 
-          fontSize: 14,
-          marginBottom: 4,
-          textDecoration: isFalsePositive ? 'line-through' : 'none',
-          color: '#1e293b',
-        }}>
+      <td className="py-3.5 px-3 align-middle max-w-[400px]">
+        <div className={`font-semibold text-sm mb-1 text-slate-800 ${isFalsePositive ? 'line-through' : ''}`}>
           {finding.ruleTitle}
         </div>
-        <div style={{ 
-          fontSize: 13, 
-          color: '#64748b', 
-          lineHeight: 1.4,
-        }}>
-          {finding.description.length > 80 
-            ? finding.description.slice(0, 80) + '...' 
+        <div className="text-[13px] text-slate-500 leading-normal">
+          {finding.description.length > 80
+            ? finding.description.slice(0, 80) + '...'
             : finding.description}
         </div>
         {isFalsePositive && (
-          <span style={{
-            display: 'inline-block',
-            marginTop: 6,
-            fontSize: 10,
-            padding: '2px 6px',
-            background: '#fef2f2',
-            color: '#991b1b',
-            borderRadius: 4,
-            fontWeight: 500,
-          }}>
+          <span className="inline-block mt-1.5 text-[10px] py-0.5 px-1.5 bg-red-50 text-red-800 rounded font-medium">
             False Positive
           </span>
         )}
       </td>
 
       {/* Source */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         <SourceBadge source={finding.source} />
       </td>
 
       {/* WCAG Tags */}
-      <td style={tdStyle}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <td className="py-3.5 px-3 align-middle">
+        <div className="flex flex-wrap gap-1">
           {finding.wcagTags.slice(0, 2).map(tag => (
-            <span 
+            <span
               key={tag}
-              style={{ 
-                fontSize: 11, 
-                padding: '2px 6px',
-                background: '#f1f5f9',
-                color: '#475569',
-                borderRadius: 4,
-                fontFamily: 'monospace',
-              }}
+              className="text-xs py-0.5 px-1.5 bg-slate-100 text-slate-600 rounded font-mono"
             >
               {tag.replace('wcag', '')}
             </span>
           ))}
           {finding.wcagTags.length > 2 && (
-            <span 
-              style={{ 
-                fontSize: 11, 
-                color: '#94a3b8',
-              }}
+            <span
+              className="text-xs text-slate-400"
               title={finding.wcagTags.join(', ')}
             >
               +{finding.wcagTags.length - 2}
@@ -148,7 +119,7 @@ export const FindingsRow = memo(function FindingsRow({
       </td>
 
       {/* JIRA Column */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         <JiraCell
           issueKey={jiraIssueKey}
           isLinking={isLinkingJira}
@@ -162,37 +133,24 @@ export const FindingsRow = memo(function FindingsRow({
       </td>
 
       {/* PR Status Column */}
-      <td style={tdStyle}>
+      <td className="py-3.5 px-3 align-middle">
         {renderPRStatus(finding.id)}
       </td>
 
       {/* Actions */}
-      <td style={tdStyle}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <td className="py-3.5 px-3 align-middle">
+        <div className="flex gap-2 items-center">
           <button
             onClick={() => onToggleFalsePositive(finding)}
             title={isFalsePositive ? 'Restore finding' : 'Mark as false positive'}
             aria-label={isFalsePositive ? 'Restore finding' : 'Mark as false positive'}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 12,
-              color: isFalsePositive ? '#15803d' : '#94a3b8',
-              padding: '4px 8px',
-              borderRadius: 4,
-              transition: 'all 0.15s',
-            }}
-            onMouseOver={e => {
-              e.currentTarget.style.background = isFalsePositive ? '#f0fdf4' : '#fef2f2';
-              e.currentTarget.style.color = isFalsePositive ? '#15803d' : '#dc2626';
-            }}
-            onMouseOut={e => {
-              e.currentTarget.style.background = 'none';
-              e.currentTarget.style.color = isFalsePositive ? '#15803d' : '#94a3b8';
-            }}
+            className={`bg-none border-none cursor-pointer text-xs py-1 px-2 rounded transition-all duration-150 ${
+              isFalsePositive
+                ? 'text-green-700 hover:bg-green-50'
+                : 'text-slate-400 hover:bg-red-50 hover:text-red-600'
+            }`}
           >
-            {isFalsePositive ? <><Undo size={12} aria-hidden="true" style={{ marginRight: 4 }} />Restore</> : <><X size={12} aria-hidden="true" style={{ marginRight: 4 }} />Ignore</>}
+            {isFalsePositive ? <><Undo size={12} aria-hidden="true" className="mr-1" />Restore</> : <><X size={12} aria-hidden="true" className="mr-1" />Ignore</>}
           </button>
           <Button variant="secondary" size="sm" onClick={() => onViewDetails(finding)}>
             Details
@@ -202,8 +160,3 @@ export const FindingsRow = memo(function FindingsRow({
     </tr>
   );
 });
-
-const tdStyle: React.CSSProperties = {
-  padding: '14px 12px',
-  verticalAlign: 'middle',
-};

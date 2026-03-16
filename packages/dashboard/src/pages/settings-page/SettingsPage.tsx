@@ -1,7 +1,8 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useMemo } from 'react';
 import { PageContainer } from '../../components/layout';
 import { Tabs, ConfirmDialog, Toast, TabLoader } from '../../components/ui';
 import { useLocalStorage, useConfirmDialog, useToast } from '../../hooks';
+import { useAuth } from '../../contexts';
 import { GeneralSettingsTab } from './GeneralSettingsTab';
 import { APISettings } from './APISettings';
 import { DEFAULT_SETTINGS, TABS } from './constants';
@@ -19,8 +20,19 @@ const CustomRulesManager = lazy(() => import('../../components/settings/CustomRu
 const TeamSettings = lazy(() => import('../../components/settings/TeamSettings').then(m => ({ default: m.TeamSettings })));
 const BillingSettings = lazy(() => import('../../components/settings/BillingSettings').then(m => ({ default: m.BillingSettings })));
 const AuthProfilesManager = lazy(() => import('../../components/settings/AuthProfilesManager').then(m => ({ default: m.AuthProfilesManager })));
+const SSOSettings = lazy(() => import('../../components/settings/SSOSettings').then(m => ({ default: m.SSOSettings })));
+const AuditLog = lazy(() => import('../../components/audit/AuditLog').then(m => ({ default: m.AuditLog })));
 
 export function SettingsPage() {
+  const { can } = useAuth();
+  const visibleTabs = useMemo(() => TABS.filter(tab => {
+    if (tab.id === 'sso' && !can('settings:edit')) return false;
+    if (tab.id === 'audit' && !can('audit-logs:view')) return false;
+    if (tab.id === 'billing' && !can('billing:view')) return false;
+    if (tab.id === 'team' && !can('users:view')) return false;
+    return true;
+  }), [can]);
+
   const [activeTab, setActiveTab] = useState<TabId>('general');
   const [settings, setSettings] = useLocalStorage<Settings>(
     'allylab_settings',
@@ -96,10 +108,10 @@ export function SettingsPage() {
         onCancel={handleCancel}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {/* Tabs */}
         <Tabs
-          tabs={TABS}
+          tabs={visibleTabs}
           activeTab={activeTab}
           onChange={(id) => setActiveTab(id as TabId)}
         />
@@ -165,6 +177,13 @@ export function SettingsPage() {
           </Suspense>
         )}
 
+        {/* SSO / SAML */}
+        {activeTab === 'sso' && (
+          <Suspense fallback={<TabLoader />}>
+            <SSOSettings />
+          </Suspense>
+        )}
+
         {/* Webhooks / Notifications */}
         {activeTab === 'webhooks' && (
           <Suspense fallback={<TabLoader />}>
@@ -195,6 +214,13 @@ export function SettingsPage() {
 
         {/* API Settings */}
         {activeTab === 'api' && <APISettings />}
+
+        {/* Audit Log */}
+        {activeTab === 'audit' && (
+          <Suspense fallback={<TabLoader />}>
+            <AuditLog />
+          </Suspense>
+        )}
       </div>
     </PageContainer>
   );

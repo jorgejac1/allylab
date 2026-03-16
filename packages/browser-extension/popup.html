@@ -182,6 +182,27 @@
       text-decoration: underline;
     }
 
+    .connection-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .connection-dot.connected {
+      background: #10b981;
+    }
+
+    .connection-dot.disconnected {
+      background: #ef4444;
+    }
+
+    .connection-dot.checking {
+      background: #f59e0b;
+    }
+
     .preview {
       margin-top: 16px;
       background: #1e293b;
@@ -264,6 +285,7 @@
   </div>
 
   <div class="footer">
+    <span id="connection-status" class="connection-dot checking" title="Checking connection..."></span>
     Paste in <a href="https://allylab.io" target="_blank">AllyLab</a> Settings &rarr; Authentication
   </div>
 

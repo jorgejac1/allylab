@@ -7,7 +7,7 @@ export interface Settings {
   maxScansStored: number;
 }
 
-export type TabId = 'general' | 'team' | 'billing' | 'rules' | 'reports' | 'alerts' | 'schedules' | 'auth' | 'webhooks' | 'jira' | 'git' | 'cicd' | 'api';
+export type TabId = 'general' | 'team' | 'billing' | 'rules' | 'reports' | 'alerts' | 'schedules' | 'auth' | 'sso' | 'webhooks' | 'jira' | 'git' | 'cicd' | 'api' | 'audit';
 
 export interface TabConfig {
   id: string;

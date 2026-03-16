@@ -33,34 +33,20 @@ describe("findings/SourceBadge", () => {
     const { container } = render(<SourceBadge source="custom-rule" />);
 
     const badge = container.firstChild as HTMLElement;
-    expect(badge).toHaveStyle({
-      background: "rgb(224, 242, 254)",
-      color: "rgb(3, 105, 161)",
-    });
+    expect(badge).toHaveClass("bg-sky-100", "text-sky-700", "border-sky-200");
   });
 
   it("applies default styling for axe-core source", () => {
     const { container } = render(<SourceBadge source="axe-core" />);
 
     const badge = container.firstChild as HTMLElement;
-    expect(badge).toHaveStyle({
-      background: "rgb(241, 245, 249)",
-      color: "rgb(100, 116, 139)",
-    });
+    expect(badge).toHaveClass("bg-slate-100", "text-slate-500", "border-slate-200");
   });
 
   it("applies common styling to all badges", () => {
     const { container } = render(<SourceBadge source="custom-rule" />);
 
     const badge = container.firstChild as HTMLElement;
-    expect(badge).toHaveStyle({
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "4px",
-      padding: "2px 6px",
-      borderRadius: "4px",
-      fontSize: "10px",
-      fontWeight: 500,
-    });
+    expect(badge).toHaveClass("inline-flex", "items-center", "gap-1", "py-0.5", "px-1.5", "rounded", "text-[10px]", "font-medium");
   });
 });

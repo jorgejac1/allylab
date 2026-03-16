@@ -60,12 +60,6 @@ describe("findings/TrackingStats", () => {
     const { container } = render(<TrackingStats stats={stats} />);
 
     const statsContainer = container.firstChild as HTMLElement;
-    expect(statsContainer).toHaveStyle({
-      display: "flex",
-      gap: "16px",
-      padding: "12px 16px",
-      background: "rgb(248, 250, 252)",
-      borderRadius: "8px",
-    });
+    expect(statsContainer).toHaveClass("flex", "gap-4", "py-3", "px-4", "bg-slate-50", "rounded-lg");
   });
 });

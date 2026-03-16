@@ -658,7 +658,7 @@ describe("benchmarking/CompetitorBenchmark - getGrade", () => {
 
     const { container } = render(<CompetitorBenchmark />);
     // Grade A is shown with specific styling
-    const gradeElements = container.querySelectorAll('[style*="font-size: 12px"][style*="font-weight: 600"]');
+    const gradeElements = container.querySelectorAll('.text-xs.font-semibold');
     const hasGradeA = Array.from(gradeElements).some(el => el.textContent === "A");
     expect(hasGradeA).toBe(true);
   });
@@ -669,7 +669,7 @@ describe("benchmarking/CompetitorBenchmark - getGrade", () => {
     ];
 
     const { container } = render(<CompetitorBenchmark />);
-    const gradeElements = container.querySelectorAll('[style*="font-size: 12px"][style*="font-weight: 600"]');
+    const gradeElements = container.querySelectorAll('.text-xs.font-semibold');
     const hasGradeB = Array.from(gradeElements).some(el => el.textContent === "B");
     expect(hasGradeB).toBe(true);
   });
@@ -680,7 +680,7 @@ describe("benchmarking/CompetitorBenchmark - getGrade", () => {
     ];
 
     const { container } = render(<CompetitorBenchmark />);
-    const gradeElements = container.querySelectorAll('[style*="font-size: 12px"][style*="font-weight: 600"]');
+    const gradeElements = container.querySelectorAll('.text-xs.font-semibold');
     const hasGradeC = Array.from(gradeElements).some(el => el.textContent === "C");
     expect(hasGradeC).toBe(true);
   });
@@ -691,7 +691,7 @@ describe("benchmarking/CompetitorBenchmark - getGrade", () => {
     ];
 
     const { container } = render(<CompetitorBenchmark />);
-    const gradeElements = container.querySelectorAll('[style*="font-size: 12px"][style*="font-weight: 600"]');
+    const gradeElements = container.querySelectorAll('.text-xs.font-semibold');
     const hasGradeD = Array.from(gradeElements).some(el => el.textContent === "D");
     expect(hasGradeD).toBe(true);
   });
@@ -702,7 +702,7 @@ describe("benchmarking/CompetitorBenchmark - getGrade", () => {
     ];
 
     const { container } = render(<CompetitorBenchmark />);
-    const gradeElements = container.querySelectorAll('[style*="font-size: 12px"][style*="font-weight: 600"]');
+    const gradeElements = container.querySelectorAll('.text-xs.font-semibold');
     const hasGradeF = Array.from(gradeElements).some(el => el.textContent === "F");
     expect(hasGradeF).toBe(true);
   });

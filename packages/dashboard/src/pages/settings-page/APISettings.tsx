@@ -19,39 +19,28 @@ export function APISettings() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-      }}
-    >
+    <div className="flex flex-col gap-6">
       {/* API Endpoint */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px' }}>
+        <h3 className="text-base font-semibold m-0 mb-4">
           API Configuration
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           <div>
             <label
               htmlFor="api-base-url"
-              style={{
-                display: 'block',
-                fontSize: 14,
-                fontWeight: 500,
-                marginBottom: 6,
-              }}
+              className="block text-sm font-medium mb-1.5"
             >
               API Base URL
             </label>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="flex gap-2">
               <Input
                 id="api-base-url"
                 value={apiUrl}
                 onChange={(e) => setApiUrl(e.target.value)}
                 placeholder="http://localhost:3001"
-                style={{ flex: 1 }}
+                className="flex-1"
               />
               <Button
                 variant="secondary"
@@ -60,7 +49,7 @@ export function APISettings() {
                 Reset
               </Button>
             </div>
-            <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+            <p className="text-xs text-slate-500 mt-1">
               The URL where your AllyLab API is running
             </p>
           </div>
@@ -69,12 +58,12 @@ export function APISettings() {
 
       {/* API Endpoints Reference */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
           <BookOpen size={18} aria-hidden="true" />
           API Endpoints
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="flex flex-col gap-3">
           <EndpointRow
             method="GET"
             path="/health"
@@ -144,7 +133,7 @@ export function APISettings() {
         </div>
 
         {copied && (
-          <p style={{ fontSize: 12, color: '#10b981', marginTop: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <p className="text-xs text-emerald-500 mt-3 flex items-center gap-1">
             <Check size={14} aria-hidden="true" />
             Copied to clipboard!
           </p>
@@ -153,24 +142,13 @@ export function APISettings() {
 
       {/* Example Request */}
       <Card>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="text-base font-semibold m-0 mb-4 flex items-center gap-2">
           <Lightbulb size={18} aria-hidden="true" />
           Example Request
         </h3>
 
-        <div
-          style={{
-            background: '#1e293b',
-            color: '#e2e8f0',
-            padding: 16,
-            borderRadius: 8,
-            fontFamily: 'monospace',
-            fontSize: 13,
-            lineHeight: 1.6,
-            overflow: 'auto',
-          }}
-        >
-          <pre style={{ margin: 0 }}>
+        <div className="bg-slate-800 text-slate-200 p-4 rounded-lg font-mono text-sm leading-relaxed overflow-auto">
+          <pre className="m-0">
             {`curl -X POST ${apiUrl}/scan/json \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -189,9 +167,9 @@ export function APISettings() {
               `curl -X POST ${apiUrl}/scan/json -H "Content-Type: application/json" -d '{"url": "https://example.com", "standard": "wcag21aa", "viewport": "desktop"}'`
             )
           }
-          style={{ marginTop: 12 }}
+          className="mt-3"
         >
-          <Clipboard size={14} aria-hidden="true" style={{ marginRight: 6 }} />
+          <Clipboard size={14} aria-hidden="true" className="mr-1.5" />
           Copy cURL
         </Button>
       </Card>

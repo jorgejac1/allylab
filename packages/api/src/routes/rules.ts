@@ -1,11 +1,11 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { CustomRule, CreateRuleRequest, UpdateRuleRequest } from '../types/rules';
 import { randomUUID } from 'crypto';
-import { JsonStorage } from '../utils/storage';
+import { createStorage } from '../utils/storage-factory';
 import { getPaginationFromQuery, paginate } from '../utils/pagination.js';
 
-// File-based persistent storage
-const rulesStore = new JsonStorage<CustomRule>({ filename: 'rules.json' });
+// Persistent storage (backend determined by STORAGE_TYPE env var)
+const rulesStore = createStorage<CustomRule>({ tableName: 'rules', filename: 'rules.json' });
 
 interface RulesListQuery {
   limit?: string;

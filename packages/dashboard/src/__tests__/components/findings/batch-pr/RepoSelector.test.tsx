@@ -130,21 +130,14 @@ describe("batch-pr/RepoSelector", () => {
     expect(arrows).toHaveLength(2);
   });
 
-  // Test hover states for RepoRow
-  it("changes background on hover for repo row", () => {
+  // Test hover classes for RepoRow (Tailwind hover: classes)
+  it("has hover class on repo row", () => {
     render(<RepoSelector {...defaultProps} />);
     const repoButton = screen.getByText("owner/test-repo").closest("button")!;
 
-    // Initial state
-    expect(repoButton).toHaveStyle({ background: "rgb(255, 255, 255)" });
-
-    // Hover
-    fireEvent.mouseEnter(repoButton);
-    expect(repoButton).toHaveStyle({ background: "rgb(248, 250, 252)" });
-
-    // Leave hover
-    fireEvent.mouseLeave(repoButton);
-    expect(repoButton).toHaveStyle({ background: "rgb(255, 255, 255)" });
+    // Button uses Tailwind classes for background and hover
+    expect(repoButton).toHaveClass("bg-white");
+    expect(repoButton).toHaveClass("hover:bg-slate-50");
   });
 
   it("renders with empty repos array", () => {

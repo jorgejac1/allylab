@@ -20,21 +20,21 @@ export function VerificationModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Fix Verification" size="md">
       {isLoading && (
-        <div style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><Search size={32} /></div>
-          <p style={{ color: '#64748b', fontSize: 14 }}>
+        <div className="text-center p-10">
+          <div className="mb-4 flex justify-center"><Search size={32} /></div>
+          <p className="text-slate-500 text-sm">
             Re-scanning page to verify fixes...
           </p>
         </div>
       )}
 
       {error && (
-        <div style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><XCircle size={48} style={{ color: '#dc2626' }} /></div>
-          <h3 style={{ margin: '0 0 8px', fontSize: 16, color: '#dc2626' }}>
+        <div className="text-center p-10">
+          <div className="mb-4 flex justify-center"><XCircle size={48} className="text-red-600" /></div>
+          <h3 className="m-0 mb-2 text-base text-red-600">
             Verification Failed
           </h3>
-          <p style={{ color: '#64748b', fontSize: 14, marginBottom: 24 }}>
+          <p className="text-slate-500 text-sm mb-6">
             {error}
           </p>
           <Button onClick={onClose}>Close</Button>
@@ -42,24 +42,24 @@ export function VerificationModal({
       )}
 
       {result && !isLoading && !error && (
-        <div style={{ padding: 20 }}>
+        <div className="p-5">
           {result.allFixed ? (
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><PartyPopper size={64} style={{ color: '#16a34a' }} /></div>
-              <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#16a34a' }}>
+            <div className="text-center mb-6">
+              <div className="mb-4 flex justify-center"><PartyPopper size={64} className="text-green-600" /></div>
+              <h3 className="m-0 mb-2 text-lg text-green-600">
                 All Fixes Verified!
               </h3>
-              <p style={{ color: '#64748b', fontSize: 14 }}>
+              <p className="text-slate-500 text-sm">
                 All {result.findingsVerified.length} issues have been successfully fixed.
               </p>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={48} style={{ color: '#f59e0b' }} /></div>
-              <h3 style={{ margin: '0 0 8px', fontSize: 18, color: '#f59e0b' }}>
+            <div className="text-center mb-6">
+              <div className="mb-4 flex justify-center"><AlertTriangle size={48} className="text-amber-500" /></div>
+              <h3 className="m-0 mb-2 text-lg text-amber-500">
                 Some Issues Still Present
               </h3>
-              <p style={{ color: '#64748b', fontSize: 14 }}>
+              <p className="text-slate-500 text-sm">
                 {result.findingsVerified.filter(f => f.stillPresent).length} of{' '}
                 {result.findingsVerified.length} issues are still present.
               </p>
@@ -67,32 +67,27 @@ export function VerificationModal({
           )}
 
           {/* Results Table */}
-          <div style={{
-            border: '1px solid #e2e8f0',
-            borderRadius: 8,
-            overflow: 'hidden',
-            marginBottom: 16,
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="border border-slate-200 rounded-lg overflow-hidden mb-4">
+            <table className="w-full border-collapse">
               <thead>
-                <tr style={{ background: '#f8fafc' }}>
-                  <th style={thStyle}>Rule</th>
-                  <th style={{ ...thStyle, width: 100 }}>Status</th>
+                <tr className="bg-slate-50">
+                  <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-500">Rule</th>
+                  <th className="py-2.5 px-3 text-left text-xs font-semibold text-slate-500 w-[100px]">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {result.findingsVerified.map((finding, index) => (
-                  <tr key={index} style={{ borderTop: '1px solid #e2e8f0' }}>
-                    <td style={tdStyle}>
-                      <code style={{ fontSize: 12 }}>{finding.ruleId}</code>
+                  <tr key={index} className="border-t border-slate-200">
+                    <td className="py-2.5 px-3 text-[13px]">
+                      <code className="text-xs">{finding.ruleId}</code>
                     </td>
-                    <td style={tdStyle}>
+                    <td className="py-2.5 px-3 text-[13px]">
                       {finding.stillPresent ? (
-                        <span style={{ color: '#dc2626', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span className="text-red-600 font-medium inline-flex items-center gap-1">
                           <X size={12} /> Still Present
                         </span>
                       ) : (
-                        <span style={{ color: '#16a34a', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span className="text-green-600 font-medium inline-flex items-center gap-1">
                           <Check size={12} /> Fixed
                         </span>
                       )}
@@ -104,18 +99,12 @@ export function VerificationModal({
           </div>
 
           {/* Scan Info */}
-          <div style={{
-            padding: 12,
-            background: '#f8fafc',
-            borderRadius: 8,
-            fontSize: 13,
-            color: '#64748b',
-          }}>
+          <div className="p-3 bg-slate-50 rounded-lg text-[13px] text-slate-500">
             <div>New Score: <strong>{result.scanScore}/100</strong></div>
             <div>Scanned: {new Date(result.scanTimestamp).toLocaleString()}</div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+          <div className="flex justify-center mt-6">
             <Button onClick={onClose}>Close</Button>
           </div>
         </div>
@@ -123,16 +112,3 @@ export function VerificationModal({
     </Modal>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  textAlign: 'left',
-  fontSize: 12,
-  fontWeight: 600,
-  color: '#64748b',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  fontSize: 13,
-};

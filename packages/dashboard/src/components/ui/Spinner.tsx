@@ -5,18 +5,13 @@ interface SpinnerProps {
 
 export function Spinner({ size = 20, color = '#2563eb' }: SpinnerProps) {
   return (
-    <>
-      <div
-        style={{
-          width: size,
-          height: size,
-          border: `2px solid #e2e8f0`,
-          borderTopColor: color,
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-        }}
-      />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </>
+    <div
+      className="rounded-full border-2 border-slate-200 animate-spin"
+      style={{
+        width: size,
+        height: size,
+        borderTopColor: color,
+      }}
+    />
   );
 }

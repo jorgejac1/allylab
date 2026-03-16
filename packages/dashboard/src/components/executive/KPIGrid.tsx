@@ -8,24 +8,22 @@ interface KPIGridProps {
   marginBottom?: number;
 }
 
-export function KPIGrid({ 
-  children, 
+export function KPIGrid({
+  children,
   columns,
-  minWidth = 200, 
+  minWidth = 200,
   gap = 16,
   marginBottom = 24,
 }: KPIGridProps) {
-  const gridTemplateColumns = columns 
+  const gridTemplateColumns = columns
     ? `repeat(${columns}, 1fr)`
     : `repeat(auto-fit, minmax(${minWidth}px, 1fr))`;
 
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns,
-      gap,
-      marginBottom,
-    }}>
+    <div
+      className="grid"
+      style={{ gridTemplateColumns, gap, marginBottom }}
+    >
       {children}
     </div>
   );

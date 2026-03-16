@@ -9,35 +9,18 @@ export function EditorHeader({ filePath, onBack }: EditorHeaderProps) {
   const fileName = filePath.split('/').pop();
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }}>
+    <div className="flex justify-between items-center">
       <div>
-        <h3 style={{
-          margin: 0,
-          fontSize: 14,
-          fontWeight: 600,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-        }}>
+        <h3 className="m-0 text-sm font-semibold inline-flex items-center gap-1.5">
           <Edit3 size={14} aria-hidden="true" /> Edit: {fileName}
         </h3>
-        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748b' }}>
+        <p className="mt-1 mb-0 text-xs text-slate-500">
           {filePath}
         </p>
       </div>
       <button
         onClick={onBack}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: '#3b82f6',
-          fontSize: 13,
-          cursor: 'pointer',
-        }}
+        className="bg-none border-none text-blue-500 text-[13px] cursor-pointer"
       >
         ← Back
       </button>

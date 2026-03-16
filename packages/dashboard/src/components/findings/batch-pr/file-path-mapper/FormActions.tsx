@@ -12,29 +12,21 @@ export function FormActions({
   onSubmit
 }: FormActionsProps) {
   return (
-    <div style={{
-      display: 'flex',
-      gap: 12,
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: 8,
-      paddingTop: 12,
-      borderTop: '1px solid #e2e8f0',
-    }}>
+    <div className="flex gap-3 justify-between items-center mt-2 pt-3 border-t border-slate-200">
       <Button variant="secondary" onClick={onBack}>
         ← Back
       </Button>
 
-      <div style={{ flex: 1, textAlign: 'center' }}>
+      <div className="flex-1 text-center">
         {withPathCount > 0 && (
-          <span style={{ fontSize: 11, color: '#64748b' }}>
+          <span className="text-[11px] text-slate-500">
             {withPathCount} of {totalCount} ready
             {highConfidenceCount > 0 && ` (${highConfidenceCount} high confidence)`}
           </span>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div className="flex gap-3">
         <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
@@ -48,7 +40,7 @@ export function FormActions({
               <Spinner size={14} /> Creating...
             </>
           ) : (
-            <><Rocket size={14} aria-hidden="true" style={{ marginRight: 4 }} /> Create PR ({withPathCount})</>
+            <><Rocket size={14} aria-hidden="true" className="mr-1" /> Create PR ({withPathCount})</>
           )}
         </Button>
       </div>

@@ -45,7 +45,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
     } else if (drillDownContext.type === 'issue' && drillDownContext.ruleId) {
       // Load the most recent scan that contains this issue
       const allScans = loadAllScans();
-      const scanWithIssue = allScans.find(scan => 
+      const scanWithIssue = allScans.find(scan =>
         scan.findings.some(f => f.ruleId === drillDownContext.ruleId)
       );
       if (scanWithIssue) {
@@ -80,30 +80,30 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
   return (
     <PageContainer
       title="Accessibility Scanner"
-      subtitle={drillDownContext?.type === 'issue' 
-        ? `Filtered by: ${drillDownContext.ruleId}` 
+      subtitle={drillDownContext?.type === 'issue'
+        ? `Filtered by: ${drillDownContext.ruleId}`
         : "Scan any URL for accessibility issues"
       }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {/* Scan Form */}
-        <ScanForm 
-          onScan={handleScan} 
+        <ScanForm
+          onScan={handleScan}
           isScanning={isScanning}
           initialUrl={drillDownContext?.type === 'site' ? drillDownContext.url : undefined}
         />
 
         {/* Progress with Cancel Button */}
         {isScanning && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-3">
             <ScanProgress
               percent={progress.percent}
               message={progress.message}
               isComplete={progress.status === 'complete'}
             />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="flex justify-center">
               <Button variant="secondary" size="sm" onClick={handleCancel}>
-                <X size={12} style={{ marginRight: 4 }} /> Cancel Scan
+                <X size={12} className="mr-1" /> Cancel Scan
               </Button>
             </div>
           </div>
@@ -111,15 +111,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
 
         {/* Error */}
         {error && (
-          <div
-            style={{
-              padding: 16,
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: 8,
-              color: '#991b1b',
-            }}
-          >
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
             <strong>Error:</strong> {error}
           </div>
         )}
@@ -128,15 +120,7 @@ export function ScanPage({ currentScan, onScanComplete, drillDownContext }: Scan
         {filteredScan ? (
           <ScanResults scan={filteredScan} onRescan={handleRescan} />
         ) : result ? (
-          <div
-            style={{
-              padding: 16,
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: 8,
-              color: '#166534',
-            }}
-          >
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
             <strong>Scan Complete:</strong> Found {result.totalIssues} issues with score {result.score}/100
           </div>
         ) : !isScanning && !error ? (

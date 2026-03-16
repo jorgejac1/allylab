@@ -46,6 +46,32 @@ interface CompareRequestBody {
   period2End: string;
 }
 
+/**
+ * Filter and sort scans in a single pass
+ */
+function filterScans(
+  scans: ScanInput[],
+  opts: { url?: string; startDate?: string; endDate?: string; limit?: number }
+): ScanInput[] {
+  const targetHost = opts.url ? new URL(opts.url).hostname : null;
+  const start = opts.startDate ? new Date(opts.startDate).getTime() : null;
+  const end = opts.endDate ? new Date(opts.endDate).getTime() : null;
+
+  const filtered = scans.filter(s => {
+    if (targetHost) {
+      try { if (new URL(s.url).hostname !== targetHost) return false; } catch { return false; }
+    }
+    const t = new Date(s.timestamp).getTime();
+    if (start && t < start) return false;
+    if (end && t > end) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  return opts.limit ? filtered.slice(-opts.limit) : filtered;
+}
+
 export async function trendsRoutes(fastify: FastifyInstance) {
   // POST /trends - Get score trends over time
   fastify.post<{ Querystring: TrendQuery; Body: TrendRequestBody }>(
@@ -62,38 +88,7 @@ export async function trendsRoutes(fastify: FastifyInstance) {
           });
         }
 
-        let filtered = [...scans];
-
-        // Filter by URL
-        if (url) {
-          const targetHost = new URL(url).hostname;
-          filtered = filtered.filter(s => {
-            try {
-              return new URL(s.url).hostname === targetHost;
-            } catch {
-              return false;
-            }
-          });
-        }
-
-        // Filter by date range
-        if (startDate) {
-          const start = new Date(startDate).getTime();
-          filtered = filtered.filter(s => new Date(s.timestamp).getTime() >= start);
-        }
-
-        if (endDate) {
-          const end = new Date(endDate).getTime();
-          filtered = filtered.filter(s => new Date(s.timestamp).getTime() <= end);
-        }
-
-        // Sort by timestamp
-        filtered.sort((a, b) => 
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-
-        // Limit results
-        filtered = filtered.slice(-limit);
+        const filtered = filterScans(scans, { url, startDate, endDate, limit });
 
         // Transform to trend data points
         const trendData: TrendDataPoint[] = filtered.map(scan => ({
@@ -149,35 +144,7 @@ export async function trendsRoutes(fastify: FastifyInstance) {
           });
         }
 
-        let filtered = [...scans];
-
-        // Apply filters
-        if (url) {
-          const targetHost = new URL(url).hostname;
-          filtered = filtered.filter(s => {
-            try {
-              return new URL(s.url).hostname === targetHost;
-            } catch {
-              return false;
-            }
-          });
-        }
-
-        if (startDate) {
-          const start = new Date(startDate).getTime();
-          filtered = filtered.filter(s => new Date(s.timestamp).getTime() >= start);
-        }
-
-        if (endDate) {
-          const end = new Date(endDate).getTime();
-          filtered = filtered.filter(s => new Date(s.timestamp).getTime() <= end);
-        }
-
-        filtered.sort((a, b) => 
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-
-        filtered = filtered.slice(-limit);
+        const filtered = filterScans(scans, { url, startDate, endDate, limit });
 
         // Group by severity over time
         const issueTrends = filtered.map(scan => ({
@@ -235,18 +202,7 @@ export async function trendsRoutes(fastify: FastifyInstance) {
           });
         }
 
-        let filtered = [...scans];
-
-        if (url) {
-          const targetHost = new URL(url).hostname;
-          filtered = filtered.filter(s => {
-            try {
-              return new URL(s.url).hostname === targetHost;
-            } catch {
-              return false;
-            }
-          });
-        }
+        const filtered = filterScans(scans, { url });
 
         // Split into periods
         const p1Start = new Date(period1Start).getTime();

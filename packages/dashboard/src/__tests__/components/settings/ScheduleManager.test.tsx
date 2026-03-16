@@ -15,6 +15,20 @@ vi.mock("../../../hooks", async (importOriginal) => {
   };
 });
 
+vi.mock('../../../contexts', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', email: 'admin@test.com', name: 'Admin', role: 'admin' },
+      organization: { id: 'org1', name: 'Test', plan: 'enterprise', settings: { maxScansPerMonth: -1, maxAiFixesPerMonth: -1, maxGitHubPRsPerMonth: -1, scheduledScans: true, maxCustomRules: -1, jiraIntegration: true, exportFormats: ['csv', 'pdf', 'json'] } },
+      isAuthenticated: true,
+      can: () => true,
+      hasRole: () => true,
+    }),
+  };
+});
+
 describe("settings/ScheduleManager", () => {
   const baseSchedule: Schedule = {
     id: "1",
@@ -85,7 +99,7 @@ describe("settings/ScheduleManager", () => {
     expect(await screen.findByText(/Scan History/)).toBeInTheDocument();
     expect(await screen.findByText("fail")).toBeInTheDocument();
     // Close the modal by clicking the close button (X icon)
-    const closeButton = document.querySelector('button[style*="background: none"]') as HTMLElement;
+    const closeButton = document.querySelector('button.bg-transparent.border-none') as HTMLElement;
     fireEvent.click(closeButton);
 
     fireEvent.click(screen.getAllByTitle("Delete schedule")[0]);
@@ -254,6 +268,6 @@ describe("settings/ScheduleManager", () => {
     fireEvent.click(historyBtn);
     await waitFor(() => expect(getHistory).toHaveBeenCalledWith("1"));
     const emptyState = await screen.findByText("No scan history yet");
-    expect(emptyState).toHaveStyle({ padding: "40px", textAlign: "center", color: "#64748b" });
+    expect(emptyState).toHaveClass("p-10", "text-center", "text-slate-500");
   });
 });

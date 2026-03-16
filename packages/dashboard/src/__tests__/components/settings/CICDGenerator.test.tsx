@@ -145,7 +145,7 @@ describe("settings/CICDGenerator", () => {
 
     // Force unknown platform to hit generateConfig default branch (line 219)
     fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "unknown" } });
-    const codeBlock = document.querySelector("div[style*='white-space: pre']");
+    const codeBlock = document.querySelector("div.whitespace-pre");
     expect(codeBlock).not.toBeNull();
     expect(codeBlock?.textContent ?? "").toBe("");
   });
@@ -195,7 +195,7 @@ describe("settings/CICDGenerator", () => {
     vi.useRealTimers();
     render(<CICDGenerator />);
     const getConfigText = () =>
-      document.querySelector("div[style*='monospace']")?.textContent ?? "";
+      document.querySelector("div.font-mono")?.textContent ?? "";
     const platformSelect = screen.getAllByRole("combobox")[0] as HTMLSelectElement;
     await act(async () => {
       fireEvent.change(platformSelect, { target: { value: "harness" } });
@@ -217,7 +217,7 @@ describe("settings/CICDGenerator", () => {
     vi.useRealTimers();
     render(<CICDGenerator />);
     const getConfigText = () =>
-      document.querySelector("div[style*='monospace']")?.textContent ?? "";
+      document.querySelector("div.font-mono")?.textContent ?? "";
     const platformSelect = screen.getAllByRole("combobox")[0] as HTMLSelectElement;
     await act(async () => {
       fireEvent.change(platformSelect, { target: { value: "harness" } });
@@ -250,7 +250,7 @@ describe("settings/CICDGenerator", () => {
     expect(scheduleSelect.value).toBe("manual");
 
     // Config should now include workflow_dispatch trigger
-    const configText = document.querySelector("div[style*='monospace']")?.textContent ?? "";
+    const configText = document.querySelector("div.font-mono")?.textContent ?? "";
     expect(configText).toContain("workflow_dispatch");
   });
 

@@ -53,21 +53,10 @@ describe("findings/SeverityBadge", () => {
     const { rerender } = render(<SeverityBadge severity="critical" />);
 
     const badge = screen.getByText("Critical");
-    expect(badge).toHaveStyle({
-      padding: "4px 10px",
-      borderRadius: "20px",
-      fontSize: "12px",
-      fontWeight: 600,
-      textTransform: "capitalize",
-    });
+    expect(badge).toHaveClass("py-1", "px-2.5", "rounded-full", "text-xs", "font-semibold", "capitalize");
 
     rerender(<SeverityBadge severity="minor" />);
     const minorBadge = screen.getByText("Minor");
-    expect(minorBadge).toHaveStyle({
-      padding: "4px 10px",
-      borderRadius: "20px",
-      fontSize: "12px",
-      fontWeight: 600,
-    });
+    expect(minorBadge).toHaveClass("py-1", "px-2.5", "rounded-full", "text-xs", "font-semibold");
   });
 });

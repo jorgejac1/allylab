@@ -63,7 +63,7 @@ export function FilePathMapper({
   const mappedWithHighConfidence = getMappedWithHighConfidence(fixedFindings);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       <RepoHeader
         repo={selectedRepo}
         branches={branches}

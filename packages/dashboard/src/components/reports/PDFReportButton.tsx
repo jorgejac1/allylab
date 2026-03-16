@@ -12,11 +12,11 @@ interface PDFReportButtonProps {
   companyName?: string;
 }
 
-export function PDFReportButton({ 
-  data, 
-  sites, 
+export function PDFReportButton({
+  data,
+  sites,
   topIssues,
-  companyName = 'AllyLab' 
+  companyName = 'AllyLab'
 }: PDFReportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toasts, success, error, closeToast } = useToast();
@@ -52,7 +52,7 @@ export function PDFReportButton({
         onClick={handleExport}
         disabled={isGenerating || sites.length === 0}
       >
-        {isGenerating ? <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Generating...</> : <><FileText size={14} style={{ marginRight: 6 }} />Export PDF</>}
+        {isGenerating ? <><Loader2 size={14} className="mr-1.5 animate-spin" />Generating...</> : <><FileText size={14} className="mr-1.5" />Export PDF</>}
       </Button>
     </>
   );

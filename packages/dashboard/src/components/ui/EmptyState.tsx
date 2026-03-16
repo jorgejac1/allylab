@@ -16,21 +16,13 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
   const defaultIcon = <Inbox size={64} />;
 
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        padding: '60px 20px',
-        background: '#f8fafc',
-        borderRadius: 12,
-        border: '2px dashed #e2e8f0',
-      }}
-    >
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center', color: '#94a3b8' }}>{icon || defaultIcon}</div>
-      <h3 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px', color: '#0f172a' }}>
+    <div className="text-center py-8 px-4 sm:py-15 sm:px-5 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+      <div className="mb-4 flex justify-center text-slate-400">{icon || defaultIcon}</div>
+      <h3 className="text-lg/[normal] font-semibold m-0 mb-2 text-slate-900">
         {title}
       </h3>
       {description && (
-        <p style={{ fontSize: 14, color: '#64748b', margin: '0 0 20px', maxWidth: 400, marginInline: 'auto' }}>
+        <p className="text-sm/[normal] text-slate-500 m-0 mb-5 max-w-[400px] mx-auto">
           {description}
         </p>
       )}

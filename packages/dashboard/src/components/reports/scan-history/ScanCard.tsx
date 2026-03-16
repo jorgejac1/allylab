@@ -53,14 +53,7 @@ export const ScanCard = memo(function ScanCard({
       }}
       onClick={handleClick}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          padding: 16,
-        }}
-      >
+      <div className="flex items-center gap-4 p-4">
         {/* Compare Checkbox */}
         {compareMode && (
           <input
@@ -68,7 +61,7 @@ export const ScanCard = memo(function ScanCard({
             checked={!!isCompareSelected}
             onChange={() => onCompareToggle?.(scan)}
             onClick={e => e.stopPropagation()}
-            style={{ width: 18, height: 18 }}
+            className="w-[18px] h-[18px]"
           />
         )}
 
@@ -76,62 +69,38 @@ export const ScanCard = memo(function ScanCard({
         <ScoreCircle score={scan.score} size={56} />
 
         {/* Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 4,
-            }}
-          >
-            <span
-              style={{
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
               {new URL(scan.url).hostname}
             </span>
-            <span style={{ fontWeight: 400, color: '#64748b' }}>
+            <span className="font-normal text-slate-500">
               {new URL(scan.url).pathname}
             </span>
             {/* Regression Badge */}
             {regression && (
               <span
                 title={`Score dropped ${regression.scoreDrop} points from ${regression.previousScore} to ${regression.currentScore}`}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '2px 8px',
-                  borderRadius: 4,
-                  background: '#fef3c7',
-                  color: '#92400e',
-                  fontSize: 11,
-                  fontWeight: 600,
-                }}
+                className="inline-flex items-center gap-1 py-0.5 px-2 rounded bg-amber-100 text-amber-800 text-xs font-semibold"
               >
                 <TrendingDown size={12} />-{regression.scoreDrop}
               </span>
             )}
           </div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>
+          <div className="text-xs text-slate-500">
             {new Date(scan.timestamp).toLocaleString()}
           </div>
         </div>
 
         {/* Trend Sparkline */}
         {scoreTrend.length > 1 && (
-          <div style={{ width: 80 }}>
+          <div className="w-20">
             <Sparkline data={scoreTrend} color="auto" height={30} />
           </div>
         )}
 
         {/* Severity Counts */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex gap-2">
           <SeverityPill severity="critical" count={scan.critical} />
           <SeverityPill severity="serious" count={scan.serious} />
           <SeverityPill severity="moderate" count={scan.moderate} />
@@ -147,7 +116,7 @@ export const ScanCard = memo(function ScanCard({
               e.stopPropagation();
               onDelete(scan.id);
             }}
-            style={{ color: '#ef4444' }}
+            className="text-red-500"
           >
             <Trash2 size={16} />
           </Button>

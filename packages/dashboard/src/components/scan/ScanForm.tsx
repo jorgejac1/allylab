@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import { Button, Input, Select } from '../ui';
 import { CustomRulesIndicator } from './CustomRulesIndicator';
-import { Monitor, Tablet, Smartphone, Search, Loader2, Lock } from 'lucide-react';
+import { CanScan } from '../guards/RoleGuard';
+import { Monitor, Tablet, Smartphone, Tv, Search, Loader2, Lock } from 'lucide-react';
 import type { WCAGStandard, Viewport } from '../../types';
 import type { ScanAuthOptions } from '../../types/auth';
 import { getAuthProfiles, profileToAuthOptions, findProfileForDomain } from '../../utils/authProfiles';
@@ -30,6 +31,8 @@ const VIEWPORTS: { value: Viewport; label: string; icon: ReactNode }[] = [
   { value: 'desktop', label: 'Desktop', icon: <Monitor size={16} /> },
   { value: 'tablet', label: 'Tablet', icon: <Tablet size={16} /> },
   { value: 'mobile', label: 'Mobile', icon: <Smartphone size={16} /> },
+  { value: 'tv-hd', label: 'TV HD', icon: <Tv size={16} /> },
+  { value: 'tv-4k', label: 'TV 4K', icon: <Tv size={16} /> },
 ];
 
 export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps) {
@@ -87,78 +90,72 @@ export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps)
     onScan(finalUrl, { standard, viewport, auth });
   };
 
+  const resolutionLabel = {
+    desktop: '1280×720',
+    tablet: '768×1024',
+    mobile: '375×667',
+    'tv-hd': '1920×1080',
+    'tv-4k': '3840×2160',
+  }[viewport];
+
   return (
-    <div
-      style={{
-        background: '#1e293b',
-        borderRadius: 12,
-        padding: 20,
-      }}
-    >
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="bg-slate-800 rounded-xl p-5 flex flex-col gap-3">
+      {/* Row 1: URL + Scan button */}
+      <div className="flex gap-3 items-center">
         <Input
           placeholder="Enter URL to scan (e.g., https://example.com)"
           value={url}
           onChange={e => setUrl(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           disabled={isScanning}
-          style={{
-            flex: 1,
-            minWidth: 300,
-            background: '#0f172a',
-            border: '1px solid #334155',
-            color: '#fff',
-          }}
+          className="flex-1 min-w-0 bg-slate-900 text-white border border-slate-700"
         />
-        
+        <CanScan fallback={<span className="text-sm text-slate-400">No scan permission</span>}>
+          <Button onClick={handleSubmit} disabled={isScanning || !url.trim()}>
+            {isScanning ? (
+              <><Loader2 size={14} className="mr-1.5 animate-spin" />Scanning...</>
+            ) : (
+              <><Search size={14} className="mr-1.5" />Scan</>
+            )}
+          </Button>
+        </CanScan>
+      </div>
+
+      {/* Row 2: Options bar */}
+      <div className="flex items-center gap-3 flex-wrap">
         {/* Viewport Selector */}
-        <div style={{ display: 'flex', gap: 4, background: '#0f172a', borderRadius: 8, padding: 4 }}>
+        <div className="flex gap-1 bg-slate-900 rounded-lg p-1 items-center">
           {VIEWPORTS.map(v => (
             <button
               key={v.value}
               onClick={() => setViewport(v.value)}
               disabled={isScanning}
-              title={v.label}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 6,
-                border: 'none',
-                background: viewport === v.value ? '#2563eb' : 'transparent',
-                color: viewport === v.value ? '#fff' : '#94a3b8',
-                cursor: isScanning ? 'not-allowed' : 'pointer',
-                fontSize: 16,
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
+              title={`${v.label} (${resolutionLabel})`}
+              className={`py-1.5 px-2 rounded-md border-none text-base transition-all duration-200 flex items-center gap-1.5 ${
+                viewport === v.value ? 'bg-blue-600 text-white' : 'bg-transparent text-slate-400 hover:text-slate-200'
+              } ${isScanning ? 'cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <span>{v.icon}</span>
-              <span style={{ fontSize: 12, fontWeight: 500 }}>{v.label}</span>
+              {viewport === v.value && (
+                <span className="text-xs font-medium">{v.label}</span>
+              )}
             </button>
           ))}
+          <span className="text-xs text-slate-500 pl-2 pr-1">{resolutionLabel}</span>
         </div>
 
         {/* Standard Selector */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span id="wcag-standard-label" style={{ color: '#94a3b8', fontSize: 14 }}>Standard:</span>
-          <Select
-            options={STANDARDS}
-            value={standard}
-            onChange={e => setStandard(e.target.value as WCAGStandard)}
-            aria-labelledby="wcag-standard-label"
-            style={{
-              background: '#0f172a',
-              border: '1px solid #334155',
-              color: '#fff',
-              minWidth: 140,
-            }}
-          />
-        </div>
+        <Select
+          options={STANDARDS}
+          value={standard}
+          onChange={e => setStandard(e.target.value as WCAGStandard)}
+          aria-label="WCAG Standard"
+          className="bg-slate-900 text-white border border-slate-700"
+        />
 
         {/* Auth Profile Selector (only show if profiles exist) */}
         {authProfiles.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="flex gap-2 items-center">
             <Lock size={14} style={{ color: selectedAuthId ? '#22c55e' : '#94a3b8' }} />
             <Select
               options={[
@@ -171,54 +168,24 @@ export function ScanForm({ onScan, isScanning, initialUrl = '' }: ScanFormProps)
               value={selectedAuthId}
               onChange={e => setSelectedAuthId(e.target.value)}
               aria-label="Authentication profile"
+              className="bg-slate-900 text-white border border-slate-700"
               style={{
-                background: '#0f172a',
-                border: `1px solid ${selectedAuthId ? '#22c55e' : '#334155'}`,
-                color: '#fff',
-                minWidth: 130,
+                borderColor: selectedAuthId ? '#22c55e' : undefined,
               }}
             />
           </div>
         )}
 
-        <Button onClick={handleSubmit} disabled={isScanning || !url.trim()}>
-          {isScanning ? (
-            <><Loader2 size={14} style={{ marginRight: 6, animation: 'spin 1s linear infinite' }} />Scanning...</>
-          ) : (
-            <><Search size={14} style={{ marginRight: 6 }} />Scan Page</>
-          )}
-        </Button>
-      </div>
-      
-      {/* Bottom Info Row */}
-      <div
-        style={{
-          marginTop: 12,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 12,
-        }}
-      >
-        {/* Viewport Info */}
-        <div style={{ fontSize: 12, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span>
-            Testing as: {VIEWPORTS.find(v => v.value === viewport)?.icon}{' '}
-            {viewport === 'desktop' && '1280×720'}
-            {viewport === 'tablet' && '768×1024'}
-            {viewport === 'mobile' && '375×667 (2x scale)'}
+        {selectedAuthId && (
+          <span className="flex items-center gap-1 text-xs text-green-500">
+            <Lock size={12} />
+            Authenticated
           </span>
-          {selectedAuthId && (
-            <span style={{ color: '#22c55e', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Lock size={12} />
-              Authenticated scan
-            </span>
-          )}
-        </div>
+        )}
 
-        {/* Custom Rules Indicator */}
-        <CustomRulesIndicator />
+        <div className="ml-auto">
+          <CustomRulesIndicator />
+        </div>
       </div>
     </div>
   );

@@ -63,11 +63,11 @@ describe("ui/Table", () => {
     expect(onSort).toHaveBeenCalledTimes(2);
 
     const arrows = screen.getAllByText(/↑|↓|↕/);
-    expect(arrows[0]).toHaveStyle({ color: "#2563eb" });
+    expect(arrows[0]).toHaveClass("text-blue-600");
     expect(arrows[1]).toHaveTextContent("↓");
-    expect(arrows[1]).toHaveStyle({ color: "#2563eb" });
+    expect(arrows[1]).toHaveClass("text-blue-600");
     expect(arrows[2]).toHaveTextContent("↕");
-    expect(arrows[2]).toHaveStyle({ color: "#cbd5e1" });
+    expect(arrows[2]).toHaveClass("text-slate-300");
   });
 
   it("renders empty and loading states", () => {
@@ -92,15 +92,11 @@ describe("ui/Table", () => {
     const rows = container.querySelectorAll("tbody tr");
     expect(rows.length).toBe(4); // 1 empty + 2 loading + 1 truncate row
     const skeletonCell = within(rows[1] as HTMLElement).getAllByRole("cell")[0];
-    expect((skeletonCell.firstChild as HTMLElement)).toHaveStyle({ animation: "pulse 1.5s infinite" });
+    expect((skeletonCell.firstChild as HTMLElement)).toHaveClass("animate-pulse");
 
     const [truncateCell, defaultCell] = within(rows[3] as HTMLElement).getAllByRole("cell");
-    expect(truncateCell).toHaveStyle({
-      maxWidth: "180px",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    });
+    expect(truncateCell).toHaveStyle({ maxWidth: "180px" });
+    expect(truncateCell).toHaveClass("overflow-hidden", "text-ellipsis", "whitespace-nowrap");
     expect(defaultCell).toHaveStyle({ maxWidth: "200px" });
   });
 });

@@ -8,6 +8,20 @@ vi.mock("../../components/settings", () => import("../__mocks__/pageComponents")
 vi.mock("../../components/ui", () => import("../__mocks__/pageComponents"));
 vi.mock("../../hooks", () => import("../__mocks__/hooks"));
 
+vi.mock('../../contexts', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', email: 'admin@test.com', name: 'Admin', role: 'admin' },
+      organization: { id: 'org1', name: 'Test', plan: 'enterprise', settings: { maxScansPerMonth: -1, maxAiFixesPerMonth: -1, maxGitHubPRsPerMonth: -1, scheduledScans: true, maxCustomRules: -1, jiraIntegration: true, exportFormats: ['csv', 'pdf', 'json'] } },
+      isAuthenticated: true,
+      can: () => true,
+      hasRole: () => true,
+    }),
+  };
+});
+
 // Mock individual settings components for lazy loading
 vi.mock("../../components/settings/CICDGenerator", () => import("../__mocks__/pageComponents"));
 vi.mock("../../components/settings/JiraSettings", () => import("../__mocks__/pageComponents"));

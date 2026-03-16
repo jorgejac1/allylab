@@ -1,5 +1,5 @@
 import type { FindingSource } from '../../types';
-import { Search, ClipboardList } from 'lucide-react';
+import { Search, ClipboardList, Tv } from 'lucide-react';
 
 export type SourceFilterValue = 'all' | FindingSource;
 
@@ -9,26 +9,19 @@ interface SourceFilterProps {
   counts: {
     axeCore: number;
     customRule: number;
+    tvRule: number;
     total: number;
   };
 }
 
 export function SourceFilter({ value, onChange, counts }: SourceFilterProps) {
-  if (counts.customRule === 0 && counts.axeCore === counts.total) {
-    // No custom rules in results, don't show filter
+  if (counts.customRule === 0 && counts.tvRule === 0 && counts.axeCore === counts.total) {
+    // No custom rules or TV rules in results, don't show filter
     return null;
   }
 
   return (
-    <div 
-      style={{ 
-        display: 'flex', 
-        gap: 4, 
-        background: '#f1f5f9', 
-        borderRadius: 6, 
-        padding: 2 
-      }}
-    >
+    <div className="flex gap-1 bg-slate-100 rounded-md p-0.5">
       <SourceButton
         active={value === 'all'}
         onClick={() => onChange('all')}
@@ -37,15 +30,23 @@ export function SourceFilter({ value, onChange, counts }: SourceFilterProps) {
       <SourceButton
         active={value === 'axe-core'}
         onClick={() => onChange('axe-core')}
-        label={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Search size={10} /> axe-core ({counts.axeCore})</span>}
+        label={<span className="inline-flex items-center gap-1"><Search size={10} /> axe-core ({counts.axeCore})</span>}
         color="#6366f1"
       />
       <SourceButton
         active={value === 'custom-rule'}
         onClick={() => onChange('custom-rule')}
-        label={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><ClipboardList size={10} /> Custom ({counts.customRule})</span>}
+        label={<span className="inline-flex items-center gap-1"><ClipboardList size={10} /> Custom ({counts.customRule})</span>}
         color="#0891b2"
       />
+      {counts.tvRule > 0 && (
+        <SourceButton
+          active={value === 'tv-rule'}
+          onClick={() => onChange('tv-rule')}
+          label={<span className="inline-flex items-center gap-1"><Tv size={10} /> TV Rules ({counts.tvRule})</span>}
+          color="#7c3aed"
+        />
+      )}
     </div>
   );
 }
@@ -64,17 +65,10 @@ function SourceButton({
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: '4px 10px',
-        borderRadius: 4,
-        border: 'none',
-        background: active ? (color || '#2563eb') : 'transparent',
-        color: active ? '#fff' : '#64748b',
-        fontSize: 12,
-        fontWeight: 500,
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-      }}
+      className={`py-1 px-2.5 rounded border-none text-xs font-medium cursor-pointer transition-all duration-150 ${
+        active ? 'text-white' : 'bg-transparent text-slate-500'
+      }`}
+      style={active ? { background: color || '#2563eb' } : undefined}
     >
       {label}
     </button>

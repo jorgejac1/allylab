@@ -45,19 +45,19 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
 
   return (
     <Card>
-      <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 16px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <h3 className="text-base font-semibold mt-0 mb-4 inline-flex items-center gap-2">
         <Map size={18} /> Field Mapping
       </h3>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex flex-col gap-6">
         {/* Severity → Priority Mapping */}
         <div>
-          <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#374151' }}>
+          <h4 className="text-sm font-semibold mt-0 mb-3 text-gray-700">
             Severity → JIRA Priority
           </h4>
-          
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: 13, color: '#64748b', marginBottom: 4 }}>
+
+          <div className="mb-3">
+            <label className="block text-sm text-slate-500 mb-1">
               Target JIRA Field
             </label>
             <Input
@@ -68,18 +68,12 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {SEVERITIES.map(severity => (
               <div key={severity}>
                 <label
-                  style={{
-                    display: 'block',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    marginBottom: 4,
-                    textTransform: 'capitalize',
-                    color: getSeverityColor(severity),
-                  }}
+                  className="block text-xs font-medium mb-1 capitalize"
+                  style={{ color: getSeverityColor(severity) }}
                 >
                   {severity}
                 </label>
@@ -95,13 +89,13 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
 
         {/* WCAG Tags Mapping */}
         <div>
-          <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#374151' }}>
+          <h4 className="text-sm font-semibold mt-0 mb-3 text-gray-700">
             WCAG Tags → JIRA Labels
           </h4>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label style={{ display: 'block', fontSize: 13, color: '#64748b', marginBottom: 4 }}>
+              <label className="block text-sm text-slate-500 mb-1">
                 Target Field
               </label>
               <Input
@@ -111,7 +105,7 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 13, color: '#64748b', marginBottom: 4 }}>
+              <label className="block text-sm text-slate-500 mb-1">
                 Label Prefix
               </label>
               <Input
@@ -125,7 +119,7 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
 
         {/* Rule ID Mapping */}
         <div>
-          <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: '#374151' }}>
+          <h4 className="text-sm font-semibold mt-0 mb-3 text-gray-700">
             Rule ID → JIRA Field
           </h4>
           <Input
@@ -134,32 +128,17 @@ export function FieldMappingConfig({ mapping, onChange }: FieldMappingConfigProp
             placeholder="labels or customfield_xxxxx"
             style={{ width: 300 }}
           />
-          <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+          <p className="text-xs text-slate-500 mt-1">
             Use "labels" or a custom field ID (e.g., customfield_10001)
           </p>
         </div>
 
         {/* Preview */}
-        <div
-          style={{
-            padding: 16,
-            background: '#f8fafc',
-            borderRadius: 8,
-            border: '1px solid #e2e8f0',
-          }}
-        >
-          <h4 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 8px', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <h4 className="text-sm font-semibold mt-0 mb-2 text-slate-500 inline-flex items-center gap-1.5">
             <ClipboardList size={14} /> Mapping Preview
           </h4>
-          <pre
-            style={{
-              fontSize: 12,
-              fontFamily: 'monospace',
-              color: '#334155',
-              margin: 0,
-              whiteSpace: 'pre-wrap',
-            }}
-          >
+          <pre className="text-xs font-mono text-slate-700 m-0 whitespace-pre-wrap">
 {`critical → ${mapping.severity.values.critical}
 serious  → ${mapping.severity.values.serious}
 moderate → ${mapping.severity.values.moderate}

@@ -393,8 +393,8 @@ describe("components/findings/FindingDetails", () => {
     it("renders backdrop when open", () => {
       const { container } = render(<FindingDetailsDrawer {...defaultProps} isOpen={true} />);
 
-      // Check for backdrop element (has fixed position and background color)
-      const backdrop = container.querySelector('[style*="background: rgba(0, 0, 0, 0.4)"]');
+      // Check for backdrop element (has Tailwind classes for fixed position and background)
+      const backdrop = container.querySelector('.fixed.inset-0.bg-black\\/40');
       expect(backdrop).toBeInTheDocument();
     });
 
@@ -402,7 +402,7 @@ describe("components/findings/FindingDetails", () => {
       const onClose = vi.fn();
       const { container } = render(<FindingDetailsDrawer {...defaultProps} isOpen={true} onClose={onClose} />);
 
-      const backdrop = container.querySelector('[style*="background: rgba(0, 0, 0, 0.4)"]');
+      const backdrop = container.querySelector('.fixed.inset-0.bg-black\\/40');
       fireEvent.click(backdrop!);
 
       expect(onClose).toHaveBeenCalledTimes(1);

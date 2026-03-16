@@ -6,13 +6,7 @@ export function PRFormFields({ prTitle, prDescription, onTitleChange, onDescript
       <div>
         <label
           htmlFor="pr-title"
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: '#475569',
-            marginBottom: 6,
-            display: 'block'
-          }}
+          className="text-[13px] font-medium text-slate-600 mb-1.5 block"
         >
           PR Title
         </label>
@@ -21,26 +15,14 @@ export function PRFormFields({ prTitle, prDescription, onTitleChange, onDescript
           type="text"
           value={prTitle}
           onChange={e => onTitleChange(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            border: '1px solid #e2e8f0',
-            borderRadius: 6,
-            fontSize: 14,
-          }}
+          className="w-full py-2.5 px-3 border border-slate-200 rounded-md text-sm"
         />
       </div>
 
       <div>
         <label
           htmlFor="pr-description"
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: '#475569',
-            marginBottom: 6,
-            display: 'block'
-          }}
+          className="text-[13px] font-medium text-slate-600 mb-1.5 block"
         >
           Description (optional)
         </label>
@@ -50,14 +32,7 @@ export function PRFormFields({ prTitle, prDescription, onTitleChange, onDescript
           value={prDescription}
           onChange={e => onDescriptionChange(e.target.value)}
           rows={3}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            border: '1px solid #e2e8f0',
-            borderRadius: 6,
-            fontSize: 14,
-            resize: 'vertical',
-          }}
+          className="w-full py-2.5 px-3 border border-slate-200 rounded-md text-sm resize-y"
         />
       </div>
     </>

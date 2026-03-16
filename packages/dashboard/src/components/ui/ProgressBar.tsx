@@ -5,35 +5,29 @@ interface ProgressBarProps {
   showLabel?: boolean;
 }
 
-export function ProgressBar({ 
-  percent, 
-  color = '#2563eb', 
+export function ProgressBar({
+  percent,
+  color = '#2563eb',
   height = 8,
-  showLabel = false 
+  showLabel = false
 }: ProgressBarProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="flex items-center gap-3">
       <div
-        style={{
-          flex: 1,
-          height,
-          background: '#e2e8f0',
-          borderRadius: height / 2,
-          overflow: 'hidden',
-        }}
+        className="flex-1 bg-slate-200 overflow-hidden"
+        style={{ height, borderRadius: height / 2 }}
       >
         <div
+          className="h-full transition-[width] duration-300 ease-in-out"
           style={{
             width: `${Math.min(100, Math.max(0, percent))}%`,
-            height: '100%',
             background: color,
             borderRadius: height / 2,
-            transition: 'width 0.3s ease',
           }}
         />
       </div>
       {showLabel && (
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#64748b', minWidth: 50 }}>
+        <span className="text-sm font-semibold text-slate-500 min-w-[50px]">
           {Math.round(percent)}%
         </span>
       )}

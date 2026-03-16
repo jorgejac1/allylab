@@ -18,29 +18,18 @@ const STATUS_CONFIG: Record<IssueStatusType, { icon: ReactNode; color: string; b
 export const IssueStatus = memo(function IssueStatus({ status, size = 'md', showLabel = true }: IssueStatusProps) {
   const config = STATUS_CONFIG[status];
 
-  const sizes = {
-    sm: { padding: '2px 6px', fontSize: 10, iconSize: 12 },
-    md: { padding: '4px 10px', fontSize: 12, iconSize: 14 },
-    lg: { padding: '6px 14px', fontSize: 14, iconSize: 18 },
+  const sizeClasses = {
+    sm: 'py-0.5 px-1.5 text-[10px]',
+    md: 'py-1 px-2.5 text-xs',
+    lg: 'py-1.5 px-3.5 text-sm',
   };
-
-  const sizeStyle = sizes[size];
 
   return (
     <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: sizeStyle.padding,
-        borderRadius: 20,
-        background: config.bg,
-        color: config.color,
-        fontSize: sizeStyle.fontSize,
-        fontWeight: 600,
-      }}
+      className={`inline-flex items-center gap-1 rounded-full font-semibold ${sizeClasses[size]}`}
+      style={{ background: config.bg, color: config.color }}
     >
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{config.icon}</span>
+      <span className="inline-flex items-center">{config.icon}</span>
       {showLabel && config.label}
     </span>
   );
@@ -57,23 +46,13 @@ export const IssueStatusSummary = memo(function IssueStatusSummary({ newCount, r
   const total = newCount + recurringCount + fixedCount;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 16,
-        padding: '12px 16px',
-        background: '#f8fafc',
-        borderRadius: 8,
-        border: '1px solid #e2e8f0',
-        alignItems: 'center',
-      }}
-    >
+    <div className="flex gap-4 py-3 px-4 bg-slate-50 rounded-lg border border-slate-200 items-center">
       <StatusItem status="new" count={newCount} />
       <StatusItem status="recurring" count={recurringCount} />
       <StatusItem status="fixed" count={fixedCount} />
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontWeight: 700 }}>{total}</span>
-        <span style={{ fontSize: 13, color: '#64748b' }}>Total Tracked</span>
+      <div className="ml-auto flex items-center gap-2">
+        <span className="font-bold">{total}</span>
+        <span className="text-[13px] text-slate-500">Total Tracked</span>
       </div>
     </div>
   );
@@ -83,10 +62,10 @@ function StatusItem({ status, count }: { status: IssueStatusType; count: number 
   const config = STATUS_CONFIG[status];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ display: 'inline-flex', alignItems: 'center' }}>{config.icon}</span>
-      <span style={{ fontWeight: 700, color: config.color }}>{count}</span>
-      <span style={{ fontSize: 13, color: '#64748b' }}>{config.label}</span>
+    <div className="flex items-center gap-2">
+      <span className="inline-flex items-center">{config.icon}</span>
+      <span className="font-bold" style={{ color: config.color }}>{count}</span>
+      <span className="text-[13px] text-slate-500">{config.label}</span>
     </div>
   );
 }

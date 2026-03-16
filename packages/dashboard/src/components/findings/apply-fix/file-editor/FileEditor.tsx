@@ -151,8 +151,8 @@ export function FileEditor({
 
   if (isLoading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>
-        <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+      <div className="p-10 text-center text-slate-500">
+        <div className="mb-3 flex justify-center">
           <FileText size={24} aria-hidden="true" />
         </div>
         Loading file content...
@@ -161,7 +161,7 @@ export function FileEditor({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
       <EditorHeader filePath={filePath} onBack={onBack} />
 
       <MatchStatusBanner autoMatch={autoMatch} />
@@ -202,14 +202,7 @@ export function FileEditor({
       )}
 
       {error && (
-        <div style={{
-          padding: 12,
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          borderRadius: 8,
-          color: '#dc2626',
-          fontSize: 13,
-        }}>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-[13px]">
           {error}
         </div>
       )}

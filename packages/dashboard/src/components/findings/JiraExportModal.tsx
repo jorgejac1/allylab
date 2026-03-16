@@ -72,12 +72,12 @@ export function JiraExportModal({
   if (!config.enabled) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="JIRA Export">
-        <div style={{ padding: 24, textAlign: "center" }}>
-          <div style={{ marginBottom: 16, display: "flex", justifyContent: "center", color: "#94a3b8" }}><Link2 size={48} /></div>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "0 0 8px" }}>
+        <div className="p-6 text-center">
+          <div className="mb-4 flex justify-center text-slate-400"><Link2 size={48} /></div>
+          <h3 className="text-lg font-semibold m-0 mb-2">
             JIRA Integration Not Configured
           </h3>
-          <p style={{ color: "#64748b", marginBottom: 16 }}>
+          <p className="text-slate-500 mb-4">
             Configure your JIRA settings first in Settings → JIRA Integration
           </p>
           <Button onClick={onClose}>Close</Button>
@@ -94,13 +94,13 @@ export function JiraExportModal({
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Export to JIRA">
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="flex flex-col gap-4">
         <Tabs
           tabs={[
-            { id: "preview", label: <span style={{ display: "flex", alignItems: "center", gap: 6 }}><Eye size={14} />Select & Preview</span> },
+            { id: "preview", label: <span className="flex items-center gap-1.5"><Eye size={14} />Select & Preview</span> },
             {
               id: "result",
-              label: <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BarChart3 size={14} />Results</span>,
+              label: <span className="flex items-center gap-1.5"><BarChart3 size={14} />Results</span>,
               count: bulkProgress?.completed,
             },
           ]}
@@ -111,17 +111,11 @@ export function JiraExportModal({
         {activeTab === "preview" && (
           <>
             {/* Selection Controls */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontSize: 14, color: "#64748b" }}>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-slate-500">
                 {selectedFindings.size} of {findings.length} issues selected
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={handleSelectAll}>
                   Select All
                 </Button>
@@ -136,27 +130,15 @@ export function JiraExportModal({
             </div>
 
             {/* Findings List */}
-            <div
-              style={{
-                maxHeight: 200,
-                overflow: "auto",
-                border: "1px solid #e2e8f0",
-                borderRadius: 8,
-              }}
-            >
+            <div className="max-h-[200px] overflow-auto border border-slate-200 rounded-lg">
               {findings.map((finding) => (
                 <label
                   key={finding.id}
+                  className="flex items-center gap-3 py-2.5 px-3 border-b border-slate-50 cursor-pointer"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 12px",
-                    borderBottom: "1px solid #f1f5f9",
-                    cursor: "pointer",
                     background: selectedFindings.has(finding.id)
-                      ? "#f0f9ff"
-                      : "transparent",
+                      ? '#f0f9ff'
+                      : 'transparent',
                   }}
                 >
                   <input
@@ -165,19 +147,15 @@ export function JiraExportModal({
                     onChange={() => handleToggleFinding(finding.id)}
                   />
                   <span
+                    className="py-0.5 px-1.5 rounded text-[10px] font-semibold uppercase"
                     style={{
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      textTransform: "uppercase",
                       background: getSeverityBg(finding.impact),
                       color: getSeverityColor(finding.impact),
                     }}
                   >
                     {finding.impact}
                   </span>
-                  <span style={{ flex: 1, fontSize: 13 }}>
+                  <span className="flex-1 text-[13px]">
                     {finding.ruleTitle}
                   </span>
                 </label>
@@ -187,29 +165,11 @@ export function JiraExportModal({
             {/* Preview JSON */}
             {previewData && (
               <div>
-                <h4
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    margin: "0 0 8px",
-                    color: "#64748b",
-                  }}
-                >
+                <h4 className="text-[13px] font-semibold m-0 mb-2 text-slate-500">
                   Preview (first selected issue)
                 </h4>
-                <div
-                  style={{
-                    background: "#1e293b",
-                    color: "#e2e8f0",
-                    padding: 12,
-                    borderRadius: 8,
-                    fontFamily: "monospace",
-                    fontSize: 11,
-                    maxHeight: 200,
-                    overflow: "auto",
-                  }}
-                >
-                  <pre style={{ margin: 0 }}>
+                <div className="bg-slate-800 text-slate-200 p-3 rounded-lg font-mono text-[11px] max-h-[200px] overflow-auto">
+                  <pre className="m-0">
                     {JSON.stringify(previewData, null, 2)}
                   </pre>
                 </div>
@@ -217,9 +177,7 @@ export function JiraExportModal({
             )}
 
             {/* Export Button */}
-            <div
-              style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}
-            >
+            <div className="flex justify-end gap-3">
               <Button variant="secondary" onClick={handleClose}>
                 Cancel
               </Button>
@@ -228,8 +186,8 @@ export function JiraExportModal({
                 disabled={selectedFindings.size === 0 || isExporting}
               >
                 {isExporting
-                  ? <><Loader2 size={14} style={{ marginRight: 6, animation: "spin 1s linear infinite" }} />Exporting {bulkProgress?.completed || 0}/{selectedFindings.size}...</>
-                  : <><Upload size={14} style={{ marginRight: 6 }} />Export {selectedFindings.size} Issue{selectedFindings.size !== 1 ? "s" : ""}</>}
+                  ? <><Loader2 size={14} className="mr-1.5" style={{ animation: "spin 1s linear infinite" }} />Exporting {bulkProgress?.completed || 0}/{selectedFindings.size}...</>
+                  : <><Upload size={14} className="mr-1.5" />Export {selectedFindings.size} Issue{selectedFindings.size !== 1 ? "s" : ""}</>}
               </Button>
             </div>
           </>
@@ -249,15 +207,9 @@ function ExportResults({
   progress: import("../../types").BulkExportProgress;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="flex flex-col gap-4">
       {/* Summary */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 16,
-        }}
-      >
+      <div className="grid grid-cols-3 gap-4">
         <StatCard label="Total" value={progress.total} color="#64748b" />
         <StatCard
           label="Successful"
@@ -268,56 +220,38 @@ function ExportResults({
       </div>
 
       {/* Progress Bar */}
-      <div
-        style={{
-          height: 8,
-          background: "#f1f5f9",
-          borderRadius: 4,
-          overflow: "hidden",
-        }}
-      >
+      <div className="h-2 bg-slate-100 rounded overflow-hidden">
         <div
+          className="h-full transition-[width] duration-300 ease-out"
           style={{
-            height: "100%",
             width: `${(progress.completed / progress.total) * 100}%`,
-            background: progress.failed > 0 ? "#f59e0b" : "#10b981",
-            transition: "width 0.3s ease",
+            background: progress.failed > 0 ? '#f59e0b' : '#10b981',
           }}
         />
       </div>
 
       {/* Results List */}
-      <div
-        style={{
-          maxHeight: 300,
-          overflow: "auto",
-          border: "1px solid #e2e8f0",
-          borderRadius: 8,
-        }}
-      >
+      <div className="max-h-[300px] overflow-auto border border-slate-200 rounded-lg">
         {progress.results.map((result, idx) => (
           <div
             key={idx}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "10px 12px",
-              borderBottom: "1px solid #f1f5f9",
-              background: result.success ? "#f0fdf4" : "#fef2f2",
-            }}
+            className={`flex items-center gap-3 py-2.5 px-3 border-b border-slate-50 ${
+              result.success ? 'bg-green-50' : 'bg-red-50'
+            }`}
           >
-            <span style={{ display: "flex", alignItems: "center", color: result.success ? "#10b981" : "#ef4444" }}>{result.success ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
-            <span style={{ flex: 1, fontSize: 13 }}>
+            <span className={`flex items-center ${result.success ? 'text-emerald-500' : 'text-red-500'}`}>
+              {result.success ? <CheckCircle size={16} /> : <XCircle size={16} />}
+            </span>
+            <span className="flex-1 text-[13px]">
               {result.request.fields.summary.substring(0, 60)}...
             </span>
             {result.issueKey && (
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#2563eb" }}>
+              <span className="text-xs font-semibold text-blue-600">
                 {result.issueKey}
               </span>
             )}
             {result.error && (
-              <span style={{ fontSize: 12, color: "#ef4444" }}>
+              <span className="text-xs text-red-500">
                 {result.error}
               </span>
             )}
@@ -338,16 +272,9 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div
-      style={{
-        padding: 16,
-        background: "#f8fafc",
-        borderRadius: 8,
-        textAlign: "center",
-      }}
-    >
-      <div style={{ fontSize: 28, fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: 12, color: "#64748b" }}>{label}</div>
+    <div className="p-4 bg-slate-50 rounded-lg text-center">
+      <div className="text-[28px] font-bold" style={{ color }}>{value}</div>
+      <div className="text-xs text-slate-500">{label}</div>
     </div>
   );
 }

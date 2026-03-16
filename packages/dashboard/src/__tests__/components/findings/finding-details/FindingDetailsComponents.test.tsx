@@ -70,7 +70,7 @@ describe("finding-details/Section", () => {
       </Section>
     );
 
-    const childWrapper = container.querySelector('[style*="display: flex"]');
+    const childWrapper = container.querySelector('.flex');
     expect(childWrapper).toBeInTheDocument();
   });
 });

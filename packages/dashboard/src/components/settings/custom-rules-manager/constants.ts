@@ -36,11 +36,4 @@ export const SEVERITY_COLORS: Record<RuleSeverity, string> = {
   minor: '#2563eb',
 };
 
-export const iconButtonStyle: React.CSSProperties = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  padding: 6,
-  borderRadius: 4,
-  color: '#64748b',
-};
+export const iconButtonClass = 'bg-transparent border-none cursor-pointer p-1.5 rounded text-slate-500';

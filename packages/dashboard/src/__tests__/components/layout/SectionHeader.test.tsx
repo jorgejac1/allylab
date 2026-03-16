@@ -81,31 +81,23 @@ describe("layout/SectionHeader", () => {
     render(<SectionHeader title="Styled Title" />);
 
     const title = screen.getByText("Styled Title");
-    expect(title).toHaveStyle({
-      fontSize: "16px",
-      fontWeight: 600,
-      margin: 0,
-      color: "#0f172a",
-    });
+    expect(title).toHaveClass("text-base/[normal]", "font-semibold", "m-0", "text-slate-900");
   });
 
   it("applies correct styling to subtitle", () => {
     render(<SectionHeader title="Title" subtitle="Styled Subtitle" />);
 
     const subtitle = screen.getByText("Styled Subtitle");
-    expect(subtitle).toHaveStyle({
-      fontSize: "13px",
-      color: "#64748b",
-      margin: "2px 0 0",
-    });
+    expect(subtitle).toHaveClass("text-slate-500", "m-0");
   });
 
   it("applies correct styling to icon", () => {
-    const { container } = render(<SectionHeader title="Title" icon={<Palette size={20} data-testid="palette-icon" />} />);
+    render(<SectionHeader title="Title" icon={<Palette size={20} data-testid="palette-icon" />} />);
 
-    const iconSpan = container.querySelector('span[style*="font-size: 20px"]');
+    const icon = screen.getByTestId("palette-icon");
+    expect(icon).toBeInTheDocument();
+    const iconSpan = icon.closest("span");
     expect(iconSpan).toBeInTheDocument();
-    expect(screen.getByTestId("palette-icon")).toBeInTheDocument();
   });
 
   it("renders with only title and icon", () => {
@@ -136,12 +128,7 @@ describe("layout/SectionHeader", () => {
     const { container } = render(<SectionHeader title="Title" />);
 
     const outerDiv = container.firstChild as HTMLElement;
-    expect(outerDiv).toHaveStyle({
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "16px",
-    });
+    expect(outerDiv).toHaveClass("flex", "flex-col", "mb-4");
   });
 
   it("renders multiple action buttons with correct gap", () => {
@@ -153,13 +140,13 @@ describe("layout/SectionHeader", () => {
       </>
     );
 
-    const { container } = render(<SectionHeader title="Title" actions={actions} />);
+    render(<SectionHeader title="Title" actions={actions} />);
 
     expect(screen.getByText("Action 1")).toBeInTheDocument();
     expect(screen.getByText("Action 2")).toBeInTheDocument();
     expect(screen.getByText("Action 3")).toBeInTheDocument();
 
-    const actionsContainer = container.querySelector('div[style*="gap: 8px"]');
-    expect(actionsContainer).toBeInTheDocument();
+    const actionsContainer = screen.getByText("Action 1").closest("div");
+    expect(actionsContainer).toHaveClass("flex", "gap-2");
   });
 });

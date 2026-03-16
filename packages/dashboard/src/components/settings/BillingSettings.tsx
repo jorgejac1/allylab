@@ -145,15 +145,15 @@ export function BillingSettings() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="flex flex-col gap-6">
       {/* Current Plan */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+        <div className="flex justify-between items-start mb-5">
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 className="m-0 text-base font-semibold flex items-center gap-2">
               <CreditCard size={18} /> Current Plan
             </h3>
-            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748b' }}>
+            <p className="mt-1 mb-0 text-sm text-slate-500">
               Manage your subscription and billing
             </p>
           </div>
@@ -162,10 +162,10 @@ export function BillingSettings() {
               variant="secondary"
               onClick={handleManageBilling}
               disabled={isLoading}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              className="inline-flex items-center gap-1.5"
             >
               {isLoading ? (
-                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={14} className="animate-spin" />
               ) : (
                 <ExternalLink size={14} />
               )}
@@ -175,68 +175,27 @@ export function BillingSettings() {
         </div>
 
         {error && (
-          <div style={{
-            padding: 12,
-            background: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 8,
-            color: '#dc2626',
-            fontSize: 13,
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm mb-4 flex items-center gap-2">
             <AlertCircle size={16} /> {error}
           </div>
         )}
 
         {successMessage && (
-          <div style={{
-            padding: 12,
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: 8,
-            color: '#15803d',
-            fontSize: 13,
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm mb-4 flex items-center gap-2">
             <Check size={16} /> {successMessage}
           </div>
         )}
 
         {/* Demo Mode Banner */}
         {isMockAuth && (
-          <div style={{
-            padding: 12,
-            background: '#fef3c7',
-            border: '1px solid #fde68a',
-            borderRadius: 8,
-            color: '#92400e',
-            fontSize: 13,
-            marginBottom: 16,
-          }}>
+          <div className="p-3 bg-amber-100 border border-amber-200 rounded-lg text-amber-800 text-sm mb-4">
             <strong>Demo Mode:</strong> Billing actions are simulated. No real charges will be made.
           </div>
         )}
 
         {/* Trial Banner */}
         {trialEndsAt && currentPlan !== 'free' && (
-          <div style={{
-            padding: 12,
-            background: '#eff6ff',
-            border: '1px solid #bfdbfe',
-            borderRadius: 8,
-            color: '#1e40af',
-            fontSize: 13,
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm mb-4 flex items-center gap-2">
             <Clock size={16} />
             <span>
               Your trial ends on <strong>{trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>.
@@ -246,49 +205,38 @@ export function BillingSettings() {
         )}
 
         {/* Plan Card */}
-        <div style={{
-          padding: 20,
-          background: currentPlan === 'free' ? '#f8fafc' : '#f0fdf4',
-          border: '1px solid',
-          borderColor: currentPlan === 'free' ? '#e2e8f0' : '#bbf7d0',
-          borderRadius: 12,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div
+          className="p-5 border rounded-xl"
+          style={{
+            background: currentPlan === 'free' ? '#f8fafc' : '#f0fdf4',
+            borderColor: currentPlan === 'free' ? '#e2e8f0' : '#bbf7d0',
+          }}
+        >
+          <div className="flex justify-between items-center mb-4">
             <div>
-              <span style={{
-                fontSize: 24,
-                fontWeight: 700,
-                color: currentPlan === 'free' ? '#475569' : '#15803d',
-              }}>
+              <span
+                className="text-2xl font-bold"
+                style={{ color: currentPlan === 'free' ? '#475569' : '#15803d' }}
+              >
                 {planDetails.name}
               </span>
               {currentPlan !== 'free' && currentPlan !== 'enterprise' && (
-                <span style={{ fontSize: 14, color: '#64748b', marginLeft: 8 }}>
+                <span className="text-sm text-slate-500 ml-2">
                   ${planDetails.price.monthly}/month
                 </span>
               )}
             </div>
             {currentPlan !== 'free' && (
-              <span style={{
-                padding: '4px 12px',
-                background: '#dcfce7',
-                color: '#15803d',
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 500,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-              }}>
+              <span className="py-1 px-3 bg-green-100 text-green-700 rounded-full text-xs font-medium inline-flex items-center gap-1">
                 <Check size={12} /> Active
               </span>
             )}
           </div>
 
-          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          <ul className="m-0 p-0 list-none grid grid-cols-1 sm:grid-cols-2 gap-2">
             {planDetails.features.map((feature, i) => (
-              <li key={i} style={{ fontSize: 13, color: '#475569', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Check size={14} style={{ color: '#22c55e' }} />
+              <li key={i} className="text-sm text-slate-600 flex items-center gap-2">
+                <Check size={14} className="text-green-500" />
                 {feature}
               </li>
             ))}
@@ -296,12 +244,12 @@ export function BillingSettings() {
 
           {/* Downgrade option in mock mode for paid plans */}
           {isMockAuth && currentPlan !== 'free' && canManageBilling && (
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
+            <div className="mt-4 pt-4 border-t border-slate-200">
               <Button
                 variant="secondary"
                 onClick={handleDowngrade}
                 disabled={isLoading}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                className="inline-flex items-center gap-1.5"
               >
                 <ArrowDown size={14} />
                 Downgrade to Free (Demo)
@@ -313,11 +261,11 @@ export function BillingSettings() {
 
       {/* Usage Statistics */}
       <Card>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 className="mt-0 mb-4 text-base font-semibold flex items-center gap-2">
           <BarChart3 size={18} /> Usage This Month
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <UsageCard
             label="Scans"
             used={usage.scansUsed}
@@ -338,7 +286,7 @@ export function BillingSettings() {
           />
         </div>
 
-        <p style={{ margin: '16px 0 0', fontSize: 12, color: '#94a3b8' }}>
+        <p className="mt-4 mb-0 text-xs text-slate-400">
           Usage resets on the 1st of each month
         </p>
       </Card>
@@ -346,94 +294,77 @@ export function BillingSettings() {
       {/* Upgrade Options */}
       {currentPlan === 'free' && (
         <Card>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 className="mt-0 mb-4 text-base font-semibold flex items-center gap-2">
             <Zap size={18} /> Upgrade Your Plan
           </h3>
-          <p style={{ margin: '0 0 20px', fontSize: 14, color: '#64748b' }}>
+          <p className="mt-0 mb-5 text-sm text-slate-500">
             Unlock more scans, AI fixes, and team features.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Pro Plan */}
-            <div style={{
-              padding: 20,
-              border: '2px solid #22c55e',
-              borderRadius: 12,
-              background: 'white',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontSize: 18, fontWeight: 600 }}>Pro</span>
-                <span style={{
-                  padding: '2px 8px',
-                  background: '#dcfce7',
-                  color: '#15803d',
-                  borderRadius: 12,
-                  fontSize: 11,
-                  fontWeight: 500,
-                }}>
+            <div className="p-5 border-2 border-green-500 rounded-xl bg-white">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-lg font-semibold">Pro</span>
+                <span className="py-0.5 px-2 bg-green-100 text-green-700 rounded-xl text-[11px] font-medium">
                   Popular
                 </span>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <span style={{ fontSize: 28, fontWeight: 700 }}>$49</span>
-                <span style={{ color: '#64748b' }}>/month</span>
+              <div className="mb-4">
+                <span className="text-[28px] font-bold">$49</span>
+                <span className="text-slate-500">/month</span>
               </div>
-              <ul style={{ margin: '0 0 16px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <ul className="m-0 mb-4 p-0 list-none flex flex-col gap-1.5">
                 {PLAN_DETAILS.pro.features.slice(0, 4).map((f, i) => (
-                  <li key={i} style={{ fontSize: 13, color: '#475569', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={12} style={{ color: '#22c55e' }} /> {f}
+                  <li key={i} className="text-sm text-slate-600 flex items-center gap-1.5">
+                    <Check size={12} className="text-green-500" /> {f}
                   </li>
                 ))}
               </ul>
-              <Button onClick={() => handleUpgrade('pro')} disabled={isLoading} style={{ width: '100%' }}>
+              <Button onClick={() => handleUpgrade('pro')} disabled={isLoading} className="w-full">
                 Upgrade to Pro
               </Button>
             </div>
 
             {/* Team Plan */}
-            <div style={{
-              padding: 20,
-              border: '1px solid #e2e8f0',
-              borderRadius: 12,
-              background: 'white',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="p-5 border border-slate-200 rounded-xl bg-white">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-lg font-semibold flex items-center gap-1.5">
                   <Users size={18} /> Team
                 </span>
               </div>
-              <div style={{ marginBottom: 16 }}>
-                <span style={{ fontSize: 28, fontWeight: 700 }}>$149</span>
-                <span style={{ color: '#64748b' }}>/month</span>
+              <div className="mb-4">
+                <span className="text-[28px] font-bold">$149</span>
+                <span className="text-slate-500">/month</span>
               </div>
-              <ul style={{ margin: '0 0 16px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <ul className="m-0 mb-4 p-0 list-none flex flex-col gap-1.5">
                 {PLAN_DETAILS.team.features.slice(0, 4).map((f, i) => (
-                  <li key={i} style={{ fontSize: 13, color: '#475569', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={12} style={{ color: '#22c55e' }} /> {f}
+                  <li key={i} className="text-sm text-slate-600 flex items-center gap-1.5">
+                    <Check size={12} className="text-green-500" /> {f}
                   </li>
                 ))}
               </ul>
-              <Button variant="secondary" onClick={() => handleUpgrade('team')} disabled={isLoading} style={{ width: '100%' }}>
+              <Button variant="secondary" onClick={() => handleUpgrade('team')} disabled={isLoading} className="w-full">
                 Upgrade to Team
               </Button>
             </div>
           </div>
 
-          <p style={{ margin: '20px 0 0', fontSize: 13, color: '#64748b', textAlign: 'center' }}>
-            Need more? <a href={`${authConfig.websiteUrl}/contact`} style={{ color: '#3b82f6' }}>Contact us</a> for Enterprise pricing.
+          <p className="mt-5 mb-0 text-sm text-slate-500 text-center">
+            Need more? <a href={`${authConfig.websiteUrl}/contact`} className="text-blue-500">Contact us</a> for Enterprise pricing.
           </p>
         </Card>
       )}
 
       {/* Plan Comparison Link */}
-      <div style={{ textAlign: 'center' }}>
+      <div className="text-center">
         <a
           href={`${authConfig.websiteUrl}/pricing`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#3b82f6', fontSize: 14, textDecoration: 'none' }}
+          className="text-blue-500 text-sm no-underline"
         >
-          Compare all plans <ExternalLink size={14} style={{ verticalAlign: 'middle' }} />
+          Compare all plans <ExternalLink size={14} className="align-middle" />
         </a>
       </div>
 
@@ -461,38 +392,28 @@ function UsageCard({ label, used, limit, icon }: UsageCardProps) {
   const isExceeded = percentage >= 100 && !isUnlimited;
 
   return (
-    <div style={{
-      padding: 16,
-      background: '#f8fafc',
-      borderRadius: 8,
-      border: '1px solid #e2e8f0',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{ color: '#64748b' }}>{icon}</span>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#475569' }}>{label}</span>
+    <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-slate-500">{icon}</span>
+        <span className="text-sm font-medium text-slate-600">{label}</span>
       </div>
 
-      <div style={{ marginBottom: 8 }}>
-        <span style={{ fontSize: 24, fontWeight: 700 }}>{used}</span>
-        <span style={{ fontSize: 14, color: '#94a3b8' }}>
+      <div className="mb-2">
+        <span className="text-2xl font-bold">{used}</span>
+        <span className="text-sm text-slate-400">
           {isUnlimited ? ' used' : ` / ${limit}`}
         </span>
       </div>
 
       {!isUnlimited && (
-        <div style={{
-          height: 6,
-          background: '#e2e8f0',
-          borderRadius: 3,
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            height: '100%',
-            width: `${percentage}%`,
-            background: isExceeded ? '#ef4444' : isWarning ? '#f59e0b' : '#22c55e',
-            borderRadius: 3,
-            transition: 'width 0.3s ease',
-          }} />
+        <div className="h-1.5 bg-slate-200 rounded-sm overflow-hidden">
+          <div
+            className="h-full rounded-sm transition-[width] duration-300 ease-in-out"
+            style={{
+              width: `${percentage}%`,
+              background: isExceeded ? '#ef4444' : isWarning ? '#f59e0b' : '#22c55e',
+            }}
+          />
         </div>
       )}
     </div>

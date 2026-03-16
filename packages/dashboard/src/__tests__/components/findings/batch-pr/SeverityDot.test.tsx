@@ -38,11 +38,9 @@ describe("batch-pr/SeverityDot", () => {
   it("has correct styling dimensions", () => {
     const { container } = render(<SeverityDot severity="critical" />);
     const dot = container.querySelector("span");
-    expect(dot).toHaveStyle({
-      width: "8px",
-      height: "8px",
-      borderRadius: "50%",
-      display: "inline-block",
-    });
+    expect(dot).toHaveClass("w-2");
+    expect(dot).toHaveClass("h-2");
+    expect(dot).toHaveClass("rounded-full");
+    expect(dot).toHaveClass("inline-block");
   });
 });

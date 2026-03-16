@@ -120,7 +120,7 @@ describe("charts/DonutChart", () => {
   it("renders legend color indicators", () => {
     const { container } = render(<DonutChart data={mockData} />);
     // Should have 3 colored squares in legend
-    const colorIndicators = container.querySelectorAll('[style*="border-radius: 3px"]');
+    const colorIndicators = container.querySelectorAll('.rounded-sm');
     expect(colorIndicators.length).toBe(3);
   });
 
@@ -143,22 +143,18 @@ describe("charts/DonutChart", () => {
   it("renders with correct center text styling", () => {
     render(<DonutChart data={mockData} />);
     const total = screen.getByText("60");
-    expect(total).toHaveStyle({ fontSize: "28px", fontWeight: "700" });
+    expect(total).toHaveClass("text-2xl", "font-bold");
   });
 
   it("renders Total label with correct styling", () => {
     render(<DonutChart data={mockData} />);
     const totalLabel = screen.getByText("Total");
-    expect(totalLabel).toHaveStyle({ fontSize: "11px" });
+    expect(totalLabel).toHaveClass("text-xs", "text-slate-500");
   });
 
   it("renders flex container for chart and legend", () => {
     const { container } = render(<DonutChart data={mockData} />);
     const flexContainer = container.firstChild;
-    expect(flexContainer).toHaveStyle({
-      display: "flex",
-      alignItems: "center",
-      gap: "24px",
-    });
+    expect(flexContainer).toHaveClass("flex", "items-center", "gap-6");
   });
 });

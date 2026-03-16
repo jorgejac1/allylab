@@ -12,18 +12,10 @@ export function ElementScreenshot({ screenshot, selector }: ElementScreenshotPro
 
   if (!screenshot || imageError) {
     return (
-      <div style={{
-        padding: 16,
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        borderRadius: 8,
-        textAlign: 'center',
-        color: '#64748b',
-        fontSize: 13,
-      }}>
-        <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><Image size={24} /></div>
-        <p style={{ margin: 0 }}>Screenshot not available</p>
-        <p style={{ margin: '4px 0 0', fontSize: 11 }}>
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center text-slate-500 text-[13px]">
+        <div className="mb-2 flex justify-center"><Image size={24} /></div>
+        <p className="m-0">Screenshot not available</p>
+        <p className="mt-1 mb-0 text-xs">
           Run a new scan to capture element screenshots
         </p>
       </div>
@@ -31,94 +23,47 @@ export function ElementScreenshot({ screenshot, selector }: ElementScreenshotPro
   }
 
   return (
-    <div style={{
-      border: '1px solid #e2e8f0',
-      borderRadius: 8,
-      overflow: 'hidden',
-      background: '#f8fafc',
-    }}>
+    <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
       {/* Header */}
-      <div style={{
-        padding: '8px 12px',
-        background: '#fff',
-        borderBottom: '1px solid #e2e8f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: '#475569', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <div className="py-2 px-3 bg-white border-b border-slate-200 flex justify-between items-center">
+        <span className="text-xs font-medium text-slate-600 inline-flex items-center gap-1.5">
           <Camera size={14} /> Element Screenshot
         </span>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#3b82f6',
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
+          className="bg-none border-none text-blue-500 text-xs cursor-pointer"
         >
           {isExpanded ? 'Collapse' : 'Expand'}
         </button>
       </div>
 
       {/* Image Container */}
-      <div style={{
-        padding: 12,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: 'repeating-conic-gradient(#f0f0f0 0% 25%, #fff 0% 50%) 50% / 16px 16px',
-        minHeight: 80,
-        maxHeight: isExpanded ? 'none' : 200,
-        overflow: 'hidden',
-        position: 'relative',
-      }}>
+      <div
+        className="p-3 flex justify-center items-center min-h-20 overflow-hidden relative"
+        style={{
+          background: 'repeating-conic-gradient(#f0f0f0 0% 25%, #fff 0% 50%) 50% / 16px 16px',
+          maxHeight: isExpanded ? 'none' : 200,
+        }}
+      >
         <img
           src={`data:image/png;base64,${screenshot}`}
           alt="Element with accessibility issue highlighted"
           onError={() => setImageError(true)}
-          style={{
-            maxWidth: '100%',
-            maxHeight: isExpanded ? 'none' : 180,
-            objectFit: 'contain',
-            borderRadius: 4,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          }}
+          className="max-w-full object-contain rounded shadow-md"
+          style={{ maxHeight: isExpanded ? 'none' : 180 }}
+          loading="lazy"
         />
-        
+
         {/* Issue indicator badge */}
-        <div style={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          padding: '4px 8px',
-          background: 'rgba(239, 68, 68, 0.9)',
-          color: '#fff',
-          borderRadius: 4,
-          fontSize: 10,
-          fontWeight: 600,
-        }}>
+        <div className="absolute top-2 right-2 py-1 px-2 bg-red-500/90 text-white rounded text-[10px] font-semibold">
           Issue Location
         </div>
       </div>
 
       {/* Caption */}
-      <div style={{
-        padding: '8px 12px',
-        background: '#fff',
-        borderTop: '1px solid #e2e8f0',
-        fontSize: 11,
-        color: '#64748b',
-      }}>
-        <span style={{ fontWeight: 500 }}>Element:</span>{' '}
-        <code style={{ 
-          background: '#f1f5f9', 
-          padding: '1px 4px', 
-          borderRadius: 3,
-          fontSize: 10,
-        }}>
+      <div className="py-2 px-3 bg-white border-t border-slate-200 text-xs text-slate-500">
+        <span className="font-medium">Element:</span>{' '}
+        <code className="bg-slate-100 px-1 py-px rounded-sm text-[10px]">
           {selector.length > 60 ? selector.slice(0, 60) + '...' : selector}
         </code>
       </div>

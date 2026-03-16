@@ -6,8 +6,10 @@
   "permissions": [
     "cookies",
     "activeTab",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
+  "options_page": "options.html",
   "host_permissions": [
     "<all_urls>"
   ],
